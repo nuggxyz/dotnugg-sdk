@@ -28,6 +28,7 @@ export class ParserAccumulation {
 
                 // Stat the file to see if we have a file or dir
                 const stat = await fs.promises.stat(fromPath);
+                console.log('checking...', file);
 
                 if (stat.isFile() && file.endsWith('.nugg')) {
                     console.log('checking...', file);
@@ -37,8 +38,9 @@ export class ParserAccumulation {
                     ParserAccumulation.results.collection = parser.results.collection;
                     ParserAccumulation.results.items.push(...parser.results.items);
                     console.log('gottem!', file);
+                } else if (stat.isDirectory() && !file.startsWith('.')) {
+                    await ParserAccumulation.init(fromPath);
                 }
-
                 // Log because we're crazy
                 // console.log("Moved '%s'->'%s'", fromPath, toPath);
             } // End for...of
@@ -1220,7 +1222,6 @@ export class Parser {
                 });
                 this.next
             ) {
-                console.log(this.current.token.scopes);
                 if (this.has(tokens.ItemVersionName)) {
                     name = this.currentValue;
                     nameToken = this.current;

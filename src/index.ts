@@ -11,7 +11,7 @@ const main = async () => {
 
         await Config.init('./reference/onig.wasm', './syntax/dotnugg.tmLanguage.json');
 
-        ParserAccumulation.init(argv.input);
+        await ParserAccumulation.init(argv.input);
 
         console.log(ParserAccumulation.json);
 
