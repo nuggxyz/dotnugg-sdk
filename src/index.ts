@@ -9,7 +9,7 @@ const main = async () => {
             input: string;
         } = require('minimist')(process.argv.slice(2));
 
-        await Config.init('../reference/onig.wasm', '../../syntax/dotnugg.tmLanguage.json');
+        await Config.init('./reference/onig.wasm', './syntax/dotnugg.tmLanguage.json');
 
         const parser = Parser.init(argv.input);
         parser.compile();

@@ -5,7 +5,8 @@
     "main": "index.ts",
     "license": "MIT",
     "scripts": {
-        "build": "yarn install && tsc"
+        "build": "yarn install && tsc",
+        "start": "tsc && node ./build/index.js --input"
     },
     "dependencies": {
         "minimist": "^1.2.5",
