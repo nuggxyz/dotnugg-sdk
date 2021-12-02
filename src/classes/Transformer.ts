@@ -23,12 +23,12 @@ export class Transformer {
     static transformCollection(input: NL.DotNugg.Transformer.Collection): NL.DotNugg.Encoder.Collection {
         console.log(input);
 
-        Object.entries(input.features).map(([k, v], i) => {
-            console.log(k);
-            this.featureMap[k] = i;
-
-            this.defaultLayerMap[k] = ItemTransformer.init.transformLevel(v.zindex);
-        });
+        Object.entries(input.features)
+            .reverse()
+            .map(([k, v], i) => {
+                this.featureMap[k] = i;
+                this.defaultLayerMap[k] = ItemTransformer.init.transformLevel(v.zindex);
+            });
         return {
             featureLen: Object.keys(input.features).length,
             width: input.width,
