@@ -37,7 +37,6 @@ export class ParserAccumulation {
                     parser.compile();
                     ParserAccumulation.results.collection = parser.results.collection;
                     ParserAccumulation.results.items.push(...parser.results.items);
-                    console.log('gottem!', file);
                 } else if (stat.isDirectory() && !file.startsWith('.')) {
                     await ParserAccumulation.init(fromPath);
                 }
