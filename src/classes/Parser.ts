@@ -1,5 +1,6 @@
 /* eslint-disable prefer-const */
 import * as fs from 'fs';
+import * as path from 'path';
 
 import * as vscode from 'vscode';
 import * as vsctm from 'vscode-textmate';
@@ -9,17 +10,65 @@ import tokens from '../constants/tokens';
 import { Validator } from './Validator';
 import { Config } from './Config';
 
+export class ParserAccumulation {
+    public static results: NL.DotNugg.Document = {
+        collection: undefined,
+        items: [],
+    };
+
+    public static async init(dir: string) {
+        try {
+            // Get the files as an array
+            const files = await fs.promises.readdir(dir);
+
+            // Loop them all with the new for...of
+            for (const file of files) {
+                // Get the full paths
+                const fromPath = path.join(dir, file);
+
+                // Stat the file to see if we have a file or dir
+                const stat = await fs.promises.stat(fromPath);
+
+                if (stat.isFile() && file.endsWith('.nugg')) {
+                    console.log('checking...', file);
+
+                    const parser = Parser.init(fromPath);
+                    parser.compile();
+                    ParserAccumulation.results.collection = parser.results.collection;
+                    ParserAccumulation.results.items.push(...parser.results.items);
+                    console.log('gottem!', file);
+                }
+
+                // Log because we're crazy
+                // console.log("Moved '%s'->'%s'", fromPath, toPath);
+            } // End for...of
+        } catch (e) {
+            // Catch anything bad that happens
+            console.error("We've thrown! Whoops!", e);
+        }
+    }
+
+    public static get json() {
+        return JSON.stringify(
+            ParserAccumulation.results,
+            function (key, value) {
+                if (this[key] !== undefined && this[key].value !== undefined) {
+                    return this[key].value;
+                } else {
+                    return value;
+                }
+            },
+            4,
+        );
+    }
+}
+
 export class Parser {
     public tokens: NL.DotNugg.ParsedToken[] = [];
 
     private index: number = 0;
     private document: string[];
     public linescopes: { [_: number]: string[] } = {};
-
-    public results: NL.DotNugg.Document = {
-        collection: undefined,
-        items: [],
-    };
 
     private get next() {
         if (this.hasNext) {
@@ -32,6 +81,11 @@ export class Parser {
     private back() {
         this.index--;
     }
+
+    public results: NL.DotNugg.Document = {
+        collection: undefined,
+        items: [],
+    };
 
     public get json() {
         return JSON.stringify(
@@ -1166,6 +1220,7 @@ export class Parser {
                 });
                 this.next
             ) {
+                console.log(this.current.token.scopes);
                 if (this.has(tokens.ItemVersionName)) {
                     name = this.currentValue;
                     nameToken = this.current;
@@ -1197,6 +1252,9 @@ export class Parser {
                     endToken = this.current;
                 }
             }
+
+            this.back();
+
             const validator = new Validator({
                 token,
                 endToken,

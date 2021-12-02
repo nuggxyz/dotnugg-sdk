@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { Config } from './classes/Config';
-import { Parser } from './classes/Parser';
+import { Parser, ParserAccumulation } from './classes/Parser';
 
 const main = async () => {
     try {
@@ -11,10 +11,9 @@ const main = async () => {
 
         await Config.init('./reference/onig.wasm', './syntax/dotnugg.tmLanguage.json');
 
-        const parser = Parser.init(argv.input);
-        parser.compile();
+        ParserAccumulation.init(argv.input);
 
-        console.log(parser.json);
+        console.log(ParserAccumulation.json);
 
         // fs.writeFileSync(argv.input.replace('.nugg', '.tmp.json'), parser.json);
     } catch (err) {
