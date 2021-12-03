@@ -1,3 +1,4 @@
+
 declare namespace NL.DotNugg.Encoder {
     // type EncodedDocument struct {
     // 	Collection []*byte
@@ -41,7 +42,11 @@ declare namespace NL.DotNugg.Encoder {
     // 	Radii     *Rlud
     // 	Receivers []*Receiver
     // }
-
+    type EncoderOutput = {
+        feature: number;
+        bits: Byter[];
+        hex: import('ethers').BigNumber[];
+    };
     type Version = {
         groups: Group[];
         len: Coordinate;

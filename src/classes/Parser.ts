@@ -28,10 +28,10 @@ export class ParserAccumulation {
 
                 // Stat the file to see if we have a file or dir
                 const stat = await fs.promises.stat(fromPath);
-                console.log('checking...', file);
+                // console.log('checking...', file);
 
                 if (stat.isFile() && file.endsWith('.nugg')) {
-                    console.log('checking...', file);
+                    console.log('compiling...', file);
 
                     const parser = Parser.init(fromPath);
                     parser.compile();

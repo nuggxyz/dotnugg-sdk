@@ -2,18 +2,22 @@ import { BigNumber, ethers } from 'ethers';
 import invariant from 'tiny-invariant';
 
 import { Transformer } from './Transformer';
+import { Builder } from './Builder';
 
 export class Encoder {
     main: Uint8Array;
 
-    static output: Byter[][] = [];
+    static output: NL.DotNugg.Encoder.EncoderOutput[] = [];
 
     static fileHeader: Byter = { dat: 0x4e554747, bit: 32 };
 
     public static init() {
         const input = Transformer.output;
-
-        this.output = input.items.map((x) => this.encodeItem(x));
+        const res = input.items.map((x) => {
+            const item = this.encodeItem(x);
+            return { ...item, hex: Builder.breakup(Encoder.strarr(item.bits)) };
+        });
+        this.output = res;
     }
 
     public static bitlen(input: Byter[]): number {
@@ -23,13 +27,9 @@ export class Encoder {
     }
 
     public static strarr(input: Byter[]): BigNumber {
-        // return input.map((x) => {
-
-        //     return x.dat.toString(x.bit);
-        // });
-
-        return input.reduce((prev, curr) => {
-            return prev.shl(curr.bit).or(curr.dat);
+        return input.reverse().reduce((prev, curr) => {
+            invariant(curr.dat < Math.pow(2, curr.bit), 'ENCODE:STRARR:0');
+            return prev.eq(0) ? (prev = BigNumber.from(curr.dat)) : prev.shl(curr.bit).or(curr.dat);
         }, BigNumber.from(0));
     }
 
@@ -192,7 +192,7 @@ export class Encoder {
     // │                                                                   │
     // └───────────────────────────────────────────────────────────────────┘
 
-    public static encodeItem(input: NL.DotNugg.Encoder.Item): Byter[] {
+    public static encodeItem(input: NL.DotNugg.Encoder.Item): { feature: number; bits: Byter[] } {
         let res: Byter[] = [this.fileHeader]; // uint56
 
         res.push(this.encodeFeature(input.feature));
@@ -207,7 +207,7 @@ export class Encoder {
             res.push(...this.encodeVersion(x));
         });
 
-        return res;
+        return { bits: res, feature: input.feature };
     }
 
     public static encodeFeature(input: number): Byter {

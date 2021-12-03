@@ -5,6 +5,7 @@ import { Encoder } from './classes/Encoder';
 import { Parser, ParserAccumulation } from './classes/Parser';
 import { Transformer } from './classes/Transformer';
 import { Writer } from './classes/Writer';
+import { Builder } from './classes/Builder';
 
 const main = async () => {
     try {
@@ -26,11 +27,12 @@ const main = async () => {
 
         // console.log(Encoder.output);
 
-        Encoder.output.forEach((x) => {
-            console.log(Encoder.strarr(x));
-        });
+        // Encoder.output.forEach((x) => {
+        //     // console.log(Encoder.strarr(x));
+        //     Builder.breakup(Encoder.strarr(x.bits));
+        // });
 
-        await Writer.go(argv.output, argv.filename);
+        // await Writer.go(argv.output, argv.filename);
 
         // console.log(ParserAccumulation.json);
 

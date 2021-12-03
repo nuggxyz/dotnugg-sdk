@@ -21,8 +21,6 @@ export class Transformer {
     }
 
     static transformCollection(input: NL.DotNugg.Transformer.Collection): NL.DotNugg.Encoder.Collection {
-        console.log(input);
-
         Object.entries(input.features)
             .reverse()
             .map(([k, v], i) => {

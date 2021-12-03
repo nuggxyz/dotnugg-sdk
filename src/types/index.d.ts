@@ -1,3 +1,7 @@
+/// <reference types="./encoder" />
+/// <reference types="./transformer" />
+/// <reference types="./parser" />
+
 type uint8 = number;
 type uint12 = number;
 type uint16 = number;
@@ -21,3 +25,12 @@ type Byter = {
 interface Array<T> {
     first(count?: number): Array<T>;
 }
+
+declare namespace NL.DotNugg.Compiler {
+    type Result = {
+        feature: number;
+        bits: Byter[];
+        hex: import('ethers').BigNumber[];
+    }
+}
+
