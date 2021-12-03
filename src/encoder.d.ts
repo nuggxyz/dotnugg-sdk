@@ -123,13 +123,15 @@ declare namespace NL.DotNugg.Encoder {
         len: uint8;
     };
 
-    type Rgba = Bytes;
+    type Rgba = {
+        r: uint8;
+        g: uint8;
+        b: uint8;
+        a: uint8;
+    };
 
     // type Rgba = {
-    //     r: uint8;
-    //     g: uint8;
-    //     b: uint8;
-    //     a: uint8;
+
     // };
     // func (me *Rgba) ToHex() *[4]byte {
     // 	res := [4]byte{byte(me.R), byte(me.G), byte(me.B), byte(me.A)}

@@ -67,7 +67,7 @@ export class Transformer {
     static transformMatrixPixel(input: NL.DotNugg.Transformer.MatrixPixel[]): uint8[] {
         return input.map((x) => +x.label);
     }
-    static rgba2hex(orig: string) {
+    static rgba2hex(orig: string): NL.DotNugg.Transformer.Rgba {
         var a,
             rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
             alpha = ((rgb && rgb[4]) || '').trim(),
@@ -85,7 +85,12 @@ export class Transformer {
         // multiply before convert to HEX
         a = ((a * 255) | (1 << 8)).toString(16).slice(1);
         hex = hex + a;
-        return ethers.utils.toUtf8Bytes(hex);
+        return {
+            r: ethers.utils.toUtf8Bytes(hex)[0],
+            g: ethers.utils.toUtf8Bytes(hex)[1],
+            b: ethers.utils.toUtf8Bytes(hex)[2],
+            a,
+        };
     }
 }
 
