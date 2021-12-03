@@ -21,7 +21,7 @@ declare namespace NL.DotNugg.Transformer {
     type Pixel = {
         name: string;
         zindex: Level;
-        rgba: Rgba;
+        rgba: string;
     };
 
     type Rgba = {

@@ -18,11 +18,17 @@ const main = async () => {
 
         await ParserAccumulation.init(argv.input);
 
-        await Transformer.init();
+        Transformer.init();
 
-        console.log(Transformer.output);
+        // console.log(Transformer.output);
 
-        await Encoder.go();
+        Encoder.init();
+
+        // console.log(Encoder.output);
+
+        Encoder.output.forEach((x) => {
+            console.log(Encoder.strarr(x));
+        });
 
         await Writer.go(argv.output, argv.filename);
 

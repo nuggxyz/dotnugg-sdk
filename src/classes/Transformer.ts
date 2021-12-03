@@ -158,7 +158,7 @@ export class ItemTransformer {
 
         input.matrix.forEach((row) => {
             row.forEach((pixel) => {
-                if (currlen == 0 || (this.newColors[pixel.label] == lastkey && currlen < 16)) {
+                if (currlen == 0 || (this.newColors[pixel.label] == lastkey && currlen < 19)) {
                     currlen++;
                 } else {
                     res.push({ colorkey: lastkey, len: currlen });

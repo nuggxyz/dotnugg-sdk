@@ -8,12 +8,29 @@ export class Encoder {
 
     static output: Byter[][] = [];
 
-    static fileHeader: Byter = { dat: '4e554747', bit: 32 };
+    static fileHeader: Byter = { dat: 0x4e554747, bit: 32 };
 
     public static init() {
         const input = Transformer.output;
 
         this.output = input.items.map((x) => this.encodeItem(x));
+    }
+
+    public static bitlen(input: Byter[]): number {
+        return input.reduce((prev, curr) => {
+            return prev + curr.bit;
+        }, 0);
+    }
+
+    public static strarr(input: Byter[]): BigNumber {
+        // return input.map((x) => {
+
+        //     return x.dat.toString(x.bit);
+        // });
+
+        return input.reduce((prev, curr) => {
+            return prev.shl(curr.bit).or(curr.dat);
+        }, BigNumber.from(0));
     }
 
     static encodeCoordinate(input: NL.DotNugg.Encoder.Coordinate): Byter {
@@ -69,7 +86,10 @@ export class Encoder {
         invariant(0 <= input.feature && input.feature < 8, 'ENCODE:ER:0');
         invariant(0 <= input.xorZindex && input.xorZindex < 64, 'ENCODE:ER:2');
         invariant(0 <= input.yorYoffset && input.yorYoffset < 64, 'ENCODE:ER:3');
-        return { dat: (c << 15) | (input.feature << 3) | (input.xorZindex << 6) | (input.yorYoffset << 0), bit: 16 };
+        return {
+            dat: (c << 15) | (input.feature << 3) | (input.xorZindex << 6) | (input.yorYoffset << 0),
+            bit: 16,
+        };
     }
 
     static encodeReceivers(input: NL.DotNugg.Encoder.Receiver[]): Byter[] {
@@ -77,14 +97,71 @@ export class Encoder {
         return input.map((x) => this.encodeReceiver(x));
     }
 
-    static encodeMatrixPixel(input: NL.DotNugg.Encoder.Group[]): Byter[] {
-        // /uint4[]\
+    static encodeMatrixPixelA(input: NL.DotNugg.Encoder.Group[]): Byter[] {
+        return input
+            .map((x) => {
+                let res = [];
+                x.len = x.len - 1;
+                invariant(0 <= x.len && x.len < 256, 'ENCODE:EMP:2');
 
-        input.map((x) => {
-            invariant(0 <= x && x < 16, 'ENCODE:EMP:2');
+                if (x.len == 0) res.push({ dat: 0, bit: 3 });
+                else if (x.len == 1) res.push({ dat: 1, bit: 3 });
+                else if (x.len == 2) res.push({ dat: 2, bit: 3 });
+                else if (x.len == 3) res.push({ dat: 3, bit: 3 });
+                else if (x.len == 4) res.push({ dat: 4, bit: 3 });
+                else if (x.len == 5) res.push({ dat: 5, bit: 3 });
+                else if (x.len < 14)
+                    res.push(
+                        ...[
+                            { dat: 6, bit: 3 },
+                            { dat: x.len - 8, bit: 3 },
+                        ],
+                    );
+                else if (x.len < 256)
+                    res.push(
+                        ...[
+                            { dat: 7, bit: 3 },
+                            { dat: x.len, bit: 8 },
+                        ],
+                    );
+                else invariant(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
+                if (x.colorkey === undefined) x.colorkey = 0;
+                else x.colorkey++;
 
-            +x.label;
-        });
+                invariant(0 <= x.colorkey && x.colorkey < 16, 'ENCODE:EMP:CKs - ' + x.colorkey);
+
+                res.push({ dat: x.colorkey, bit: 4 });
+                return res;
+            })
+            .flat();
+    }
+
+    static encodeMatrixPixelB(input: NL.DotNugg.Encoder.Group[]): Byter[] {
+        return input
+            .map((x) => {
+                let res = [];
+                x.len = x.len - 1;
+                invariant(0 <= x.len && x.len < 19, 'ENCODE:EMP:2');
+
+                if (x.len == 0) res.push({ dat: 0, bit: 2 });
+                else if (x.len == 1) res.push({ dat: 1, bit: 2 });
+                else if (x.len == 2) res.push({ dat: 2, bit: 2 });
+                else if (x.len < 19)
+                    res.push(
+                        ...[
+                            { dat: 3, bit: 2 },
+                            { dat: x.len - 3, bit: 4 },
+                        ],
+                    );
+                else invariant(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
+                if (x.colorkey === undefined) x.colorkey = 0;
+
+                invariant(0 <= x.colorkey && x.colorkey < 16, 'ENCODE:EMP:CKs');
+
+                res.push({ dat: x.colorkey, bit: 4 });
+                return res;
+            })
+            .flat();
     }
     // ┌───────────────────────────────────────────────────────────────────┐
     // │                                                                   │
@@ -120,7 +197,11 @@ export class Encoder {
 
         res.push(this.encodeFeature(input.feature));
 
-        input.pixels.forEach((x) => {});
+        res.push({ dat: input.pixels.length, bit: 4 }); // pallet length
+
+        input.pixels.forEach((x) => {
+            res.push(...this.encodePixel(x));
+        });
 
         input.versions.forEach((x) => {
             res.push(...this.encodeVersion(x));
@@ -137,13 +218,13 @@ export class Encoder {
 
     public static encodeVersion(input: NL.DotNugg.Encoder.Version): Byter[] {
         let res: Byter[] = [];
-
+        // console.log(input.groups);
         res.push(this.encodeCoordinate(input.len));
         res.push(this.encodeCoordinate(input.anchor));
         res.push(this.encodeRlud(input.radii));
         res.push(this.encodeRlud(input.expanders));
         res.push(...this.encodeReceivers(input.receivers));
-        res.push(...this.encodeMatrixPixel(input.groups));
+        res.push(...this.encodeMatrixPixelB(input.groups));
         return res;
     }
 
@@ -189,5 +270,5 @@ export class Encoder {
         return { bit: 4, dat: input };
     }
 
-    public static encodeMatrix(input: NL.DotNugg.Encoder.Matrix): Byter[] {}
+    // public static encodeMatrix(input: NL.DotNugg.Encoder.Matrix): Byter[] {}
 }
