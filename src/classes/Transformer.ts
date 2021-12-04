@@ -80,14 +80,15 @@ export class Transformer {
         } else {
             a = 1;
         }
+        console.log('here', a);
         // multiply before convert to HEX
-        a = ((a * 255) | (1 << 8)).toString(16).slice(1);
-        hex = hex + a;
+        // a = ((a * 255) | (1 << 8)).toString(16).slice(1);
+        // hex = hex + a;
         return {
-            r: ethers.utils.toUtf8Bytes(hex)[0],
-            g: ethers.utils.toUtf8Bytes(hex)[1],
-            b: ethers.utils.toUtf8Bytes(hex)[2],
-            a,
+            r: +ethers.utils.toUtf8Bytes(hex)[0],
+            g: +ethers.utils.toUtf8Bytes(hex)[1],
+            b: +ethers.utils.toUtf8Bytes(hex)[2],
+            a: Math.floor(255 * +a),
         };
     }
 }

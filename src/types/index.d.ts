@@ -21,6 +21,7 @@ type NumberDictionary<T> = {
 type Byter = {
     dat: string | number;
     bit: number;
+    nam?: string;
 };
 interface Array<T> {
     first(count?: number): Array<T>;
