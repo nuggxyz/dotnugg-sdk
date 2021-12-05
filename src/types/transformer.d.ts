@@ -72,8 +72,8 @@ declare namespace NL.DotNugg.Transformer {
     type Receiver = {
         type: string;
         feature: string;
-        xorZindex: uint8;
-        yorYoffset: uint8;
+        a: {offset: uint8, direction: Direction};
+        b: {offset: uint8, direction: Direction};
     };
 
     type Rlud = {

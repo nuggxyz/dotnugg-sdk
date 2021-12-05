@@ -1002,7 +1002,21 @@ export class Parser {
             let feature: string = undefined;
             let featureToken: NL.DotNugg.ParsedToken = undefined;
 
-            for (; this.has(tokens.GeneralReceiver) && Validator.anyUndefined({ token, endToken }); this.next) {
+            for (
+                ;
+                this.has(tokens.GeneralReceiver) &&
+                Validator.anyUndefined({
+                    token,
+                    endToken,
+                    aOffset,
+                    bOffset,
+                    feature,
+                    featureToken,
+                    aToken,
+                    bToken,
+                });
+                this.next
+            ) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -1074,8 +1088,8 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileGeneralColor', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileGeneralColor');
+                console.error('ERROR', 'blank value returned from: compileGeneralReceiver', validator.undefinedVarNames);
+                throw new Error('blank value returned from: compileGeneralReceiver');
             }
         }
         return undefined;
@@ -1272,7 +1286,7 @@ export class Parser {
                         expanders,
                         data,
                         anchor,
-                        receivers: [],
+                        receivers: receivers,
                         name: { value: name, token: nameToken },
                     },
                     token,

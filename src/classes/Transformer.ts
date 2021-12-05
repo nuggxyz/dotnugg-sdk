@@ -47,9 +47,10 @@ export class Transformer {
     }
 
     static transformReceiver(input: NL.DotNugg.Transformer.Receiver): NL.DotNugg.Encoder.Receiver {
+        console.log('HEREREREE:', input);
         return {
-            xorZindex: input.xorZindex, // zindex or x
-            yorYoffset: input.yorYoffset, // yoffset or y
+            xorZindex: input.a.offset, // zindex or x
+            yorYoffset: input.b.offset, // yoffset or y
             feature: Transformer.featureMap[input.feature],
             calculated: input.type === 'calculated',
         };
@@ -104,6 +105,7 @@ export class ItemTransformer {
 
     public transformItem(input: NL.DotNugg.Transformer.Item): NL.DotNugg.Encoder.Item {
         this.feature = input.feature;
+
         return {
             pixels: this.transformPixels(input.colors),
             feature: Transformer.featureMap[input.feature],
@@ -122,11 +124,12 @@ export class ItemTransformer {
     }
 
     transformVersion(input: NL.DotNugg.Transformer.Version): NL.DotNugg.Encoder.Version {
+        console.log('HERERERERE @22222:', input.receivers.length);
         return {
             anchor: Transformer.transformCoordinate(input.anchor),
             expanders: Transformer.transformRlud(input.expanders),
             groups: this.transformMatrix(input.data),
-            len: { x: input.data.matrix[0].length, y: input.data.matrix[0].length },
+            len: { x: input.data.matrix[0].length, y: input.data.matrix.length },
             radii: Transformer.transformRlud(input.radii),
             receivers: Transformer.transformReceivers(input.receivers),
         };

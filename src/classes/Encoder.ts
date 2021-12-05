@@ -29,7 +29,7 @@ export class Encoder {
     public static strarr(input: Byter[]): BigNumber {
         return input.reverse().reduce((prev, curr) => {
             invariant(curr.dat < Math.pow(2, curr.bit) && curr.dat >= 0, 'ENCODE:STRARR:0 - ' + curr.dat + ' < ' + Math.pow(2, curr.bit));
-            console.log(BigNumber.from(0).shl(curr.bit).or(curr.dat)._hex, curr.bit.toString(), curr.nam);
+            // console.log(BigNumber.from(0).shl(curr.bit).or(curr.dat)._hex, curr.bit.toString(), curr.nam);
             return prev.eq(0) ? (prev = BigNumber.from(curr.dat)) : prev.shl(curr.bit).or(curr.dat);
         }, BigNumber.from(0));
     }
@@ -80,9 +80,10 @@ export class Encoder {
     // y = uint6
     static encodeReceiver(input: NL.DotNugg.Encoder.Receiver): Byter[] {
         let c = input.calculated ? 0x1 : 0x0;
-        invariant(0 <= input.feature && input.feature < 8, 'ENCODE:ER:0');
-        invariant(0 <= input.xorZindex && input.xorZindex < 64, 'ENCODE:ER:2');
-        invariant(0 <= input.yorYoffset && input.yorYoffset < 64, 'ENCODE:ER:3');
+        console.log(input);
+        invariant(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0');
+        invariant(0 <= input.xorZindex && input.xorZindex < 64, 'ENCODE:REC:2 - ' + input.xorZindex);
+        invariant(0 <= input.yorYoffset && input.yorYoffset < 64, 'ENCODE:REC:3');
         return [
             {
                 dat: input.yorYoffset,
