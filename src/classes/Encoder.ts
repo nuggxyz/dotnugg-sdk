@@ -110,7 +110,6 @@ export class Encoder {
 
     static encodeReceivers(input: NL.DotNugg.Encoder.Receiver[]): Byter[] {
         //uint16[]
-
         return input.map((x) => this.encodeReceiver(x)).flat();
     }
 
@@ -244,12 +243,12 @@ export class Encoder {
         res.push(...this.encodeRlud(input.radii));
         res.push(...this.encodeRlud(input.expanders));
 
-        invariant(0 <= input.receivers.length && input.receivers.length < 8, 'ENCODE:VERS:0 - ' + input.receivers.length);
+        invariant(0 <= input.receivers.length && input.receivers.length < 16, 'ENCODE:VERS:0 - ' + input.receivers.length);
         if (input.receivers.length == 1) {
             res.push({ dat: 0x1, bit: 1, nam: 'receiver len == 1 ?' });
         } else {
             res.push({ dat: 0x0, bit: 1, nam: 'receiver len == 1 ?' });
-            res.push({ dat: input.receivers.length, bit: 3, nam: 'receivers len' });
+            res.push({ dat: input.receivers.length, bit: 4, nam: 'receivers len' });
         }
         res.push(...this.encodeReceivers(input.receivers));
 

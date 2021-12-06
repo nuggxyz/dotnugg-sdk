@@ -1,12 +1,15 @@
 import { ethers } from 'ethers';
 import invariant from 'tiny-invariant';
 
+import { Encoder } from './Encoder';
 import { ParserAccumulation } from './Parser';
 export class Transformer {
     static input: NL.DotNugg.Transformer.Document;
     static output: NL.DotNugg.Encoder.Document;
 
     static featureMap: Dictionary<uint8> = {};
+    static calculatedReceiversByFeature: Dictionary<NL.DotNugg.Encoder.Receiver[]> = {};
+
     static defaultLayerMap: Dictionary<uint8> = {};
     static sortedFeatureStrings: string[] = [];
     static sortedFeatureUints: uint8[] = [];
@@ -23,9 +26,13 @@ export class Transformer {
     static transformCollection(input: NL.DotNugg.Transformer.Collection): NL.DotNugg.Encoder.Collection {
         Object.entries(input.features)
             .reverse()
+            .map((args, i) => {
+                this.featureMap[args[0]] = i;
+                this.defaultLayerMap[args[0]] = ItemTransformer.init.transformLevel(args[1].zindex);
+                return args;
+            })
             .map(([k, v], i) => {
-                this.featureMap[k] = i;
-                this.defaultLayerMap[k] = ItemTransformer.init.transformLevel(v.zindex);
+                this.calculatedReceiversByFeature[k] = [...this.transformReceivers(v.receivers)];
             });
 
         return {
@@ -134,7 +141,7 @@ export class ItemTransformer {
             groups: this.transformMatrix(input.data),
             len: { x: input.data.matrix[0].length, y: input.data.matrix.length },
             radii: Transformer.transformRlud(input.radii),
-            receivers: Transformer.transformReceivers(input.receivers),
+            receivers: [...Transformer.transformReceivers(input.receivers), ...Transformer.calculatedReceiversByFeature[this.feature]],
         };
     }
 
