@@ -212,6 +212,8 @@ export class Encoder {
 
         console.log('pallet length', input.pixels.length);
 
+        // res.push({ dat: input.versions.length - 1, bit: 2, nam: 'version len' });
+
         input.pixels.forEach((x) => {
             res.push(...this.encodePixel(x));
         });
@@ -283,7 +285,12 @@ export class Encoder {
         //    uint1 | uint9
         let res: Byter[] = [];
         res.push(this.encodeLayer(input.zindex));
-        res.push(...this.encodeRGB(input.rgba.r, input.rgba.g, input.rgba.b));
+
+        const color = this.encodeRGB(input.rgba.r, input.rgba.g, input.rgba.b);
+        res.push(...color);
+
+        console.log(color);
+
         res.push(...this.encodeA(input.rgba.a));
 
         return res;
@@ -308,7 +315,10 @@ export class Encoder {
         invariant(0 <= b && b < 256, 'ENCODE:ER:B');
         return [
             { dat: 0x0, bit: 1, nam: 'is RGB black ?' },
-            { dat: (r << 16) | (r << 8) | b, bit: 24, nam: 'non black rgb' },
+            { dat: r, bit: 8, nam: 'R' },
+            { dat: g, bit: 8, nam: 'G' },
+            { dat: b, bit: 8, nam: 'B' },
+            // { dat: (r << 16) | (g << 8) | b, bit: 24, nam: 'non black rgb' },
         ];
     }
 

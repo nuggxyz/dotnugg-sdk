@@ -27,6 +27,7 @@ export class Transformer {
                 this.featureMap[k] = i;
                 this.defaultLayerMap[k] = ItemTransformer.init.transformLevel(v.zindex);
             });
+
         return {
             featureLen: Object.keys(input.features).length,
             width: input.width,
@@ -47,7 +48,6 @@ export class Transformer {
     }
 
     static transformReceiver(input: NL.DotNugg.Transformer.Receiver): NL.DotNugg.Encoder.Receiver {
-        console.log('HEREREREE:', input);
         return {
             xorZindex: input.a.offset, // zindex or x
             yorYoffset: input.b.offset, // yoffset or y
@@ -67,29 +67,32 @@ export class Transformer {
         return input.map((x) => +x.label);
     }
     static rgba2hex(orig: string): NL.DotNugg.Transformer.Rgba {
-        var a,
-            rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
-            alpha = ((rgb && rgb[4]) || '').trim(),
-            hex = rgb
-                ? (+rgb[1] | (1 << 8)).toString(16).slice(1) +
-                  (+rgb[2] | (1 << 8)).toString(16).slice(1) +
-                  (+rgb[3] | (1 << 8)).toString(16).slice(1)
-                : orig;
+        const res = orig.split('(')[1].split(')')[0].split(',');
 
-        if (alpha !== '') {
-            a = alpha;
-        } else {
-            a = 1;
-        }
-        console.log('here', a);
-        // multiply before convert to HEX
-        // a = ((a * 255) | (1 << 8)).toString(16).slice(1);
-        // hex = hex + a;
+        // var a,
+        //     rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
+        //     alpha = ((rgb && rgb[4]) || '').trim(),
+        //     hex = rgb
+        //         ? (+rgb[1] | (1 << 8)).toString(16).slice(1) +
+        //           (+rgb[2] | (1 << 8)).toString(16).slice(1) +
+        //           (+rgb[3] | (1 << 8)).toString(16).slice(1)
+        //         : orig;
+
+        // if (alpha !== '') {
+        //     a = alpha;
+        // } else {
+        //     a = 1;
+        // }
+        // console.log('here', a);
+        // // multiply before convert to HEX
+        // // a = ((a * 255) | (1 << 8)).toString(16).slice(1);
+        // // hex = hex + a;
+        // console.log(hex);
         return {
-            r: +ethers.utils.toUtf8Bytes(hex)[0],
-            g: +ethers.utils.toUtf8Bytes(hex)[1],
-            b: +ethers.utils.toUtf8Bytes(hex)[2],
-            a: Math.floor(255 * +a),
+            r: +res[0],
+            g: +res[1],
+            b: +res[2],
+            a: Math.floor(255 * +res[3]),
         };
     }
 }
@@ -140,7 +143,7 @@ export class ItemTransformer {
     }
     transformPixels(input: Dictionary<NL.DotNugg.Transformer.Pixel>): NL.DotNugg.Encoder.Pixel[] {
         return Object.entries(input).map(([k, v], i) => {
-            this.newColors[k] = i;
+            this.newColors[k] = i + 1;
             return this.transformPixel(v);
         });
     }
@@ -154,7 +157,7 @@ export class ItemTransformer {
 
     transformMatrix(input: NL.DotNugg.Transformer.Matrix): NL.DotNugg.Encoder.Group[] {
         let res: NL.DotNugg.Encoder.Group[] = [];
-
+        console.log(this.newColors);
         let currlen = 0;
         let lastkey = this.newColors[input.matrix[0][0].label];
 
