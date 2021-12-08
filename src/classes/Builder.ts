@@ -1,7 +1,5 @@
 import { BigNumber, ethers } from 'ethers';
 
-import { IDotNuggHolder } from '../types/typechain/IDotNuggHolder';
-import { IDotNuggHolder__factory } from '../types/typechain/IDotNuggHolder__factory';
 export class Builder {
     public static init(input: BigNumber[]) {}
 

@@ -1,23 +1,68 @@
 import * as path from 'path';
 
-import { BigNumber } from 'ethers';
+import invariant from 'tiny-invariant';
 
-import { Builder } from './classes/Builder';
 import { Config } from './classes/Config';
 import { Encoder } from './classes/Encoder';
-import { ParserAccumulation } from './classes/Parser';
+import { Parser } from './classes/Parser';
 import { Transformer } from './classes/Transformer';
 
 export class DotNuggCompiler {
-    public static compile = async (inputdir: string): Promise<NL.DotNugg.Compiler.Result[]> => {
-        await Config.init(path.join(__dirname, '../reference/onig.wasm'), path.join(__dirname, '../syntax/dotnugg.tmLanguage.json'));
+    public transformer: Transformer;
+    public encoder: Encoder;
+    public parser: Parser;
 
-        await ParserAccumulation.init(inputdir);
+    static inited: boolean = false;
 
-        Transformer.init();
+    processed: boolean = false;
 
-        Encoder.init();
+    constructor() {
+        invariant(DotNuggCompiler.inited, '');
+    }
 
-        return Encoder.output;
+    static async init() {
+        if (!DotNuggCompiler.inited) {
+            await Config.init(path.join(__dirname, '../reference/onig.wasm'), path.join(__dirname, '../syntax/dotnugg.tmLanguage.json'));
+
+            DotNuggCompiler.inited = true;
+        }
+    }
+
+    public compileDirectory = (inputdir: string) => {
+        invariant(!this.processed, '');
+
+        this.processed = true;
+
+        this.parser = Parser.parseDirectory(inputdir);
+
+        this.transformer = new Transformer(this.parser);
+
+        this.encoder = new Encoder(this.transformer);
+
+        return this;
+    };
+
+    public compileFile = (inputpath: string) => {
+        invariant(!this.processed, '');
+
+        this.parser = Parser.parsePath(inputpath);
+
+        this.transformer = new Transformer(this.parser);
+
+        this.encoder = new Encoder(this.transformer);
+
+        return this;
+    };
+
+    public compileData = (data: string) => {
+        invariant(!this.processed, '');
+
+        this.parser = Parser.parseData(data);
+
+        this.transformer = new Transformer(this.parser);
+
+        this.encoder = new Encoder(this.transformer);
+
+        return this;
     };
 }

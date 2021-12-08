@@ -5,20 +5,20 @@ import { Transformer } from './Transformer';
 import { Builder } from './Builder';
 
 export class Encoder {
-    main: Uint8Array;
-
-    static output: NL.DotNugg.Encoder.EncoderOutput[] = [];
+    output: NL.DotNugg.Encoder.EncoderOutput[] = [];
 
     static fileHeader: Byter = { dat: 0x4e554747, bit: 32, nam: 'nuggcheck' };
 
-    public static init() {
-        const input = Transformer.output;
+    constructor(transformer: Transformer) {
+        const input = transformer.output;
         const res = input.items.map((x) => {
-            const item = this.encodeItem(x);
+            const item = Encoder.encodeItem(x);
             return { ...item, hex: Builder.breakup(Encoder.strarr(item.bits)) };
         });
         this.output = res;
     }
+
+    public static init() {}
 
     public static bitlen(input: Byter[]): number {
         return input.reduce((prev, curr) => {

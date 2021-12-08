@@ -5,8 +5,6 @@ import * as oniguruma from 'vscode-oniguruma';
 import * as vsctm from 'vscode-textmate';
 import * as plist from 'plist';
 
-const path = require('path');
-
 // Create a registry that can create a grammar from a scope name.
 const registry = (onigPath: string, dotnuggPath: string) =>
     new vsctm.Registry({

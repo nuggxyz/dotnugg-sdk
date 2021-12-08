@@ -2,67 +2,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as vscode from 'vscode';
 import * as vsctm from 'vscode-textmate';
+import invariant from 'tiny-invariant';
 
 import tokens from '../constants/tokens';
 
 import { Validator } from './Validator';
 import { Config } from './Config';
-
-export class ParserAccumulation {
-    public static results: NL.DotNugg.Document = {
-        collection: undefined,
-        items: [],
-    };
-
-    public static async init(dir: string) {
-        try {
-            // Get the files as an array
-            const files = await fs.promises.readdir(dir);
-
-            // Loop them all with the new for...of
-            for (const file of files) {
-                // Get the full paths
-                const fromPath = path.join(dir, file);
-
-                // Stat the file to see if we have a file or dir
-                const stat = await fs.promises.stat(fromPath);
-                // console.log('checking...', file);
-
-                if (stat.isFile() && file.endsWith('.nugg')) {
-                    console.log('compiling...', file);
-
-                    const parser = Parser.init(fromPath);
-                    parser.compile();
-                    ParserAccumulation.results.collection = parser.results.collection;
-                    ParserAccumulation.results.items.push(...parser.results.items);
-                } else if (stat.isDirectory() && !file.startsWith('.')) {
-                    await ParserAccumulation.init(fromPath);
-                }
-                // Log because we're crazy
-                // console.log("Moved '%s'->'%s'", fromPath, toPath);
-            } // End for...of
-        } catch (e) {
-            // Catch anything bad that happens
-            console.error("We've thrown! Whoops!", e);
-        }
-    }
-
-    public static get json() {
-        return JSON.stringify(
-            ParserAccumulation.results,
-            function (key, value) {
-                if (this[key] !== undefined && this[key].value !== undefined) {
-                    return this[key].value;
-                } else {
-                    return value;
-                }
-            },
-            4,
-        );
-    }
-}
 
 export class Parser {
     public tokens: NL.DotNugg.ParsedToken[] = [];
@@ -82,6 +28,8 @@ export class Parser {
     private back() {
         this.index--;
     }
+
+    public static globalCollection: NL.DotNugg.RangeOf<NL.DotNugg.Collection>;
 
     public results: NL.DotNugg.Document = {
         collection: undefined,
@@ -133,9 +81,16 @@ export class Parser {
         }, false);
     }
 
-    private constructor(filePath: string) {
-        const file = fs.readFileSync(filePath, 'utf-8');
-        this.document = file.split('/n');
+    public checkScopesOnLine(line: number, strs: string[]) {
+        return strs.reduce((prev, curr) => {
+            if (prev || this.linescopes[line].indexOf(curr) > -1) {
+                return true;
+            }
+        }, false);
+    }
+
+    private constructor(fileData: string) {
+        this.document = fileData.split('/n');
     }
 
     private lineAt(num: number) {
@@ -150,53 +105,103 @@ export class Parser {
         return this.document.length;
     }
 
-    public static init(filePath: string) {
-        const instance = new Parser(filePath);
+    public static parseEmpty() {
+        return new Parser('');
+    }
 
+    public static parseData(fileData: string) {
+        return new Parser(fileData).init();
+    }
+    public static parsePath(filePath: string) {
+        const file = fs.readFileSync(filePath, 'utf-8');
+        return new Parser(file).init();
+    }
+
+    public static parseDirectory(dir: string, prevParser?: Parser) {
+        try {
+            if (prevParser === undefined) prevParser = Parser.parseEmpty();
+
+            // Get the files as an array
+            const files = fs.readdirSync(dir);
+
+            // Loop them all with the new for...of
+            for (const file of files) {
+                // Get the full paths
+                const fromPath = path.join(dir, file);
+
+                // Stat the file to see if we have a file or dir
+                const stat = fs.statSync(fromPath);
+                // console.log('checking...', file);
+
+                if (stat.isFile() && file.endsWith('.nugg')) {
+                    console.log('compiling...', file);
+
+                    const parser = Parser.parsePath(fromPath);
+                    parser.compile();
+                    if (parser.results.collection !== undefined) {
+                        // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
+                        prevParser.results.collection = parser.results.collection;
+                        Parser.globalCollection = parser.results.collection;
+                    }
+                    prevParser.results.items.push(...parser.results.items);
+                } else if (stat.isDirectory() && !file.startsWith('.')) {
+                    Parser.parseDirectory(fromPath, prevParser);
+                }
+                // Log because we're crazy
+                // console.log("Moved '%s'->'%s'", fromPath, toPath);
+            } // End for...of
+        } catch (e) {
+            // Catch anything bad that happens
+            console.error("We've thrown! Whoops!", e);
+        }
+        return prevParser;
+    }
+
+    private init() {
         const tokens: NL.DotNugg.ParsedToken[] = [];
 
-        for (let i = 0; i < instance.lineCount; i++) {
-            let p = Config.grammer.tokenizeLine(instance.lineAt(i), vsctm.INITIAL);
+        for (let i = 0; i < this.lineCount; i++) {
+            let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
 
             while (p.ruleStack.depth > 1) {
                 p.tokens.forEach((x) => {
-                    if (instance.linescopes[i] === undefined) {
-                        instance.linescopes[i] = [...x.scopes];
+                    if (this.linescopes[i] === undefined) {
+                        this.linescopes[i] = [...x.scopes];
                     } else {
-                        instance.linescopes[i].push(...x.scopes);
+                        this.linescopes[i].push(...x.scopes);
                     }
 
                     tokens.push({
                         token: x,
                         ruleStack: p.ruleStack,
-                        line: instance.lineAt(i),
-                        value: instance.valueAt(i, x),
+                        line: this.lineAt(i),
+                        value: this.valueAt(i, x),
                         lineNumber: i,
                     });
                 });
 
-                p = Config.grammer.tokenizeLine(instance.lineAt(++i), p.ruleStack);
+                p = Config.grammer.tokenizeLine(this.lineAt(++i), p.ruleStack);
             }
             p.tokens.forEach((x) => {
-                if (instance.linescopes[i] === undefined) {
-                    instance.linescopes[i] = [...x.scopes];
+                if (this.linescopes[i] === undefined) {
+                    this.linescopes[i] = [...x.scopes];
                 } else {
-                    instance.linescopes[i].push(...x.scopes);
+                    this.linescopes[i].push(...x.scopes);
                 }
 
                 tokens.push({
                     token: x,
                     ruleStack: p.ruleStack,
-                    line: instance.lineAt(i),
-                    value: instance.valueAt(i, x),
+                    line: this.lineAt(i),
+                    value: this.valueAt(i, x),
                     lineNumber: i,
                 });
             });
         }
 
-        instance.tokens = tokens;
+        this.tokens = tokens;
 
-        return instance;
+        return this;
     }
 
     compile() {

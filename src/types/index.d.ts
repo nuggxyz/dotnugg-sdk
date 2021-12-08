@@ -1,6 +1,7 @@
 /// <reference types="./encoder" />
 /// <reference types="./transformer" />
 /// <reference types="./parser" />
+/// <reference types="../..//node_modules/@types/vscode" />
 
 type uint8 = number;
 type uint12 = number;
