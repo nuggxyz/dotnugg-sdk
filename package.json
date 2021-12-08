@@ -1,9 +1,10 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
     "version": "1.0.0",
-    "description": "A compiler for dotnugg files written in typescript",
+    "description": "A sdk for working with dotnugg files written in typescript",
     "main": "index.ts",
     "license": "MIT",
+    "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
     "author": "dub6ix <dub6ix@nugg.xyz>",
     "scripts": {
         "build": "yarn install && tsc",
