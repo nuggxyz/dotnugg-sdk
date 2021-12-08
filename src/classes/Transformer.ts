@@ -15,13 +15,15 @@ export class Transformer {
 
     constructor(parser: Parser) {
         this.input = JSON.parse(parser.json);
+
         this.output = {
-            collection: this.transformCollection(this.input.collection),
+            collection: this.input.collection ? this.transformCollection(this.input.collection) : undefined,
             items: this.input.items.map((x) => new ItemTransformer(this).transformItem(x)),
         };
     }
 
     transformCollection(input: NL.DotNugg.Transformer.Collection): NL.DotNugg.Encoder.Collection {
+        invariant(input !== undefined, 'UND');
         Object.entries(input.features)
             .reverse()
             .map((args, i) => {
@@ -88,11 +90,9 @@ export class Transformer {
         // } else {
         //     a = 1;
         // }
-        // console.log('here', a);
-        // // multiply before convert to HEX
-        // // a = ((a * 255) | (1 << 8)).toString(16).slice(1);
-        // // hex = hex + a;
-        // console.log(hex);
+        // // // multiply before convert to HEX
+        // // // a = ((a * 255) | (1 << 8)).toString(16).slice(1);
+        // // // hex = hex + a;
         return {
             r: +res[0],
             g: +res[1],
@@ -136,7 +136,6 @@ export class ItemTransformer {
     }
 
     transformVersion(input: NL.DotNugg.Transformer.Version): NL.DotNugg.Encoder.Version {
-        console.log('HERERERERE @22222:', input.receivers.length);
         return {
             anchor: this.transformer.transformCoordinate(input.anchor),
             expanders: this.transformer.transformRlud(input.expanders),
@@ -169,7 +168,6 @@ export class ItemTransformer {
 
     transformMatrix(input: NL.DotNugg.Transformer.Matrix): NL.DotNugg.Encoder.Group[] {
         let res: NL.DotNugg.Encoder.Group[] = [];
-        console.log(this.newColors);
         let currlen = 0;
         let lastkey = this.newColors[input.matrix[0][0].label];
 

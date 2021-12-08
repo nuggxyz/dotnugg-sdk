@@ -17,7 +17,7 @@ export class DotNuggCompiler {
     processed: boolean = false;
 
     constructor() {
-        invariant(DotNuggCompiler.inited, '');
+        invariant(DotNuggCompiler.inited, 'COMP:NOT:INIT');
     }
 
     static async init() {
@@ -29,7 +29,9 @@ export class DotNuggCompiler {
     }
 
     public compileDirectory = (inputdir: string) => {
-        invariant(!this.processed, '');
+        console.log('compiling directory: ', inputdir);
+
+        invariant(!this.processed, 'COMP:DIREC:PROCESSED');
 
         this.processed = true;
 
@@ -43,7 +45,7 @@ export class DotNuggCompiler {
     };
 
     public compileFile = (inputpath: string) => {
-        invariant(!this.processed, '');
+        invariant(!this.processed, 'COMP:FILE:PROCESSED');
 
         this.parser = Parser.parsePath(inputpath);
 
@@ -55,13 +57,21 @@ export class DotNuggCompiler {
     };
 
     public compileData = (data: string) => {
-        invariant(!this.processed, '');
+        invariant(!this.processed, 'COMP:DATA:PROCESSED');
 
         this.parser = Parser.parseData(data);
 
         this.transformer = new Transformer(this.parser);
 
         this.encoder = new Encoder(this.transformer);
+
+        return this;
+    };
+
+    public parseData = (data: string) => {
+        invariant(!this.processed, 'COMP:DATA:PROCESSED');
+
+        this.parser = Parser.parseData(data);
 
         return this;
     };

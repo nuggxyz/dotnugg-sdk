@@ -90,7 +90,7 @@ export class Parser {
     }
 
     private constructor(fileData: string) {
-        this.document = fileData.split('/n');
+        this.document = fileData.split('\n');
     }
 
     private lineAt(num: number) {
@@ -137,7 +137,7 @@ export class Parser {
                     console.log('compiling...', file);
 
                     const parser = Parser.parsePath(fromPath);
-                    parser.compile();
+                    // parser.compile();
                     if (parser.results.collection !== undefined) {
                         // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
                         prevParser.results.collection = parser.results.collection;
@@ -154,16 +154,36 @@ export class Parser {
             // Catch anything bad that happens
             console.error("We've thrown! Whoops!", e);
         }
+        // if ()
         return prevParser;
     }
 
     private init() {
-        const tokens: NL.DotNugg.ParsedToken[] = [];
+        try {
+            const tokens: NL.DotNugg.ParsedToken[] = [];
 
-        for (let i = 0; i < this.lineCount; i++) {
-            let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
+            for (let i = 0; i < this.lineCount; i++) {
+                let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
 
-            while (p.ruleStack.depth > 1) {
+                while (p.ruleStack.depth > 1) {
+                    p.tokens.forEach((x) => {
+                        if (this.linescopes[i] === undefined) {
+                            this.linescopes[i] = [...x.scopes];
+                        } else {
+                            this.linescopes[i].push(...x.scopes);
+                        }
+
+                        tokens.push({
+                            token: x,
+                            ruleStack: p.ruleStack,
+                            line: this.lineAt(i),
+                            value: this.valueAt(i, x),
+                            lineNumber: i,
+                        });
+                    });
+
+                    p = Config.grammer.tokenizeLine(this.lineAt(++i), p.ruleStack);
+                }
                 p.tokens.forEach((x) => {
                     if (this.linescopes[i] === undefined) {
                         this.linescopes[i] = [...x.scopes];
@@ -179,29 +199,16 @@ export class Parser {
                         lineNumber: i,
                     });
                 });
-
-                p = Config.grammer.tokenizeLine(this.lineAt(++i), p.ruleStack);
             }
-            p.tokens.forEach((x) => {
-                if (this.linescopes[i] === undefined) {
-                    this.linescopes[i] = [...x.scopes];
-                } else {
-                    this.linescopes[i].push(...x.scopes);
-                }
 
-                tokens.push({
-                    token: x,
-                    ruleStack: p.ruleStack,
-                    line: this.lineAt(i),
-                    value: this.valueAt(i, x),
-                    lineNumber: i,
-                });
-            });
+            this.tokens = tokens;
+
+            this.compile();
+
+            return this;
+        } catch (err) {
+            console.log('error', 'ERROR IN INIT', err);
         }
-
-        this.tokens = tokens;
-
-        return this;
     }
 
     compile() {
@@ -210,8 +217,11 @@ export class Parser {
                 this.compileCollection();
                 this.compileItem();
             }
+            if (!this.results.collection) {
+                this.results.collection = Parser.globalCollection;
+            }
         } catch (err) {
-            console.error('ERROR', 'failed compilattion', { err });
+            console.log('ERROR', 'failed compilattion', { err });
         }
     }
 

@@ -29,7 +29,6 @@ export class Encoder {
     public static strarr(input: Byter[]): BigNumber {
         return input.reverse().reduce((prev, curr) => {
             invariant(curr.dat < Math.pow(2, curr.bit) && curr.dat >= 0, 'ENCODE:STRARR:0 - ' + curr.dat + ' < ' + Math.pow(2, curr.bit));
-            // console.log(BigNumber.from(0).shl(curr.bit).or(curr.dat)._hex, curr.bit.toString(), curr.nam);
             return prev.eq(0) ? (prev = BigNumber.from(curr.dat)) : prev.shl(curr.bit).or(curr.dat);
         }, BigNumber.from(0));
     }
@@ -80,7 +79,6 @@ export class Encoder {
     // y = uint6
     static encodeReceiver(input: NL.DotNugg.Encoder.Receiver): Byter[] {
         let c = input.calculated ? 0x1 : 0x0;
-        console.log(input);
         invariant(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0');
         invariant(0 <= input.xorZindex && input.xorZindex < 64, 'ENCODE:REC:2 - ' + input.xorZindex);
         invariant(0 <= input.yorYoffset && input.yorYoffset < 64, 'ENCODE:REC:3');
@@ -209,8 +207,6 @@ export class Encoder {
 
         res.push({ dat: input.pixels.length - 1, bit: 4, nam: 'pallet len' }); // pallet length
 
-        console.log('pallet length', input.pixels.length);
-
         // res.push({ dat: input.versions.length - 1, bit: 2, nam: 'version len' });
 
         input.pixels.forEach((x) => {
@@ -218,7 +214,6 @@ export class Encoder {
         });
 
         invariant(0 < input.versions.length && input.versions.length <= 4, 'ENCODE:ITM:1');
-        console.log('version length', input.versions.length);
 
         res.push({ dat: input.versions.length - 1, bit: 2, nam: 'version len' }); // pallet length
 
@@ -237,7 +232,7 @@ export class Encoder {
 
     public static encodeVersion(input: NL.DotNugg.Encoder.Version): Byter[] {
         let res: Byter[] = [];
-        // console.log(input.groups);
+
         res.push(...this.encodeCoordinate(input.len));
         res.push(...this.encodeCoordinate(input.anchor));
         res.push(...this.encodeRlud(input.radii));
@@ -263,7 +258,6 @@ export class Encoder {
             res.push({ dat: 0x0, bit: 1, nam: 'group len <= 256 ?' });
             res.push({ dat: realgrouplen - 1, bit: 16, nam: 'group len' });
         }
-        console.log(groups.length, realgrouplen);
         res.push(...groups.flat());
 
         return res;
@@ -281,14 +275,11 @@ export class Encoder {
     }
 
     public static encodePixel(input: NL.DotNugg.Encoder.Pixel): Byter[] {
-        //    uint1 | uint9
         let res: Byter[] = [];
         res.push(this.encodeLayer(input.zindex));
 
         const color = this.encodeRGB(input.rgba.r, input.rgba.g, input.rgba.b);
         res.push(...color);
-
-        console.log(color);
 
         res.push(...this.encodeA(input.rgba.a));
 
