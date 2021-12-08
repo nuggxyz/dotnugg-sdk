@@ -1,9 +1,10 @@
 {
-    "name": "dotnugg-compiler-parser",
+    "name": "@nuggxyz/dotnugg-sdk",
     "version": "1.0.0",
-    "description": "TextMate Grammer of dotnugg files for use by dotnugg-compiler",
+    "description": "A compiler for dotnugg files written in typescript",
     "main": "index.ts",
     "license": "MIT",
+    "author": "dub6ix <dub6ix@nugg.xyz>",
     "scripts": {
         "build": "yarn install && tsc",
         "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs"

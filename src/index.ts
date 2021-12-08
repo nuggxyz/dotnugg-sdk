@@ -21,22 +21,7 @@ const main = async () => {
 
         Transformer.init();
 
-        // console.log(Transformer.output);
-
         Encoder.init();
-
-        // console.log(Encoder.output);
-
-        // Encoder.output.forEach((x) => {
-        //     // console.log(Encoder.strarr(x));
-        //     Builder.breakup(Encoder.strarr(x.bits));
-        // });
-
-        // await Writer.go(argv.output, argv.filename);
-
-        // console.log(ParserAccumulation.json);
-
-        // fs.writeFileSync(argv.input.replace('.nugg', '.tmp.json'), parser.json);
     } catch (err) {
         console.error('error in main: ', err);
     }

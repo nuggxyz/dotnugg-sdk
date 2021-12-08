@@ -9,7 +9,7 @@ import { ParserAccumulation } from './classes/Parser';
 import { Transformer } from './classes/Transformer';
 
 export class DotNuggCompiler {
-    public static build = async (inputdir: string): Promise<NL.DotNugg.Compiler.Result[]> => {
+    public static compile = async (inputdir: string): Promise<NL.DotNugg.Compiler.Result[]> => {
         await Config.init(path.join(__dirname, '../reference/onig.wasm'), path.join(__dirname, '../syntax/dotnugg.tmLanguage.json'));
 
         await ParserAccumulation.init(inputdir);
