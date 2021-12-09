@@ -1,17 +1,22 @@
+/// <reference path="../../dec.d.ts" />
+
 import { BigNumber, ethers } from 'ethers';
 import invariant from 'tiny-invariant';
+
+import { Encoder as EncoderTypes } from '../types/encoder';
+import { Compiler as CompilerTypes } from '../types';
 
 import { Transformer } from './Transformer';
 import { Builder } from './Builder';
 
 export class Encoder {
-    output: NL.DotNugg.Encoder.EncoderOutput[] = [];
+    output: EncoderTypes.EncoderOutput[] = [];
 
-    static fileHeader: Byter = { dat: 0x4e554747, bit: 32, nam: 'nuggcheck' };
+    static fileHeader: CompilerTypes.Byter = { dat: 0x4e554747, bit: 32, nam: 'nuggcheck' };
 
     constructor(transformer: Transformer) {
         const input = transformer.output;
-        const res = input.items.map((x) => {
+        const res = input.items.map((x: any) => {
             const item = Encoder.encodeItem(x);
             return { ...item, hex: Builder.breakup(Encoder.strarr(item.bits)) };
         });
@@ -20,20 +25,20 @@ export class Encoder {
 
     public static init() {}
 
-    public static bitlen(input: Byter[]): number {
+    public static bitlen(input: CompilerTypes.Byter[]): number {
         return input.reduce((prev, curr) => {
             return prev + curr.bit;
         }, 0);
     }
 
-    public static strarr(input: Byter[]): BigNumber {
+    public static strarr(input: CompilerTypes.Byter[]): BigNumber {
         return input.reverse().reduce((prev, curr) => {
             invariant(curr.dat < Math.pow(2, curr.bit) && curr.dat >= 0, 'ENCODE:STRARR:0 - ' + curr.dat + ' < ' + Math.pow(2, curr.bit));
             return prev.eq(0) ? (prev = BigNumber.from(curr.dat)) : prev.shl(curr.bit).or(curr.dat);
         }, BigNumber.from(0));
     }
 
-    static encodeCoordinate(input: NL.DotNugg.Encoder.Coordinate): Byter[] {
+    static encodeCoordinate(input: EncoderTypes.Coordinate): CompilerTypes.Byter[] {
         // uint12
         const x = input.x;
         const y = input.y;
@@ -44,7 +49,7 @@ export class Encoder {
         ];
     }
 
-    static encodeRlud(input: NL.DotNugg.Encoder.Rlud): Byter[] {
+    static encodeRlud(input: EncoderTypes.Rlud): CompilerTypes.Byter[] {
         //uint1 | uint25
         if (input.exists) {
             invariant(0 <= input.r && input.r < 64, 'ENCODE:ER:0');
@@ -77,7 +82,7 @@ export class Encoder {
     // feature = uint3
     // x = uint6
     // y = uint6
-    static encodeReceiver(input: NL.DotNugg.Encoder.Receiver): Byter[] {
+    static encodeReceiver(input: EncoderTypes.Receiver): CompilerTypes.Byter[] {
         let c = input.calculated ? 0x1 : 0x0;
         invariant(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0');
         invariant(0 <= input.xorZindex && input.xorZindex < 64, 'ENCODE:REC:2 - ' + input.xorZindex);
@@ -106,12 +111,12 @@ export class Encoder {
         ];
     }
 
-    static encodeReceivers(input: NL.DotNugg.Encoder.Receiver[]): Byter[] {
+    static encodeReceivers(input: EncoderTypes.Receiver[]): CompilerTypes.Byter[] {
         //uint16[]
         return input.map((x) => this.encodeReceiver(x)).flat();
     }
 
-    // static encodeMatrixPixelA(input: NL.DotNugg.Encoder.Group[]): Byter[] {
+    // static encodeMatrixPixelA(input: EncoderTypes.Group[]): CompilerTypes.Byter[] {
     //     return input
     //         .map((x) => {
     //             let res = [];
@@ -150,10 +155,10 @@ export class Encoder {
     //         .flat();
     // }
 
-    static encodeMatrixPixelB(input: NL.DotNugg.Encoder.Group[]): Byter[][] {
+    static encodeMatrixPixelB(input: EncoderTypes.Group[]): CompilerTypes.Byter[][] {
         return input
             .map((x) => {
-                let res: Byter[][] = [];
+                let res: CompilerTypes.Byter[][] = [];
                 x.len = x.len - 1;
                 invariant(0 <= x.len && x.len < 19, 'ENCODE:EMP:2');
 
@@ -176,7 +181,7 @@ export class Encoder {
             .flat();
     }
 
-    // static encodeMatrixPixelC(input: NL.DotNugg.Encoder.Group[]): Byter[] {
+    // static encodeMatrixPixelC(input: EncoderTypes.Group[]): CompilerTypes.Byter[] {
     //     return input
     //         .map((x) => {
     //             let res = [];
@@ -198,8 +203,8 @@ export class Encoder {
     //         .flat();
     // }
 
-    public static encodeItem(input: NL.DotNugg.Encoder.Item): { feature: number; bits: Byter[] } {
-        let res: Byter[] = [this.fileHeader]; // uint56
+    public static encodeItem(input: EncoderTypes.Item): { feature: number; bits: CompilerTypes.Byter[] } {
+        let res: CompilerTypes.Byter[] = [this.fileHeader]; // uint56
 
         res.push(this.encodeFeature(input.feature));
 
@@ -224,14 +229,14 @@ export class Encoder {
         return { bits: res, feature: input.feature };
     }
 
-    public static encodeFeature(input: number): Byter {
+    public static encodeFeature(input: number): CompilerTypes.Byter {
         invariant(0 <= input && input < 8, 'ENCODE:FEA:0');
         invariant(0 <= input && input < 8, 'ENCODE:FEA:1');
         return { dat: input, bit: 3 };
     }
 
-    public static encodeVersion(input: NL.DotNugg.Encoder.Version): Byter[] {
-        let res: Byter[] = [];
+    public static encodeVersion(input: EncoderTypes.Version): CompilerTypes.Byter[] {
+        let res: CompilerTypes.Byter[] = [];
 
         res.push(...this.encodeCoordinate(input.len));
         res.push(...this.encodeCoordinate(input.anchor));
@@ -263,19 +268,19 @@ export class Encoder {
         return res;
     }
 
-    public static encodeVersions(input: Dictionary<NL.DotNugg.Encoder.Version>): Byter[] {
+    public static encodeVersions(input: Dictionary<EncoderTypes.Version>): CompilerTypes.Byter[] {
         return Object.values(input)
             .map((x) => this.encodeVersion(x))
             .flat();
     }
-    public static encodePixels(input: Dictionary<NL.DotNugg.Encoder.Pixel>): Byter[] {
+    public static encodePixels(input: Dictionary<EncoderTypes.Pixel>): CompilerTypes.Byter[] {
         return Object.values(input)
             .map((x) => this.encodePixel(x))
             .flat();
     }
 
-    public static encodePixel(input: NL.DotNugg.Encoder.Pixel): Byter[] {
-        let res: Byter[] = [];
+    public static encodePixel(input: EncoderTypes.Pixel): CompilerTypes.Byter[] {
+        let res: CompilerTypes.Byter[] = [];
         res.push(this.encodeLayer(input.zindex));
 
         const color = this.encodeRGB(input.rgba.r, input.rgba.g, input.rgba.b);
@@ -286,7 +291,7 @@ export class Encoder {
         return res;
     }
 
-    public static encodeA(input: number): Byter[] {
+    public static encodeA(input: number): CompilerTypes.Byter[] {
         //    uint1 | uint9
 
         invariant(!Number.isNaN(input), 'ENCODE:A:NAN');
@@ -297,7 +302,7 @@ export class Encoder {
         ];
     }
 
-    public static encodeRGB(r: number, g: number, b: number): Byter[] {
+    public static encodeRGB(r: number, g: number, b: number): CompilerTypes.Byter[] {
         // uint1 | uint25
         if (r === 0 && g === 0 && b === 0) return [{ dat: 0x1, bit: 1, nam: 'is RBG black ?' }];
         invariant(0 <= r && r < 256, 'ENCODE:ER:R');
@@ -312,11 +317,11 @@ export class Encoder {
         ];
     }
 
-    public static encodeLayer(input: number): Byter {
+    public static encodeLayer(input: number): CompilerTypes.Byter {
         //uint8
         invariant(0 <= input && input < 15, 'ENCODE:LAYER:0');
         return { bit: 4, dat: input + 1, nam: 'layer' };
     }
 
-    // public static encodeMatrix(input: NL.DotNugg.Encoder.Matrix): Byter[] {}
+    // public static encodeMatrix(input: EncoderTypes.Matrix): CompilerTypes.Byter[] {}
 }

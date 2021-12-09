@@ -1,4 +1,4 @@
-declare namespace NL.DotNugg.Transformer {
+export namespace Transformer {
     type uint8 = number;
 
     type Dictionary<T> = {

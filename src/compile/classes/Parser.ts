@@ -6,12 +6,13 @@ import * as vsctm from 'vscode-textmate';
 import invariant from 'tiny-invariant';
 
 import tokens from '../constants/tokens';
+import { Parser as ParserTypes } from '../types/parser';
 
 import { Validator } from './Validator';
 import { Config } from './Config';
 
 export class Parser {
-    public tokens: NL.DotNugg.ParsedToken[] = [];
+    public tokens: ParserTypes.ParsedToken[] = [];
 
     private index: number = 0;
     private document: string[];
@@ -29,9 +30,9 @@ export class Parser {
         this.index--;
     }
 
-    public static globalCollection: NL.DotNugg.RangeOf<NL.DotNugg.Collection>;
+    public static globalCollection: ParserTypes.RangeOf<ParserTypes.Collection>;
 
-    public results: NL.DotNugg.Document = {
+    public results: ParserTypes.Document = {
         collection: undefined,
         items: [],
     };
@@ -160,7 +161,7 @@ export class Parser {
 
     private init() {
         try {
-            const tokens: NL.DotNugg.ParsedToken[] = [];
+            const tokens: ParserTypes.ParsedToken[] = [];
 
             for (let i = 0; i < this.lineCount; i++) {
                 let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
@@ -227,12 +228,12 @@ export class Parser {
 
     compileCollection() {
         if (this.has(tokens.Collection)) {
-            let features: NL.DotNugg.RangeOf<NL.DotNugg.CollectionFeatures> = undefined;
+            let features: ParserTypes.RangeOf<ParserTypes.CollectionFeatures> = undefined;
 
             const token = this.current;
             let endToken = undefined;
             let width: number = undefined;
-            let widthToken: NL.DotNugg.ParsedToken = undefined;
+            let widthToken: ParserTypes.ParsedToken = undefined;
 
             for (; this.has(tokens.Collection) && this.hasNext; this.next) {
                 const collectionFeatures = this.compileCollectionFeatures();
@@ -274,7 +275,7 @@ export class Parser {
             const token = this.current;
             let endToken = undefined;
 
-            const collectionFeatures: NL.DotNugg.RangeOf<NL.DotNugg.CollectionFeature>[] = [];
+            const collectionFeatures: ParserTypes.RangeOf<ParserTypes.CollectionFeature>[] = [];
 
             for (; this.has(tokens.CollectionFeatures) && Validator.anyUndefined({ token, endToken, collectionFeatures }); this.next) {
                 const collectionfeature = this.compileCollectionFeature();
@@ -293,7 +294,7 @@ export class Parser {
             const validator = new Validator({ token, endToken, collectionFeatures });
 
             if (validator.complete) {
-                const value: NL.DotNugg.CollectionFeatures = collectionFeatures.reduce((prev, curr) => {
+                const value: ParserTypes.CollectionFeatures = collectionFeatures.reduce((prev, curr) => {
                     return { [curr.value.name.value]: curr, ...prev };
                 }, {});
 
@@ -316,23 +317,23 @@ export class Parser {
             let endToken = undefined;
 
             let r: number = undefined;
-            let rToken: NL.DotNugg.ParsedToken = undefined;
+            let rToken: ParserTypes.ParsedToken = undefined;
             let l: number = undefined;
-            let lToken: NL.DotNugg.ParsedToken = undefined;
+            let lToken: ParserTypes.ParsedToken = undefined;
             let u: number = undefined;
-            let uToken: NL.DotNugg.ParsedToken = undefined;
+            let uToken: ParserTypes.ParsedToken = undefined;
             let d: number = undefined;
-            let dToken: NL.DotNugg.ParsedToken = undefined;
-            let radiiToken: NL.DotNugg.ParsedToken = undefined;
+            let dToken: ParserTypes.ParsedToken = undefined;
+            let radiiToken: ParserTypes.ParsedToken = undefined;
 
-            // let anchorDirection: NL.DotNugg.Operator = undefined;
+            // let anchorDirection: ParserTypes.Operator = undefined;
             // let anchorOffset: number = undefined;
-            // let anchorToken: NL.DotNugg.ParsedToken = undefined;
-            let zindexDirection: NL.DotNugg.Operator = undefined;
+            // let anchorToken: ParserTypes.ParsedToken = undefined;
+            let zindexDirection: ParserTypes.Operator = undefined;
             let zindexOffset: number = undefined;
-            let zindexToken: NL.DotNugg.ParsedToken = undefined;
+            let zindexToken: ParserTypes.ParsedToken = undefined;
             let name: string = undefined;
-            let nameToken: NL.DotNugg.ParsedToken = undefined;
+            let nameToken: ParserTypes.ParsedToken = undefined;
 
             for (
                 ;
@@ -366,7 +367,7 @@ export class Parser {
                     zindexOffset = +this.currentValue;
                 }
                 if (this.has(tokens.CollectionFeatureDetailsZIndexDirection)) {
-                    zindexDirection = this.currentValue as NL.DotNugg.Operator;
+                    zindexDirection = this.currentValue as ParserTypes.Operator;
                 }
                 if (this.has(tokens.CollectionFeatureDetailsZIndex)) {
                     zindexToken = this.current;
@@ -382,7 +383,7 @@ export class Parser {
                 //  //      anchorKey = +this.currentValue;
                 //  //  }
                 //  if (this.has(tokens.CollectionFeatureDetailsZIndexDirection)) {
-                //      anchorDirection = this.currentValue as NL.DotNugg.Operator;
+                //      anchorDirection = this.currentValue as ParserTypes.Operator;
                 //  }
                 //  if (this.has(tokens.CollectionFeatureDetailsZIndexOffset)) {
                 //      anchorOffset = +this.currentValue;
@@ -435,7 +436,7 @@ export class Parser {
             });
 
             if (validator.complete) {
-                const value: NL.DotNugg.CollectionFeature = {
+                const value: ParserTypes.CollectionFeature = {
                     zindex: {
                         token: zindexToken,
                         value: {
@@ -490,10 +491,10 @@ export class Parser {
             const token = this.current;
             let endToken = undefined;
             let name: string = undefined;
-            let nameToken: NL.DotNugg.ParsedToken = undefined;
-            let zindex: NL.DotNugg.RangeOf<NL.DotNugg.ZIndex> = undefined;
-            let expandableAt: NL.DotNugg.RangeOf<NL.DotNugg.RLUD<number>> = undefined;
-            let receivers: NL.DotNugg.RangeOf<NL.DotNugg.Receiver>[] = [];
+            let nameToken: ParserTypes.ParsedToken = undefined;
+            let zindex: ParserTypes.RangeOf<ParserTypes.ZIndex> = undefined;
+            let expandableAt: ParserTypes.RangeOf<ParserTypes.RLUD<number>> = undefined;
+            let receivers: ParserTypes.RangeOf<ParserTypes.Receiver>[] = [];
 
             for (
                 ;
@@ -545,7 +546,7 @@ export class Parser {
 
             if (validator.complete) {
                 if (validator.complete) {
-                    const value: NL.DotNugg.CollectionFeature = {
+                    const value: ParserTypes.CollectionFeature = {
                         zindex,
                         name: {
                             value: name,
@@ -575,13 +576,13 @@ export class Parser {
             let endToken = undefined;
 
             let r: number = undefined;
-            let rToken: NL.DotNugg.ParsedToken = undefined;
+            let rToken: ParserTypes.ParsedToken = undefined;
             let l: number = undefined;
-            let lToken: NL.DotNugg.ParsedToken = undefined;
+            let lToken: ParserTypes.ParsedToken = undefined;
             let u: number = undefined;
-            let uToken: NL.DotNugg.ParsedToken = undefined;
+            let uToken: ParserTypes.ParsedToken = undefined;
             let d: number = undefined;
-            let dToken: NL.DotNugg.ParsedToken = undefined;
+            let dToken: ParserTypes.ParsedToken = undefined;
 
             for (
                 ;
@@ -638,7 +639,7 @@ export class Parser {
             });
 
             if (validator.complete) {
-                const value: NL.DotNugg.RLUD<number> = {
+                const value: ParserTypes.RLUD<number> = {
                     r: {
                         value: r,
                         token: rToken,
@@ -674,7 +675,7 @@ export class Parser {
             let token = undefined;
             let endToken = undefined;
 
-            let direction: NL.DotNugg.Operator = undefined;
+            let direction: ParserTypes.Operator = undefined;
             let offset: number = undefined;
 
             for (
@@ -689,7 +690,7 @@ export class Parser {
                     offset = +this.currentValue;
                 }
                 if (this.has(tokens.CollectionFeatureLongZIndexOffset)) {
-                    direction = this.currentValue as NL.DotNugg.Operator;
+                    direction = this.currentValue as ParserTypes.Operator;
                 }
                 if (this.has(tokens.CollectionFeatureLongZIndex)) {
                     token = this.current;
@@ -700,7 +701,7 @@ export class Parser {
             let validator = new Validator({ token, direction, offset, endToken });
 
             if (validator.complete) {
-                const value: NL.DotNugg.ZIndex = {
+                const value: ParserTypes.ZIndex = {
                     direction,
                     offset,
                 };
@@ -722,7 +723,7 @@ export class Parser {
             const token = this.current;
             let endToken = undefined;
 
-            const colors: NL.DotNugg.RangeOf<NL.DotNugg.Color>[] = [];
+            const colors: ParserTypes.RangeOf<ParserTypes.Color>[] = [];
 
             for (; this.has(tokens.GeneralColors) && Validator.anyUndefined({ token, endToken, colors }); this.next) {
                 const color = this.compileGeneralColor();
@@ -737,7 +738,7 @@ export class Parser {
             let validator = new Validator({ token, endToken, colors });
 
             if (validator.complete) {
-                const value: NL.DotNugg.Colors = colors.reduce((prev, curr) => {
+                const value: ParserTypes.Colors = colors.reduce((prev, curr) => {
                     return { [curr.value.name.value]: curr, ...prev };
                 }, {});
                 return {
@@ -758,13 +759,13 @@ export class Parser {
             const token = this.current;
             let endToken = undefined;
 
-            let rgba: NL.DotNugg.RGBA = undefined;
-            let rgbaToken: NL.DotNugg.ParsedToken = undefined;
-            let zindexDirection: NL.DotNugg.Operator = undefined;
+            let rgba: ParserTypes.RGBA = undefined;
+            let rgbaToken: ParserTypes.ParsedToken = undefined;
+            let zindexDirection: ParserTypes.Operator = undefined;
             let zindexOffset: number = undefined;
-            let zindexToken: NL.DotNugg.ParsedToken = undefined;
+            let zindexToken: ParserTypes.ParsedToken = undefined;
             let name: string = undefined;
-            let nameToken: NL.DotNugg.ParsedToken = undefined;
+            let nameToken: ParserTypes.ParsedToken = undefined;
 
             for (
                 ;
@@ -789,7 +790,7 @@ export class Parser {
                     zindexOffset = this.currentValue.toLowerCase() === 'd' ? 100 : +this.currentValue;
                 }
                 if (this.has(tokens.GeneralColorDetailsZIndexDirection)) {
-                    zindexDirection = this.currentValue as NL.DotNugg.Operator;
+                    zindexDirection = this.currentValue as ParserTypes.Operator;
                 }
                 if (this.has(tokens.GeneralColorDetailsZIndex)) {
                     zindexToken = this.current;
@@ -799,7 +800,7 @@ export class Parser {
                     nameToken = this.current;
                 }
                 if (this.has(tokens.GeneralColorDetailsRgba)) {
-                    rgba = this.currentValue as NL.DotNugg.RGBA;
+                    rgba = this.currentValue as ParserTypes.RGBA;
                     rgbaToken = this.current;
                 }
                 if (this.has(tokens.GeneralColorDetailsClose)) {
@@ -820,7 +821,7 @@ export class Parser {
             });
 
             if (validator.complete) {
-                const value: NL.DotNugg.Color = {
+                const value: ParserTypes.Color = {
                     zindex: {
                         token: zindexToken,
                         value: {
@@ -850,9 +851,9 @@ export class Parser {
         return undefined;
     }
 
-    compileGeneralData(): NL.DotNugg.RangeOf<NL.DotNugg.Data> {
+    compileGeneralData(): ParserTypes.RangeOf<ParserTypes.Data> {
         if (this.has(tokens.GeneralData)) {
-            let matrix: NL.DotNugg.RangeOf<NL.DotNugg.DataRow>[] = [];
+            let matrix: ParserTypes.RangeOf<ParserTypes.DataRow>[] = [];
             let token = undefined;
             let endToken = undefined;
 
@@ -888,10 +889,10 @@ export class Parser {
         return undefined;
     }
 
-    compileGeneralDataRow(): NL.DotNugg.RangeOf<NL.DotNugg.DataRow> {
+    compileGeneralDataRow(): ParserTypes.RangeOf<ParserTypes.DataRow> {
         if (this.has(tokens.GeneralDataRow)) {
             const token = this.current;
-            let pixels: NL.DotNugg.RangeOf<NL.DotNugg.Pixel>[] = [];
+            let pixels: ParserTypes.RangeOf<ParserTypes.Pixel>[] = [];
             let lastLine = this.current.lineNumber;
             let endToken = undefined;
 
@@ -930,9 +931,9 @@ export class Parser {
             let endToken = this.current;
 
             let label: string = undefined;
-            let labelToken: NL.DotNugg.ParsedToken = undefined;
-            let type: NL.DotNugg.PixelType = undefined;
-            let typeToken: NL.DotNugg.ParsedToken = undefined;
+            let labelToken: ParserTypes.ParsedToken = undefined;
+            let type: ParserTypes.PixelType = undefined;
+            let typeToken: ParserTypes.ParsedToken = undefined;
 
             for (
                 ;
@@ -1006,16 +1007,16 @@ export class Parser {
             const token = this.current;
             let endToken = undefined;
 
-            let aDirection: NL.DotNugg.Operator = undefined;
+            let aDirection: ParserTypes.Operator = undefined;
             let aOffset: number = undefined;
-            let bDirection: NL.DotNugg.Operator = undefined;
+            let bDirection: ParserTypes.Operator = undefined;
             let bOffset: number = undefined;
 
-            let aToken: NL.DotNugg.ParsedToken = undefined;
-            let bToken: NL.DotNugg.ParsedToken = undefined;
+            let aToken: ParserTypes.ParsedToken = undefined;
+            let bToken: ParserTypes.ParsedToken = undefined;
 
             let feature: string = undefined;
-            let featureToken: NL.DotNugg.ParsedToken = undefined;
+            let featureToken: ParserTypes.ParsedToken = undefined;
 
             for (
                 ;
@@ -1044,7 +1045,7 @@ export class Parser {
                     aToken = this.current;
                 }
                 if (this.has(tokens.GeneralReceiverDetailsADirection)) {
-                    aDirection = this.currentValue as NL.DotNugg.Operator;
+                    aDirection = this.currentValue as ParserTypes.Operator;
                 }
                 if (this.has(tokens.GeneralReceiverDetailsAOffset)) {
                     aOffset = +this.currentValue;
@@ -1053,7 +1054,7 @@ export class Parser {
                     bToken = this.current;
                 }
                 if (this.has(tokens.GeneralReceiverDetailsBDirection)) {
-                    bDirection = this.currentValue as NL.DotNugg.Operator;
+                    bDirection = this.currentValue as ParserTypes.Operator;
                 }
                 if (this.has(tokens.GeneralReceiverDetailsBOffset)) {
                     bOffset = +this.currentValue;
@@ -1076,7 +1077,7 @@ export class Parser {
             });
 
             if (validator.complete) {
-                const value: NL.DotNugg.Receiver = {
+                const value: ParserTypes.Receiver = {
                     a: {
                         token: aToken,
                         value: {
@@ -1117,7 +1118,7 @@ export class Parser {
             let feature: string = undefined;
             let isDefault: boolean = undefined;
 
-            let featureToken: NL.DotNugg.ParsedToken = undefined;
+            let featureToken: ParserTypes.ParsedToken = undefined;
             let colors = undefined;
             let versions = undefined;
 
@@ -1191,7 +1192,7 @@ export class Parser {
             const token = this.current;
             let endToken = undefined;
 
-            const versions: NL.DotNugg.RangeOf<NL.DotNugg.Version>[] = [];
+            const versions: ParserTypes.RangeOf<ParserTypes.Version>[] = [];
 
             for (; this.has(tokens.ItemVersions) && Validator.anyUndefined({ token, endToken, versions }); this.next) {
                 const version = this.compileItemVersion();
@@ -1206,7 +1207,7 @@ export class Parser {
             let validator = new Validator({ token, endToken, versions });
 
             if (validator.complete) {
-                const value: NL.DotNugg.Colors = versions.reduce((prev, curr) => {
+                const value: ParserTypes.Colors = versions.reduce((prev, curr) => {
                     return { [curr.value.name.value]: curr, ...prev };
                 }, {});
                 return {
@@ -1224,14 +1225,14 @@ export class Parser {
 
     compileItemVersion() {
         if (this.has(tokens.ItemVersion)) {
-            let data: NL.DotNugg.RangeOf<NL.DotNugg.Data> = undefined;
-            let radii: NL.DotNugg.RangeOf<NL.DotNugg.RLUD<number>> = undefined;
-            let expanders: NL.DotNugg.RangeOf<NL.DotNugg.RLUD<number>> = undefined;
-            let anchor: NL.DotNugg.RangeOf<NL.DotNugg.Coordinate> = undefined;
-            let receivers: NL.DotNugg.RangeOf<NL.DotNugg.Receiver>[] = [];
+            let data: ParserTypes.RangeOf<ParserTypes.Data> = undefined;
+            let radii: ParserTypes.RangeOf<ParserTypes.RLUD<number>> = undefined;
+            let expanders: ParserTypes.RangeOf<ParserTypes.RLUD<number>> = undefined;
+            let anchor: ParserTypes.RangeOf<ParserTypes.Coordinate> = undefined;
+            let receivers: ParserTypes.RangeOf<ParserTypes.Receiver>[] = [];
 
             let name: string = undefined;
-            let nameToken: NL.DotNugg.ParsedToken = undefined;
+            let nameToken: ParserTypes.ParsedToken = undefined;
             const token = this.current;
             let endToken = undefined;
 
@@ -1321,13 +1322,13 @@ export class Parser {
             let endToken = undefined;
 
             let r: number = undefined;
-            let rToken: NL.DotNugg.ParsedToken = undefined;
+            let rToken: ParserTypes.ParsedToken = undefined;
             let l: number = undefined;
-            let lToken: NL.DotNugg.ParsedToken = undefined;
+            let lToken: ParserTypes.ParsedToken = undefined;
             let u: number = undefined;
-            let uToken: NL.DotNugg.ParsedToken = undefined;
+            let uToken: ParserTypes.ParsedToken = undefined;
             let d: number = undefined;
-            let dToken: NL.DotNugg.ParsedToken = undefined;
+            let dToken: ParserTypes.ParsedToken = undefined;
 
             for (
                 ;
@@ -1384,7 +1385,7 @@ export class Parser {
             });
 
             if (validator.complete) {
-                const value: NL.DotNugg.RLUD<number> = {
+                const value: ParserTypes.RLUD<number> = {
                     r: {
                         value: r,
                         token: rToken,
@@ -1421,13 +1422,13 @@ export class Parser {
             let endToken = undefined;
 
             let r: number = undefined;
-            let rToken: NL.DotNugg.ParsedToken = undefined;
+            let rToken: ParserTypes.ParsedToken = undefined;
             let l: number = undefined;
-            let lToken: NL.DotNugg.ParsedToken = undefined;
+            let lToken: ParserTypes.ParsedToken = undefined;
             let u: number = undefined;
-            let uToken: NL.DotNugg.ParsedToken = undefined;
+            let uToken: ParserTypes.ParsedToken = undefined;
             let d: number = undefined;
-            let dToken: NL.DotNugg.ParsedToken = undefined;
+            let dToken: ParserTypes.ParsedToken = undefined;
 
             for (
                 ;
@@ -1484,7 +1485,7 @@ export class Parser {
             });
 
             if (validator.complete) {
-                const value: NL.DotNugg.RLUD<number> = {
+                const value: ParserTypes.RLUD<number> = {
                     r: {
                         value: r,
                         token: rToken,
@@ -1520,9 +1521,9 @@ export class Parser {
             let endToken = undefined;
 
             let x: number = undefined;
-            let xToken: NL.DotNugg.ParsedToken = undefined;
+            let xToken: ParserTypes.ParsedToken = undefined;
             let y: number = undefined;
-            let yToken: NL.DotNugg.ParsedToken = undefined;
+            let yToken: ParserTypes.ParsedToken = undefined;
 
             for (; this.has(tokens.ItemVersionAnchor) && Validator.anyUndefined({ token, x, xToken, y, yToken, endToken }); this.next) {
                 if (this.currentValue === '') {
@@ -1544,7 +1545,7 @@ export class Parser {
             let validator = new Validator({ token, x, xToken, y, yToken, endToken });
 
             if (validator.complete) {
-                const value: NL.DotNugg.Coordinate = {
+                const value: ParserTypes.Coordinate = {
                     x: {
                         value: x,
                         token: xToken,

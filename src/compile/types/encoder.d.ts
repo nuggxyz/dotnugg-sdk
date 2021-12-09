@@ -1,5 +1,7 @@
 
-declare namespace NL.DotNugg.Encoder {
+import {Compiler} from '.'
+
+export namespace Encoder {
     // type EncodedDocument struct {
     // 	Collection []*byte
     // 	Items      map[uint8][][]*byte
@@ -14,7 +16,7 @@ declare namespace NL.DotNugg.Encoder {
     type Bytes = import('ethers').Bytes;
 
     type Document = {
-        collection: Collection;
+        collection?: Collection;
         items: Item[];
     };
 
@@ -44,7 +46,7 @@ declare namespace NL.DotNugg.Encoder {
     // }
     type EncoderOutput = {
         feature: number;
-        bits: Byter[];
+        bits: Compiler.Byter[];
         hex: import('ethers').BigNumber[];
     };
     type Version = {

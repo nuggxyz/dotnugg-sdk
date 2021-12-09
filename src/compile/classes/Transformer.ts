@@ -1,13 +1,16 @@
 import invariant from 'tiny-invariant';
 
+import { Transformer as TransformerTypes } from '../types/transformer';
+import { Encoder as EncoderTypes } from '../types/encoder';
+
 import { Parser } from './Parser';
 
 export class Transformer {
-    input: NL.DotNugg.Transformer.Document;
-    output: NL.DotNugg.Encoder.Document;
+    input: TransformerTypes.Document;
+    output: EncoderTypes.Document;
 
     featureMap: Dictionary<uint8> = {};
-    calculatedReceiversByFeature: Dictionary<NL.DotNugg.Encoder.Receiver[]> = {};
+    calculatedReceiversByFeature: Dictionary<EncoderTypes.Receiver[]> = {};
 
     defaultLayerMap: Dictionary<uint8> = {};
     sortedFeatureStrings: string[] = [];
@@ -22,13 +25,13 @@ export class Transformer {
         };
     }
 
-    transformCollection(input: NL.DotNugg.Transformer.Collection): NL.DotNugg.Encoder.Collection {
+    transformCollection(input: TransformerTypes.Collection): EncoderTypes.Collection {
         invariant(input !== undefined, 'UND');
         Object.entries(input.features)
             .reverse()
             .map((args, i) => {
                 this.featureMap[args[0]] = i;
-                this.defaultLayerMap[args[0]] = new ItemTransformer(this).transformLevel(args[1].zindex);
+                this.defaultLayerMap[args[0]] = new ItemTransformer(this).transformLevel(args[1].zindex as TransformerTypes.Level);
                 return args;
             })
             .map(([k, v], i) => {
@@ -41,20 +44,20 @@ export class Transformer {
         };
     }
 
-    transformCoordinate(input: NL.DotNugg.Transformer.Coordinate): NL.DotNugg.Encoder.Coordinate {
+    transformCoordinate(input: TransformerTypes.Coordinate): EncoderTypes.Coordinate {
         return {
             x: input.x,
             y: input.y,
         };
     }
-    transformRlud(input: NL.DotNugg.Transformer.Rlud): NL.DotNugg.Encoder.Rlud {
+    transformRlud(input: TransformerTypes.Rlud): EncoderTypes.Rlud {
         return {
             exists: input.d != 0 || input.l != 0 || input.r != 0 || input.u != 0,
             ...input,
         };
     }
 
-    transformReceiver(input: NL.DotNugg.Transformer.Receiver): NL.DotNugg.Encoder.Receiver {
+    transformReceiver(input: TransformerTypes.Receiver): EncoderTypes.Receiver {
         return {
             xorZindex: input.a.offset, // zindex or x
             yorYoffset: input.b.offset, // yoffset or y
@@ -62,18 +65,18 @@ export class Transformer {
             calculated: input.type === 'calculated',
         };
     }
-    transformReceivers(input: NL.DotNugg.Transformer.Receiver[]): NL.DotNugg.Encoder.Receiver[] {
+    transformReceivers(input: TransformerTypes.Receiver[]): EncoderTypes.Receiver[] {
         return input.map((x) => this.transformReceiver(x));
     }
 
-    transformLevelNullable(input: NL.DotNugg.Transformer.LevelNullable): NL.DotNugg.Encoder.uint8 {
+    transformLevelNullable(input: TransformerTypes.LevelNullable): EncoderTypes.uint8 {
         return input == null ? 0 : new ItemTransformer(this).transformLevel(input);
     }
 
-    transformMatrixPixel(input: NL.DotNugg.Transformer.MatrixPixel[]): uint8[] {
+    transformMatrixPixel(input: TransformerTypes.MatrixPixel[]): uint8[] {
         return input.map((x) => +x.label);
     }
-    rgba2hex(orig: string): NL.DotNugg.Transformer.Rgba {
+    rgba2hex(orig: string): TransformerTypes.Rgba {
         const res = orig.split('(')[1].split(')')[0].split(',');
 
         // var a,
@@ -104,7 +107,7 @@ export class Transformer {
 
 export class ItemTransformer {
     newColors: Dictionary<number> = {};
-    feature: string;
+    feature?: string;
     transformer: Transformer;
 
     constructor(transformer: Transformer) {
@@ -115,7 +118,7 @@ export class ItemTransformer {
     //     return new ItemTransformer();
     // }
 
-    public transformItem(input: NL.DotNugg.Transformer.Item): NL.DotNugg.Encoder.Item {
+    public transformItem(input: TransformerTypes.Item): EncoderTypes.Item {
         this.feature = input.feature;
 
         return {
@@ -125,7 +128,7 @@ export class ItemTransformer {
         };
     }
 
-    transformLevel(input: NL.DotNugg.Transformer.Level): NL.DotNugg.Encoder.uint8 {
+    transformLevel(input: TransformerTypes.Level): EncoderTypes.uint8 {
         let val = input.direction == '+' ? input.offset : input.offset * -1;
         if (val == 100) {
             invariant(this.feature, 'TRANS:LEV:0');
@@ -135,7 +138,7 @@ export class ItemTransformer {
         return val + 4;
     }
 
-    transformVersion(input: NL.DotNugg.Transformer.Version): NL.DotNugg.Encoder.Version {
+    transformVersion(input: TransformerTypes.Version): EncoderTypes.Version {
         return {
             anchor: this.transformer.transformCoordinate(input.anchor),
             expanders: this.transformer.transformRlud(input.expanders),
@@ -144,30 +147,30 @@ export class ItemTransformer {
             radii: this.transformer.transformRlud(input.radii),
             receivers: [
                 ...this.transformer.transformReceivers(input.receivers),
-                ...this.transformer.calculatedReceiversByFeature[this.feature],
+                ...this.transformer.calculatedReceiversByFeature[this.feature!],
             ],
         };
     }
 
-    transformVersions(input: Dictionary<NL.DotNugg.Transformer.Version>): NL.DotNugg.Encoder.Version[] {
+    transformVersions(input: Dictionary<TransformerTypes.Version>): EncoderTypes.Version[] {
         return Object.values(input).map((x) => this.transformVersion(x));
     }
-    transformPixels(input: Dictionary<NL.DotNugg.Transformer.Pixel>): NL.DotNugg.Encoder.Pixel[] {
+    transformPixels(input: Dictionary<TransformerTypes.Pixel>): EncoderTypes.Pixel[] {
         return Object.entries(input).map(([k, v], i) => {
             this.newColors[k] = i + 1;
             return this.transformPixel(v);
         });
     }
 
-    transformPixel(input: NL.DotNugg.Transformer.Pixel): NL.DotNugg.Encoder.Pixel {
+    transformPixel(input: TransformerTypes.Pixel): EncoderTypes.Pixel {
         return {
             rgba: this.transformer.rgba2hex(input.rgba),
             zindex: this.transformLevel(input.zindex),
         };
     }
 
-    transformMatrix(input: NL.DotNugg.Transformer.Matrix): NL.DotNugg.Encoder.Group[] {
-        let res: NL.DotNugg.Encoder.Group[] = [];
+    transformMatrix(input: TransformerTypes.Matrix): EncoderTypes.Group[] {
+        let res: EncoderTypes.Group[] = [];
         let currlen = 0;
         let lastkey = this.newColors[input.matrix[0][0].label];
 

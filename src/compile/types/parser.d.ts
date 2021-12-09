@@ -1,6 +1,6 @@
 declare module 'vscode';
 
-declare namespace NL.DotNugg {
+export namespace Parser {
     type RangeOf<T> = {
         value: T;
         token: ParsedToken;
