@@ -32,8 +32,10 @@ export class Encoder {
     }
 
     public static strarr(input: CompilerTypes.Byter[]): BigNumber {
+        console.log('----------------');
         return input.reverse().reduce((prev, curr) => {
             invariant(curr.dat < Math.pow(2, curr.bit) && curr.dat >= 0, 'ENCODE:STRARR:0 - ' + curr.dat + ' < ' + Math.pow(2, curr.bit));
+            if (curr.nam && !curr.nam.includes('MATRIX')) console.log(curr.nam, curr.bit, curr.dat);
             return prev.eq(0) ? (prev = BigNumber.from(curr.dat)) : prev.shl(curr.bit).or(curr.dat);
         }, BigNumber.from(0));
     }

@@ -32,6 +32,7 @@ export class Transformer {
             .map((args, i) => {
                 this.featureMap[args[0]] = i;
                 this.defaultLayerMap[args[0]] = new ItemTransformer(this).transformLevel(args[1].zindex as TransformerTypes.Level);
+                console.log(args[0], this.defaultLayerMap[args[0]].toString());
                 return args;
             })
             .map(([k, v], i) => {
@@ -100,7 +101,7 @@ export class Transformer {
             r: +res[0],
             g: +res[1],
             b: +res[2],
-            a: Math.floor(255 * +res[3]),
+            a: +res[3] > 1 && +res[3] !== 0 ? +res[3] : Math.floor(255 * +res[3]),
         };
     }
 }
@@ -135,6 +136,7 @@ export class ItemTransformer {
             val = this.transformer.defaultLayerMap[this.feature];
         }
         invariant(val >= -4 && val <= 11, 'TRANS:LEV:1 - ' + val);
+        console.log(this.feature, val);
         return val + 4;
     }
 
