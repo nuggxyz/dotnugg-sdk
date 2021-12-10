@@ -16,13 +16,23 @@ export class Transformer {
     sortedFeatureStrings: string[] = [];
     sortedFeatureUints: uint8[] = [];
 
-    constructor(parser: Parser) {
-        this.input = JSON.parse(parser.json);
+    private constructor(input: TransformerTypes.Document) {
+        this.input = input;
 
         this.output = {
             collection: this.input.collection ? this.transformCollection(this.input.collection) : undefined,
             items: this.input.items.map((x) => new ItemTransformer(this).transformItem(x)),
         };
+    }
+    public static fromObject(obj: TransformerTypes.Document) {
+        return new Transformer(obj);
+    }
+    public static fromString(json: string) {
+        return new Transformer(JSON.parse(json));
+    }
+
+    public static fromParser(parser: Parser) {
+        return new Transformer(JSON.parse(parser.json));
     }
 
     transformCollection(input: TransformerTypes.Collection): EncoderTypes.Collection {

@@ -11,6 +11,7 @@
         "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs"
     },
     "dependencies": {
+        "bluebird": "^3.7.2",
         "ethers": "^5.5.2",
         "minimist": "^1.2.5",
         "plist": "^3.0.4",
@@ -20,6 +21,7 @@
         "vscode-textmate": "^5.4.1"
     },
     "devDependencies": {
+        "@types/bluebird": "^3.5.36",
         "@types/plist": "^3.0.2",
         "@types/vscode": "^1.62.0",
         "@typescript-eslint/eslint-plugin": "^5.3.1",

@@ -42,7 +42,21 @@ export class Compiler {
 
         comp.parser = Parser.parseDirectory(inputdir);
 
-        comp.transformer = new Transformer(comp.parser!);
+        comp.transformer = Transformer.fromParser(comp.parser!);
+
+        comp.encoder = new Encoder(comp.transformer);
+
+        return comp;
+    };
+
+    public static compileDirectoryWithCache = (inputdir: string) => {
+        console.log('compiling directory checking cache: ', inputdir);
+
+        let comp = new Compiler();
+
+        comp.processed = true;
+
+        comp.transformer = Transformer.fromObject(Parser.parseDirectoryCheckCache(inputdir));
 
         comp.encoder = new Encoder(comp.transformer);
 
@@ -54,7 +68,7 @@ export class Compiler {
 
         comp.parser = Parser.parsePath(inputpath);
 
-        comp.transformer = new Transformer(comp.parser!);
+        comp.transformer = Transformer.fromParser(comp.parser!);
 
         comp.encoder = new Encoder(comp.transformer);
 
@@ -66,7 +80,7 @@ export class Compiler {
 
         comp.parser = Parser.parseData(data);
 
-        comp.transformer = new Transformer(comp.parser!);
+        comp.transformer = Transformer.fromParser(comp.parser!);
 
         comp.encoder = new Encoder(comp.transformer);
 
