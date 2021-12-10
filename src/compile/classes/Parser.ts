@@ -249,7 +249,7 @@ export class Parser {
                     if (!fileKeys[i].includes('collection')) {
                         cache[`${fileKeys[i]}`] = {
                             mtimeMs: files[fileKeys[i]].mtimeMs,
-                            items: tmp2.items,
+                            items: tmp2.items.filter((x) => x.feature !== 'SKIP'),
                         };
                         cacheUpdated = true;
                         compiledamt++;
