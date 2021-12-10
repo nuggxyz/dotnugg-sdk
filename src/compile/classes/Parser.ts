@@ -235,28 +235,31 @@ export class Parser {
         for (var i = 0; i < fileKeys.length; i++) {
             if (!fileKeys[i].includes('collection') && cache[fileKeys[i]] && files[fileKeys[i]].mtimeMs === cache[fileKeys[i]].mtimeMs) {
                 // console.log('loading from cache...', fileKeys[i]);
-                parserResults.items.push(...cache[fileKeys[i]].items);
+                parserResults.items.push(...cache[fileKeys[i]].items.filter((x) => x.feature !== 'SKIP'));
                 loadedamt++;
             } else {
-                console.log('compiling...', fileKeys[i]);
-                const tmp0 = this.parsePath(files[fileKeys[i]].path);
-                const tmp = tmp0.json;
-                const tmp2 = JSON.parse(tmp);
-                parserResults.items.push(...tmp2);
-                if (parserResults.collection !== undefined) {
-                    parserResults.collection = parserResults.collection;
-                    Parser.globalCollection = tmp0.results.collection;
-                }
-                if (!fileKeys[i].includes('collection')) {
-                    cache[`${fileKeys[i]}`] = {
-                        mtimeMs: files[fileKeys[i]].mtimeMs,
+                try {
+                    console.log('compiling...', files[fileKeys[i]].path);
+                    const tmp0 = this.parsePath(files[fileKeys[i]].path);
+                    const tmp = tmp0.json;
+                    const tmp2 = JSON.parse(tmp) as dotnugg.types.compile.Transformer.Document;
 
-                        items: tmp2,
-                    };
-                    cacheUpdated = true;
-                    compiledamt++;
-                } else {
-                    collectionComp = true;
+                    parserResults.items.push(...tmp2.items.filter((x) => x.feature !== 'SKIP'));
+
+                    if (!fileKeys[i].includes('collection')) {
+                        cache[`${fileKeys[i]}`] = {
+                            mtimeMs: files[fileKeys[i]].mtimeMs,
+                            items: tmp2.items,
+                        };
+                        cacheUpdated = true;
+                        compiledamt++;
+                    } else {
+                        parserResults.collection = tmp2.collection;
+                        Parser.globalCollection = tmp0.results.collection;
+                        collectionComp = true;
+                    }
+                } catch (err) {
+                    throw new Error('error compiling ' + files[fileKeys[i]].path + ' ' + err.message);
                 }
             }
         }
@@ -275,6 +278,8 @@ export class Parser {
         } else {
             console.log('No need to update dotnugg cache');
         }
+
+        console.log({ parserResults });
 
         return parserResults;
     }

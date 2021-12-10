@@ -86,7 +86,7 @@ export class Encoder {
     // y = uint6
     static encodeReceiver(input: EncoderTypes.Receiver): CompilerTypes.Byter[] {
         let c = input.calculated ? 0x1 : 0x0;
-        invariant(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0');
+        invariant(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0 - ' + input.feature);
         invariant(0 <= input.xorZindex && input.xorZindex < 64, 'ENCODE:REC:2 - ' + input.xorZindex);
         invariant(0 <= input.yorYoffset && input.yorYoffset < 64, 'ENCODE:REC:3');
         return [
