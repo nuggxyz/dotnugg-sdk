@@ -45,6 +45,7 @@ export namespace Encoder {
     // 	Receivers []*Receiver
     // }
     type EncoderOutput = {
+        id?: string
         feature: number;
         bits: Compiler.Byter[];
         hex: import('ethers').BigNumber[];

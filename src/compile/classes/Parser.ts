@@ -244,12 +244,22 @@ export class Parser {
                     const tmp = tmp0.json;
                     const tmp2 = JSON.parse(tmp) as dotnugg.types.compile.Transformer.Document;
 
-                    parserResults.items.push(...tmp2.items.filter((x) => x.feature !== 'SKIP'));
+                    parserResults.items.push(
+                        ...tmp2.items
+                            .filter((x) => x.feature !== 'SKIP')
+                            .map((x) => {
+                                return { ...x, id: fileKeys[i].split('.')[1] };
+                            }),
+                    );
 
                     if (!fileKeys[i].includes('collection')) {
                         cache[`${fileKeys[i]}`] = {
                             mtimeMs: files[fileKeys[i]].mtimeMs,
-                            items: tmp2.items.filter((x) => x.feature !== 'SKIP'),
+                            items: tmp2.items
+                                .filter((x) => x.feature !== 'SKIP')
+                                .map((x) => {
+                                    return { ...x, id: fileKeys[i].split('.')[1] };
+                                }),
                         };
                         cacheUpdated = true;
                         compiledamt++;

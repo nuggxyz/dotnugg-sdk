@@ -146,7 +146,6 @@ export class ItemTransformer {
             val = this.transformer.defaultLayerMap[this.feature];
         }
         invariant(val >= -4 && val <= 11, 'TRANS:LEV:1 - ' + val);
-        console.log(this.feature, val);
         return val + 4;
     }
 

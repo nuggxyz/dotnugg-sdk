@@ -6,7 +6,7 @@ export class Console {
     private static CreateNumberedRow(num: number): string {
         let res = '   ';
         for (let i = 0; i < num; i++) {
-            res += (i % 10).toString() + '  ';
+            res += (i % 10).toString() + ' ';
         }
         return res;
     }
@@ -36,7 +36,7 @@ export class Console {
                 tmp += mapper[color] + mapper[color];
                 index++;
                 if (x + 1 < width) {
-                    tmp += ' ';
+                    tmp += '';
                 }
                 //add the color to the map if
             }
