@@ -44,6 +44,7 @@ export namespace Parser {
         feature: RangeOf<string>;
         colors: RangeOf<Colors>;
         versions: RangeOf<Versions>;
+        fileName: string;
     };
     type Versions = Dictionary<RangeOf<Version>>;
     type Version = {

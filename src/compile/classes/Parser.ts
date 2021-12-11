@@ -15,7 +15,7 @@ import { Config } from './Config';
 
 export class Parser {
     public tokens: ParserTypes.ParsedToken[] = [];
-
+    public fileName: string;
     private index: number = 0;
     private document: string[];
     public linescopes: { [_: number]: string[] } = {};
@@ -92,8 +92,9 @@ export class Parser {
         }, false);
     }
 
-    private constructor(fileData: string) {
+    private constructor(fileData: string, fileName: string) {
         this.document = fileData.split('\n');
+        this.fileName = fileName;
     }
 
     private lineAt(num: number) {
@@ -109,15 +110,15 @@ export class Parser {
     }
 
     public static parseEmpty() {
-        return new Parser('');
+        return new Parser('', '');
     }
 
     public static parseData(fileData: string) {
-        return new Parser(fileData).init();
+        return new Parser(fileData, 'parseData').init();
     }
     public static parsePath(filePath: string) {
         const file = fs.readFileSync(filePath, 'utf-8');
-        return new Parser(file).init();
+        return new Parser(file, filePath).init();
     }
 
     public static parseDirectory(
@@ -1377,6 +1378,7 @@ export class Parser {
                             value: feature,
                             token: featureToken,
                         },
+                        fileName: this.fileName,
                     },
                     token,
                     endToken,

@@ -32,6 +32,8 @@ export namespace Encoder {
     // }
 
     type Item = {
+        id: number;
+        fileName: string;
         versions: Version[];
         pixels: Pixel[];
         feature: uint8;
@@ -45,11 +47,15 @@ export namespace Encoder {
     // 	Receivers []*Receiver
     // }
     type EncoderOutput = {
-        id?: string
+        id: number;
+        fileName: string;
         feature: number;
         bits: Compiler.Byter[];
         hex: import('ethers').BigNumber[];
     };
+
+    type OutputByItem = Dictionary<Dictionary<EncoderOutput>>;
+    
     type Version = {
         groups: Group[];
         len: Coordinate;

@@ -5,6 +5,7 @@ import invariant from 'tiny-invariant';
 
 import { Encoder as EncoderTypes } from '../types/encoder';
 import { Compiler as CompilerTypes } from '../types';
+import { dotnugg } from '../..';
 
 import { Transformer } from './Transformer';
 import { Builder } from './Builder';
@@ -12,13 +13,21 @@ import { Builder } from './Builder';
 export class Encoder {
     output: EncoderTypes.EncoderOutput[] = [];
 
+    outputByItem: EncoderTypes.OutputByItem = {};
+
     static fileHeader: CompilerTypes.Byter = { dat: 0x4e554747, bit: 32, nam: 'nuggcheck' };
 
     constructor(transformer: Transformer) {
         const input = transformer.output;
-        const res = input.items.map((x: any) => {
+        const res = input.items.map((x: dotnugg.types.compile.Encoder.Item) => {
             const item = Encoder.encodeItem(x);
-            return { ...item, hex: Builder.breakup(Encoder.strarr(item.bits)) };
+
+            const bu = Builder.breakup(Encoder.strarr(item.bits));
+            const res = { ...item, hex: bu };
+
+            if (this.outputByItem[x.feature] === undefined) this.outputByItem[x.feature] = {};
+            this.outputByItem[x.feature][x.id] = res;
+            return res;
         });
         this.output = res;
     }
@@ -205,7 +214,7 @@ export class Encoder {
     //         .flat();
     // }
 
-    public static encodeItem(input: EncoderTypes.Item): { feature: number; bits: CompilerTypes.Byter[] } {
+    public static encodeItem(input: EncoderTypes.Item): { feature: number; bits: CompilerTypes.Byter[]; fileName: string; id: number } {
         let res: CompilerTypes.Byter[] = [this.fileHeader]; // uint56
 
         res.push(this.encodeFeature(input.feature));
@@ -228,7 +237,7 @@ export class Encoder {
             res.push(...this.encodeVersion(x));
         });
 
-        return { bits: res, feature: input.feature };
+        return { bits: res, feature: input.feature, fileName: input.fileName, id: input.id };
     }
 
     public static encodeFeature(input: number): CompilerTypes.Byter {

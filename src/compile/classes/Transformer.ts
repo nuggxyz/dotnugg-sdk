@@ -2,6 +2,7 @@ import invariant from 'tiny-invariant';
 
 import { Transformer as TransformerTypes } from '../types/transformer';
 import { Encoder as EncoderTypes } from '../types/encoder';
+import { dotnugg } from '../..';
 
 import { Parser } from './Parser';
 
@@ -131,8 +132,17 @@ export class ItemTransformer {
 
     public transformItem(input: TransformerTypes.Item): EncoderTypes.Item {
         this.feature = input.feature;
+        const fileName = input.fileName.split('/')[input.fileName.split('/').length - 1];
+
+        invariant(fileName.split('.').length > 1, 'TRANSITEM:SPLTFN:0 - ' + fileName.split('.').length);
+
+        const id = fileName.split('.')[1] === 'collection' ? 0 : +fileName.split('.')[1];
+
+        invariant(!Number.isNaN(id), 'TRANSITEM:SPLTFN:1 - ' + fileName.split('.')[1] + ' - ' + id);
 
         return {
+            id,
+            fileName,
             pixels: this.transformPixels(input.colors),
             feature: this.transformer.featureMap[input.feature],
             versions: this.transformVersions(input.versions),

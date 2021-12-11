@@ -48,7 +48,7 @@ export namespace Transformer {
     type Direction = '+' | '-';
 
     type Item = {
-        id?: string;
+        fileName: string;
         isDefault: boolean;
         feature: string;
         colors: Dictionary<Pixel>;
