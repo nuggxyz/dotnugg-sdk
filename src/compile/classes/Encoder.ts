@@ -23,7 +23,7 @@ export class Encoder {
             const item = Encoder.encodeItem(x);
 
             const bu = Builder.breakup(Encoder.strarr(item.bits));
-            const res = { ...item, hex: bu };
+            const res = { ...item, hex: bu, hexMocked: dotnugg.Matrix.mockHexArray(bu) };
 
             if (this.outputByItem[x.feature] === undefined) this.outputByItem[x.feature] = {};
             this.outputByItem[x.feature][x.id] = res;

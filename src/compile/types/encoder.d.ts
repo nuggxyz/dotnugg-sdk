@@ -52,10 +52,12 @@ export namespace Encoder {
         feature: number;
         bits: Compiler.Byter[];
         hex: import('ethers').BigNumber[];
+        hexMocked: import('ethers').BigNumber[];
+
     };
 
     type OutputByItem = Dictionary<Dictionary<EncoderOutput>>;
-    
+
     type Version = {
         groups: Group[];
         len: Coordinate;

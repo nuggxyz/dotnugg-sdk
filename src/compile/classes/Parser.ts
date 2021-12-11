@@ -290,7 +290,7 @@ export class Parser {
             console.log('No need to update dotnugg cache');
         }
 
-        console.log({ parserResults });
+        // console.log({ parserResults });
 
         return parserResults;
     }
