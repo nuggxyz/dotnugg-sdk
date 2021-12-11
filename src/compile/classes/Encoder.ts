@@ -13,6 +13,8 @@ import { Builder } from './Builder';
 export class Encoder {
     output: EncoderTypes.EncoderOutput[] = [];
 
+    stats: EncoderTypes.Stats = { features: {} };
+
     outputByItem: EncoderTypes.OutputByItem = {};
 
     static fileHeader: CompilerTypes.Byter = { dat: 0x4e554747, bit: 32, nam: 'nuggcheck' };
@@ -25,8 +27,14 @@ export class Encoder {
             const bu = Builder.breakup(Encoder.strarr(item.bits));
             const res = { ...item, hex: bu, hexMocked: dotnugg.Matrix.mockHexArray(bu) };
 
-            if (this.outputByItem[x.feature] === undefined) this.outputByItem[x.feature] = {};
+            if (this.outputByItem[x.feature] === undefined) {
+                this.outputByItem[x.feature] = {};
+                this.stats.features[x.feature] = { name: x.folderName, amount: 0 };
+            }
+
             this.outputByItem[x.feature][x.id] = res;
+            this.stats.features[x.feature].amount++;
+
             return res;
         });
         this.output = res;

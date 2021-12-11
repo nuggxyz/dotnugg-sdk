@@ -30,10 +30,11 @@ export namespace Encoder {
     // 	Pixels   []*Pixel
     // 	Feature  uint8
     // }
-
+    type Stats = { features: Dictionary<{ name: string; amount: number }> };
     type Item = {
         id: number;
         fileName: string;
+        folderName: string;
         versions: Version[];
         pixels: Pixel[];
         feature: uint8;
