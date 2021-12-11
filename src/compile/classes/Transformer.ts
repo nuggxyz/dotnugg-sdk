@@ -72,7 +72,7 @@ export class Transformer {
     transformReceiver(input: TransformerTypes.Receiver): EncoderTypes.Receiver {
         return {
             xorZindex: input.a.offset, // zindex or x
-            yorYoffset: input.b.offset, // yoffset or y
+            yorYoffset: input.b.offset + (input.type === 'calculated' && input.b.direction === '-' ? 32 : 0), // yoffset or y
             feature: this.featureMap[input.feature],
             calculated: input.type === 'calculated',
         };
