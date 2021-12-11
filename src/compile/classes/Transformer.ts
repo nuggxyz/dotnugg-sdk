@@ -133,6 +133,7 @@ export class ItemTransformer {
     public transformItem(input: TransformerTypes.Item): EncoderTypes.Item {
         this.feature = input.feature;
         const fileName = input.fileName.split('/')[input.fileName.split('/').length - 1];
+        const folderName = input.fileName.split('/')[input.fileName.split('/').length - 2];
 
         invariant(fileName.split('.').length > 1, 'TRANSITEM:SPLTFN:0 - ' + fileName.split('.').length);
 
@@ -143,6 +144,7 @@ export class ItemTransformer {
         return {
             id,
             fileName,
+            folderName,
             pixels: this.transformPixels(input.colors),
             feature: this.transformer.featureMap[input.feature],
             versions: this.transformVersions(input.versions),
