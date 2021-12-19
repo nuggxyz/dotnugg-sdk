@@ -16,8 +16,10 @@ export class Encoder {
     stats: EncoderTypes.Stats = { features: {} };
 
     outputByItem: EncoderTypes.OutputByItem = {};
+    outputByItemArray: Dictionary<BigNumber[][]> = {};
 
     ouputByFeatureHex: BigNumber[][][] = [];
+
     ouputByFeaturePlain: BigNumber[][] = [];
 
     static fileHeader: CompilerTypes.Byter = { dat: 0x4e554747, bit: 32, nam: 'nuggcheck' };
@@ -33,6 +35,8 @@ export class Encoder {
 
             if (this.outputByItem[x.feature] === undefined) {
                 this.outputByItem[x.feature] = {};
+                this.outputByItemArray[x.feature] = [];
+
                 this.ouputByFeatureHex[x.feature] = [];
                 this.ouputByFeaturePlain[x.feature] = [];
 
@@ -40,6 +44,8 @@ export class Encoder {
             }
 
             this.outputByItem[x.feature][x.id] = res;
+            this.outputByItemArray[x.feature].push(res.hex);
+
             this.ouputByFeatureHex[x.feature].push(res.hex);
             this.ouputByFeaturePlain[x.feature].push(
                 BigNumber.from(new ethers.utils.AbiCoder().encode(['uint256[]'], [res.hex.map((x) => x._hex)])),
