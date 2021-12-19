@@ -58,6 +58,7 @@ export namespace Encoder {
     };
 
     type OutputByItem = Dictionary<Dictionary<EncoderOutput>>;
+    type OutputByItemArray = Dictionary<Array<EncoderOutput>>;
 
     type Version = {
         groups: Group[];
