@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import { dotnugg } from '..';
 
@@ -16,6 +16,11 @@ export class Console {
     public static drawOutputFromBytes(input: ethers.BytesLike) {
         const decode = (new ethers.utils.AbiCoder().decode(['uint[]'], input) as ethers.BigNumber[][])[0];
         return this.drawConsole(decode);
+    }
+
+    public static decompressA(a: BigNumber): BigNumber {
+        if (a.eq(7)) return BigNumber.from(255);
+        else return a.mul(36);
     }
 
     public static drawConsole(input: ethers.BigNumber[]) {
@@ -36,7 +41,10 @@ export class Console {
         for (let y = 0; y < height; y++) {
             let tmp = '';
             for (let x = 0; x < width; x++) {
-                const color = input[Math.floor(index / 6)].shr(40 * (index % 6)).and('0xffffffff')._hex;
+                const pix = input[Math.floor(index / 6)].shr(42 * (index % 6));
+                const a = this.decompressA(pix.and(0x7));
+                const rgb_ = pix.shl(5).and(0xffffff00);
+                const color = rgb_.or(a)._hex;
                 if (!mapper[color]) mapper[color] = constants.colorLookup[Object.keys(mapper).length];
                 tmp += mapper[color] + mapper[color];
                 index++;
@@ -63,12 +71,19 @@ export class Console {
 
     private static getPixelAt = (arr: ethers.BigNumber[], x: number, y: number, width: number): dotnugg.types.log.Pixel => {
         const index = x + y * width;
-        const val = arr[Math.floor(index / 6)].shr(40 * (index % 6)).and('0xffffffffff');
-        const color = ethers.utils.hexZeroPad(val.and('0xffffffff')._hex, 4).replace('0x', '#');
+
+        const pix = arr[Math.floor(index / 6)].shr(42 * (index % 6));
+        const a = this.decompressA(pix.and(0x7));
+        const rgb_ = pix.shl(5).and(0xffffff00);
+        const color = rgb_.or(a)._hex;
+
+        const val = arr[Math.floor(index / 6)].shr(42 * (index % 6)).and('0xffffffffff');
+        const color2 = ethers.utils.hexZeroPad(color, 4).replace('0x', '#');
         return {
-            color: color === '#00000000' ? 'nope' : color,
-            z: val.shr(32).and('0xf').toNumber(),
-            feature: val.shr(36).and('0xf').toNumber(),
+            color: color2 === '#00000000' ? 'nope' : color2,
+            id: val.shr(27).and('0xff').toNumber(),
+            z: val.shr(35).and('0xf').toNumber(),
+            feature: val.shr(39).and('0x7').toNumber(),
         };
     };
 
@@ -132,7 +147,7 @@ export class Console {
                 }
             }
             res += getRekt(last, width - count, y, count, 1);
-            last = { color: 'nope', z: 0, feature: 0 };
+            last = { color: 'nope', z: 0, feature: 0, id: 0 };
             count = 0;
         }
         console.log(res + '</svg>');

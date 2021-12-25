@@ -22,7 +22,7 @@ export class Encoder {
 
     ouputByFeaturePlain: BigNumber[][] = [];
 
-    static fileHeader: CompilerTypes.Byter = { dat: 0x4e554747, bit: 32, nam: 'nuggcheck' };
+    static fileHeader: CompilerTypes.Byter = { dat: 0x420690_01, bit: 32, nam: 'nuggcheck' };
 
     constructor(transformer: Transformer) {
         const input = transformer.output;
@@ -246,6 +246,8 @@ export class Encoder {
 
         res.push(this.encodeFeature(input.feature));
 
+        res.push(this.encodeFeatureId(input.id));
+
         invariant(0 < input.versions.length && input.versions.length <= 16, 'ENCODE:ITM:0');
 
         res.push({ dat: input.pixels.length - 1, bit: 4, nam: 'pallet len' }); // pallet length
@@ -269,8 +271,12 @@ export class Encoder {
 
     public static encodeFeature(input: number): CompilerTypes.Byter {
         invariant(0 <= input && input < 8, 'ENCODE:FEA:0');
-        invariant(0 <= input && input < 8, 'ENCODE:FEA:1');
         return { dat: input, bit: 3 };
+    }
+
+    public static encodeFeatureId(input: number): CompilerTypes.Byter {
+        invariant(0 <= input && input < 255, 'ENCODE:FEATID:0');
+        return { dat: input + 1, bit: 8 };
     }
 
     public static encodeVersion(input: EncoderTypes.Version): CompilerTypes.Byter[] {
