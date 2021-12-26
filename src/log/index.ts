@@ -132,9 +132,33 @@ export class Console {
         };
     };
 
-    public static drawSvg(input: ethers.BigNumber[], multip: number, prettyPrint: boolean = false): string {
-        const tmp = input[input.length - 1];
-        const tmp2 = input[input.length - 1];
+    public static drawSvg(_input: ethers.BigNumber[], multip: number, prettyPrint: boolean = false): string {
+        const usethis: BigNumber[] = [];
+
+        for (var i = 0; i < _input.length; i++) {
+            console.log(_input[i]._hex);
+
+            // byteLen += _input[i]._hex.length;
+
+            let numzeros = _input[i].and(0xf);
+
+            if (numzeros.eq(0xf)) {
+                numzeros = _input[i++].shr(4);
+            }
+
+            for (var j = 0; j < numzeros.toNumber(); j++) {
+                usethis.push(BigNumber.from(0));
+            }
+
+            usethis.push(_input[i].shr(4));
+
+            // console.log(usethis[usethis.length - 1]._hex);
+
+            // console.log('--');
+            // zerosSaved += numzeros.toNumber();
+        }
+        const tmp = usethis[usethis.length - 1];
+        const tmp2 = usethis[usethis.length - 1];
         const width = tmp.shr(63).and(0x3f).toNumber();
         const height = tmp2.shr(69).and(0x3f).toNumber();
         let res = '';
@@ -173,13 +197,13 @@ export class Console {
 
         // bytes memory footer = hex'3c2f7376673e';
 
-        let last = this.getPixelAt(input, 0, 0, width);
+        let last = this.getPixelAt(usethis, 0, 0, width);
         let count = 1;
 
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < height; x++) {
                 if (y == 0 && x == 0) x++;
-                let curr = this.getPixelAt(input, x, y, width);
+                let curr = this.getPixelAt(usethis, x, y, width);
                 if (curr.color === last.color) {
                     count++;
                     continue;
