@@ -27,8 +27,53 @@ export class Console {
         // console.log({ decode });
         // console.log(decode);
 
-        const tmp = input[input.length - 1];
-        const tmp2 = input[input.length - 1];
+        const usethis: BigNumber[] = [];
+
+        // for (var i = 0; i < input.length; i++) {
+        //     console.log(input[i]._hex);
+        //     if (input[i].and(0xf).eq(0xf)) {
+        //         let numzeros = input[i].shr(4).toNumber();
+        //         for (var j = 0; j < numzeros; j++) {
+        //             usethis.push(BigNumber.from(0));
+        //         }
+        //     } else {
+        //         usethis.push(input[i].shr(4));
+        //     }
+
+        //     console.log(usethis[usethis.length - 1]._hex);
+
+        //     console.log('--');
+        // }
+        let zerosSaved = 0;
+        let byteLen = 0;
+
+        for (var i = 0; i < input.length; i++) {
+            console.log(input[i]._hex);
+
+            byteLen += input[i]._hex.length;
+
+            let numzeros = input[i].and(0xf);
+
+            if (numzeros.eq(0xf)) {
+                numzeros = input[i++].shr(4);
+            }
+
+            for (var j = 0; j < numzeros.toNumber(); j++) {
+                usethis.push(BigNumber.from(0));
+            }
+
+            usethis.push(input[i].shr(4));
+
+            console.log(usethis[usethis.length - 1]._hex);
+
+            console.log('--');
+            zerosSaved += numzeros.toNumber();
+        }
+
+        console.log(input.length, zerosSaved, byteLen / 2);
+
+        const tmp = usethis[usethis.length - 1];
+        const tmp2 = usethis[usethis.length - 1];
         const width = tmp.shr(63).and(0x3f).toNumber();
         const height = tmp2.shr(69).and(0x3f).toNumber();
 
@@ -41,7 +86,7 @@ export class Console {
         for (let y = 0; y < height; y++) {
             let tmp = '';
             for (let x = 0; x < width; x++) {
-                const pix = input[Math.floor(index / 6)].shr(42 * (index % 6));
+                const pix = usethis[Math.floor(index / 6)].shr(42 * (index % 6));
                 const a = this.decompressA(pix.and(0x7));
                 const rgb_ = pix.shl(5).and(0xffffff00);
                 const color = rgb_.or(a)._hex;
