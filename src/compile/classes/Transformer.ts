@@ -42,7 +42,7 @@ export class Transformer {
             .reverse()
             .map((args, i) => {
                 this.featureMap[args[0]] = i;
-                this.defaultLayerMap[args[0]] = new ItemTransformer(this).transformLevel(args[1].zindex as TransformerTypes.Level);
+                this.defaultLayerMap[args[0]] = new ItemTransformer(this).transformLevel(args[1].zindex as TransformerTypes.Level) - 4;
                 // console.log(args[0], this.defaultLayerMap[args[0]].toString());
                 return args;
             })
@@ -140,7 +140,7 @@ export class ItemTransformer {
         const id = fileName.split('.')[1] === 'collection' ? 0 : +fileName.split('.')[1];
 
         invariant(!Number.isNaN(id), 'TRANSITEM:SPLTFN:1 - ' + fileName.split('.')[1] + ' - ' + id);
-
+        // console.log(fileName);
         return {
             id,
             fileName,
@@ -152,12 +152,18 @@ export class ItemTransformer {
     }
 
     transformLevel(input: TransformerTypes.Level): EncoderTypes.uint8 {
+        invariant(input.direction == '-' || input.direction == '+', 'TRANSLEV:DIR');
         let val = input.direction == '+' ? input.offset : input.offset * -1;
         if (val == 100) {
             invariant(this.feature, 'TRANS:LEV:0');
             val = this.transformer.defaultLayerMap[this.feature];
         }
+
+        // else {
+        //     console.log({ val, hello: this.transformer.defaultLayerMap });
+        // }
         invariant(val >= -4 && val <= 11, 'TRANS:LEV:1 - ' + val);
+
         return val + 4;
     }
 

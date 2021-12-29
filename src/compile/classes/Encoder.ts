@@ -1,14 +1,22 @@
 /// <reference path="../../dec.d.ts" />
 
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, BigNumberish, BytesLike, ethers, Overrides, PopulatedTransaction } from 'ethers';
 import invariant from 'tiny-invariant';
 
 import { Encoder as EncoderTypes } from '../types/encoder';
 import { Compiler as CompilerTypes } from '../types';
 import { dotnugg } from '../..';
+import { DotnuggV1Storage, DotnuggV1Storage__factory } from '../../typechain';
 
 import { Transformer } from './Transformer';
 import { Builder } from './Builder';
+
+interface func {
+    unsafeStoreFilesBulk(
+        data: BigNumberish[][][],
+        overrides?: Overrides & { from?: string | Promise<string> },
+    ): Promise<PopulatedTransaction>;
+}
 
 export class Encoder {
     output: EncoderTypes.EncoderOutput[] = [];
@@ -22,10 +30,21 @@ export class Encoder {
 
     ouputByFeaturePlain: BigNumber[][] = [];
 
+    bulkupload: Promise<BytesLike>;
+
     static fileHeader: CompilerTypes.Byter = { dat: 0x420690_01, bit: 32, nam: 'nuggcheck' };
 
     constructor(transformer: Transformer) {
         const input = transformer.output;
+
+        for (var i = 0; i < 8; i++) {
+            this.outputByItemArray[i] = [];
+            this.outputByItem[i] = {};
+
+            this.ouputByFeatureHex[i] = [];
+            this.ouputByFeaturePlain[i] = [];
+        }
+
         const res = input.items.map((x: dotnugg.types.compile.Encoder.Item) => {
             const item = Encoder.encodeItem(x);
 
@@ -33,13 +52,7 @@ export class Encoder {
 
             const res = { ...item, hex: bu, hexMocked: dotnugg.Matrix.mockHexArray(bu) };
 
-            if (this.outputByItem[x.feature] === undefined) {
-                this.outputByItem[x.feature] = {};
-                this.outputByItemArray[x.feature] = [];
-
-                this.ouputByFeatureHex[x.feature] = [];
-                this.ouputByFeaturePlain[x.feature] = [];
-
+            if (this.stats.features[x.feature] === undefined) {
                 this.stats.features[x.feature] = { name: x.folderName, amount: 0 };
             }
 
@@ -55,6 +68,25 @@ export class Encoder {
 
             return res;
         });
+
+        this.bulkupload = (
+            new ethers.Contract(
+                ethers.constants.AddressZero,
+                DotnuggV1Storage__factory.abi,
+                ethers.getDefaultProvider(),
+            ) as DotnuggV1Storage
+        ).populateTransaction
+            .unsafeStoreFilesBulk([
+                this.outputByItemArray[0],
+                this.outputByItemArray[1],
+                this.outputByItemArray[2],
+                this.outputByItemArray[3],
+                this.outputByItemArray[4],
+                this.outputByItemArray[5],
+                this.outputByItemArray[6],
+                this.outputByItemArray[7],
+            ])
+            .then((tx) => tx.data);
 
         this.output = res;
     }
@@ -325,7 +357,12 @@ export class Encoder {
 
     public static encodePixel(input: EncoderTypes.Pixel): CompilerTypes.Byter[] {
         let res: CompilerTypes.Byter[] = [];
-        res.push(this.encodeLayer(input.zindex));
+
+        // console.log({ input });
+
+        const z = this.encodeLayer(input.zindex);
+        // console.log({ z });
+        res.push(z);
 
         const color = this.encodeRGB(input.rgba.r, input.rgba.g, input.rgba.b);
         res.push(...color);
@@ -364,7 +401,7 @@ export class Encoder {
     public static encodeLayer(input: number): CompilerTypes.Byter {
         //uint8
         invariant(0 <= input && input < 15, 'ENCODE:LAYER:0');
-        return { bit: 4, dat: input + 1, nam: 'layer' };
+        return { bit: 4, dat: input, nam: 'layer' };
     }
 
     // public static encodeMatrix(input: EncoderTypes.Matrix): CompilerTypes.Byter[] {}

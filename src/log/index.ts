@@ -48,7 +48,7 @@ export class Console {
         let byteLen = 0;
 
         for (var i = 0; i < input.length; i++) {
-            console.log(input[i]._hex);
+            // console.log(input[i]._hex);
 
             byteLen += input[i]._hex.length;
 
@@ -64,9 +64,9 @@ export class Console {
 
             usethis.push(input[i].shr(4));
 
-            console.log(usethis[usethis.length - 1]._hex);
+            // console.log(usethis[usethis.length - 1]._hex);
 
-            console.log('--');
+            // console.log('--');
             zerosSaved += numzeros.toNumber();
         }
 

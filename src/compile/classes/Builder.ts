@@ -14,13 +14,13 @@ export class Builder {
 
         res = res.reverse();
 
-        const lenmask = BigNumber.from(res.length).shl(250);
+        // const lenmask = BigNumber.from(res.length).shl(250);
 
-        if (res[0].gt(BigNumber.from(2).pow(250).sub(1))) {
-            res.unshift(BigNumber.from(res.length + 1).shl(250));
-        } else {
-            res[0] = res[0].or(lenmask);
-        }
+        // if (res[0].gt(BigNumber.from(2).pow(250).sub(1))) {
+        //     res.unshift(BigNumber.from(res.length + 1).shl(250));
+        // } else {
+        //     res[0] = res[0].or(lenmask);
+        // }
 
         return res;
     }
