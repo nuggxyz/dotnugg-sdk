@@ -889,10 +889,10 @@ export class Parser {
                 if (this.currentValue === '') {
                     continue;
                 }
-                if (this.has(tokens.CollectionFeatureLongZIndexDirection)) {
+                if (this.has(tokens.CollectionFeatureLongZIndexOffset)) {
                     offset = +this.currentValue;
                 }
-                if (this.has(tokens.CollectionFeatureLongZIndexOffset)) {
+                if (this.has(tokens.CollectionFeatureLongZIndexDirection)) {
                     direction = this.currentValue as ParserTypes.Operator;
                 }
                 if (this.has(tokens.CollectionFeatureLongZIndex)) {

@@ -2,3 +2,5 @@ node_modules
 build
 tmp
 archive
+typechain
+src/_generated

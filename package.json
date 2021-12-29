@@ -8,7 +8,9 @@
     "author": "dub6ix <dub6ix@nugg.xyz>",
     "scripts": {
         "build": "yarn install && tsc",
-        "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs"
+        "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs",
+        "generate-uploader": "tsc && node ./build/scripts/unsafeStoreFilesBulkData.js",
+        "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'"
     },
     "dependencies": {
         "bluebird": "^3.7.2",
@@ -21,7 +23,9 @@
         "vscode-textmate": "^5.4.1"
     },
     "devDependencies": {
+        "@typechain/ethers-v5": "^8.0.5",
         "@types/bluebird": "^3.5.36",
+        "@types/fs-extra": "^9.0.13",
         "@types/plist": "^3.0.2",
         "@types/vscode": "^1.62.0",
         "@typescript-eslint/eslint-plugin": "^5.3.1",
@@ -30,6 +34,7 @@
         "eslint-config-universe": "^8.0.0",
         "eslint-plugin-import": "^2.25.3",
         "prettier": "^2.4.1",
+        "typechain": "^6.1.0",
         "typescript": "^4.4.4"
     }
 }
