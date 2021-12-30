@@ -76,7 +76,7 @@ export class Encoder {
                 ethers.getDefaultProvider(),
             ) as DotnuggV1Storage
         ).populateTransaction
-            .unsafeStoreFilesBulk([
+            .unsafeBulkStore([
                 this.outputByItemArray[0],
                 this.outputByItemArray[1],
                 this.outputByItemArray[2],

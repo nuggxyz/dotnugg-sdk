@@ -24,10 +24,21 @@ const main = async (repo: string, solFileDir: string) => {
 pragma solidity ^0.8.0;
     
 interface IGeneratedDotnuggV1StorageHelper {
-    function totalStoredFiles(address implementer, uint8 feature) external view returns (uint8);
+    function stored(address implementer, uint8 feature) external view returns (uint8);
 }
 
 abstract contract GeneratedDotnuggV1LocalUploader {
+    address constant CONSOLE_ADDRESS = address(0x000000000000000000636F6e736F6c652e6c6f67);
+
+    function _sendLogPayload(bytes memory payload) private view {
+        uint256 payloadLength = payload.length;
+        address consoleAddress = CONSOLE_ADDRESS;
+        assembly {
+            let payloadStart := add(payload, 32)
+            let r := staticcall(gas(), consoleAddress, payloadStart, payloadLength, 0, 0)
+        }
+    }
+
     function dotnuggV1CallbackHelper(uint256 tokenId, address processor) internal view virtual returns (uint8[] memory data) {
         data = new uint8[](8);
 
@@ -41,18 +52,41 @@ abstract contract GeneratedDotnuggV1LocalUploader {
         data[7] = _randSeedFromTotalStoredFiles(tokenId, 7, processor);
     }
 
+    function dotnuggV1CallbackHelper(
+        uint256 tokenId,
+        address processor,
+        uint8 extra
+    ) internal view virtual returns (uint8[] memory data) {
+        data = new uint8[](8);
+
+        require(extra > 2 && extra < 8, 'EXTRA SHOULD BE BETWEEN 3 and 7 (inclusive)');
+
+        data[0] = _randSeedFromTotalStoredFiles(tokenId, 0, processor);
+        data[1] = _randSeedFromTotalStoredFiles(tokenId, 1, processor);
+        data[2] = _randSeedFromTotalStoredFiles(tokenId, 2, processor);
+        // data[extra] = _randSeedFromTotalStoredFiles(tokenId, extra, processor);
+
+        if (tokenId % 2 == 0) {
+            data[3] = _randSeedFromTotalStoredFiles(tokenId, 3, processor);
+        } else {
+            data[4] = _randSeedFromTotalStoredFiles(tokenId, 4, processor);
+        }
+    }
+
     function _randSeedFromTotalStoredFiles(
         uint256 tokenId,
         uint8 feature,
         address processor
     ) private view returns (uint8 res) {
-        res = IGeneratedDotnuggV1StorageHelper(processor).totalStoredFiles(address(this), feature);
+        res = IGeneratedDotnuggV1StorageHelper(processor).stored(address(this), feature);
 
         if (res == 0) return 0;
 
-        uint256 seed = uint256(keccak256(abi.encodePacked(tokenId)));
+        uint256 seed = uint256(keccak256(abi.encodePacked(tokenId, "SUperranDOm2")));
 
         res = ((uint8(seed >> (feature * 8)) & 0xff) % res) + 1;
+
+        _sendLogPayload(abi.encodeWithSignature('log(string,uint256,string,uint256)', 'random id selected for feature ', feature, ' - ', res));
     }
 
     constructor(address processor) {
