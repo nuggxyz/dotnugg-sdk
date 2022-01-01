@@ -71,6 +71,14 @@ abstract contract GeneratedDotnuggV1LocalUploader {
         } else {
             data[4] = _randSeedFromTotalStoredFiles(tokenId, 4, processor);
         }
+
+        if (tokenId % 13 == 0) {
+            data[5] = _randSeedFromTotalStoredFiles(tokenId, 5, processor);
+        } else if (tokenId % 21 == 0) {
+            data[6] = _randSeedFromTotalStoredFiles(tokenId, 6, processor);
+        } else if (tokenId % 25 == 0) {
+            data[7] = _randSeedFromTotalStoredFiles(tokenId, 7, processor);
+        }
     }
 
     function _randSeedFromTotalStoredFiles(
