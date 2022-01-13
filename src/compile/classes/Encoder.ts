@@ -30,11 +30,12 @@ export class Encoder {
     ouputByFeatureHex: BigNumber[][][] = [];
 
     ouputByFeaturePlain: BigNumber[][] = [];
+    unbrokenArray: BigNumber[][] = [];
 
     bulkupload: Promise<BytesLike>;
 
     encoded: BytesLike;
-
+    compressed: BytesLike;
     static fileHeader: CompilerTypes.Byter = { dat: 0x420690_01, bit: 32, nam: 'nuggcheck' };
 
     constructor(transformer: Transformer) {
@@ -43,6 +44,7 @@ export class Encoder {
         for (var i = 0; i < 8; i++) {
             this.outputByItemArray[i] = [];
             this.outputByItem[i] = {};
+            this.unbrokenArray[i] = [];
 
             this.ouputByFeatureHex[i] = [];
             this.ouputByFeaturePlain[i] = [];
@@ -51,13 +53,16 @@ export class Encoder {
         const res = input.items.map((x: dotnugg.types.compile.Encoder.Item) => {
             const item = Encoder.encodeItem(x);
 
-            const bu = Builder.breakup(Encoder.strarr(item.bits));
+            const bet = Encoder.strarr(item.bits);
+
+            const bu = Builder.breakup(bet);
 
             const res = { ...item, hex: bu, hexMocked: dotnugg.Matrix.mockHexArray(bu) };
 
             if (this.stats.features[x.feature] === undefined) {
                 this.stats.features[x.feature] = { name: x.folderName, amount: 0 };
             }
+            this.unbrokenArray[x.feature].push(bet);
 
             this.outputByItem[x.feature][x.id] = res;
             this.outputByItemArray[x.feature].push(res.hex);
@@ -71,6 +76,22 @@ export class Encoder {
 
             return res;
         });
+
+        this.compressed = new AbiCoder().encode(
+            [ethers.utils.ParamType.fromString('bytes[]')],
+            [
+                [
+                    Builder.squish(this.unbrokenArray[0]),
+                    Builder.squish(this.unbrokenArray[1]),
+                    Builder.squish(this.unbrokenArray[2]),
+                    Builder.squish(this.unbrokenArray[3]),
+                    Builder.squish(this.unbrokenArray[4]),
+                    Builder.squish(this.unbrokenArray[5]),
+                    Builder.squish(this.unbrokenArray[6]),
+                    Builder.squish(this.unbrokenArray[7]),
+                ],
+            ],
+        );
 
         this.encoded = new AbiCoder().encode(
             [ethers.utils.ParamType.fromString('uint256[][][]')],
@@ -404,12 +425,23 @@ export class Encoder {
 
     public static encodeRGB(r: number, g: number, b: number): CompilerTypes.Byter[] {
         // uint1 | uint25
-        if (r === 0 && g === 0 && b === 0) return [{ dat: 0x1, bit: 1, nam: 'is RBG black ?' }];
+        if (r === 0 && g === 0 && b === 0)
+            return [
+                { dat: 0x1, bit: 1, nam: 'is RBG black ?' },
+                { dat: 0x0, bit: 1, nam: 'is RBG white ?' },
+            ];
+        if (r === 255 && g === 255 && b === 255)
+            return [
+                { dat: 0x0, bit: 1, nam: 'is RBG black ?' },
+                { dat: 0x1, bit: 1, nam: 'is RBG white ?' },
+            ];
+
         invariant(0 <= r && r < 256, 'ENCODE:ER:R');
         invariant(0 <= g && g < 256, 'ENCODE:ER:G');
         invariant(0 <= b && b < 256, 'ENCODE:ER:B');
         return [
             { dat: 0x0, bit: 1, nam: 'is RGB black ?' },
+            { dat: 0x0, bit: 1, nam: 'is RGB white ?' },
             { dat: r, bit: 8, nam: 'R' },
             { dat: g, bit: 8, nam: 'G' },
             { dat: b, bit: 8, nam: 'B' },

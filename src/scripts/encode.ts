@@ -3,8 +3,11 @@ import { dotnugg } from '..';
 const main = async (repo: string) => {
     await dotnugg.compile.Compiler.init();
 
-    const enc = dotnugg.compile.Compiler.compileDirectoryWithCache(repo).encoder.encoded;
+    const enc = dotnugg.compile.Compiler.compileDirectoryWithCache(repo).encoder;
 
-    console.log(enc);
+    console.log('encoded:    ', (enc.encoded.toString().length / 1000).toFixed(3), 'KB');
+    console.log('compressed: ', (enc.compressed.toString().length / 1000).toFixed(3), 'KB');
+
+    console.log(enc.compressed);
 };
 main(`../${process.argv[2]}`);
