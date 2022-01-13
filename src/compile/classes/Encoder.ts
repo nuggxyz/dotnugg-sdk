@@ -2,6 +2,7 @@
 
 import { BigNumber, BigNumberish, BytesLike, ethers, Overrides, PopulatedTransaction } from 'ethers';
 import invariant from 'tiny-invariant';
+import { AbiCoder } from 'ethers/lib/utils';
 
 import { Encoder as EncoderTypes } from '../types/encoder';
 import { Compiler as CompilerTypes } from '../types';
@@ -31,6 +32,8 @@ export class Encoder {
     ouputByFeaturePlain: BigNumber[][] = [];
 
     bulkupload: Promise<BytesLike>;
+
+    encoded: BytesLike;
 
     static fileHeader: CompilerTypes.Byter = { dat: 0x420690_01, bit: 32, nam: 'nuggcheck' };
 
@@ -68,6 +71,22 @@ export class Encoder {
 
             return res;
         });
+
+        this.encoded = new AbiCoder().encode(
+            [ethers.utils.ParamType.fromString('uint256[][][]')],
+            [
+                [
+                    this.outputByItemArray[0],
+                    this.outputByItemArray[1],
+                    this.outputByItemArray[2],
+                    this.outputByItemArray[3],
+                    this.outputByItemArray[4],
+                    this.outputByItemArray[5],
+                    this.outputByItemArray[6],
+                    this.outputByItemArray[7],
+                ],
+            ],
+        );
 
         this.bulkupload = (
             new ethers.Contract(

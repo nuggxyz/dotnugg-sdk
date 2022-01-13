@@ -10,6 +10,7 @@
         "build": "yarn install && tsc",
         "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs",
         "generate-uploader": "tsc && node ./build/scripts/unsafeStoreFilesBulkData.js",
+        "encode": "tsc && node ./build/scripts/encode.js",
         "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'"
     },
     "dependencies": {
