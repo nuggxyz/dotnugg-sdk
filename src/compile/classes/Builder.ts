@@ -1,4 +1,5 @@
 import { BigNumber, BytesLike, ethers } from 'ethers';
+import { keccak256 } from 'ethers/lib/utils';
 
 import { Compiler as CompilerTypes } from '../types';
 
@@ -80,7 +81,9 @@ export class Builder {
 
         // console.log(res);
 
-        return '0x600B5981380380925939F300' + '646F746E756767' + res;
+        res = '0x60125981380380925939F3' + '646F746E756767' + '00' + res + keccak256('0x' + res).replace('0x', '');
+
+        return res;
     }
 
     // public static async build(address: string, input: BigNumber[][]): Promise<ethers.PopulatedTransaction> {
