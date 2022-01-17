@@ -81,7 +81,7 @@ export class Builder {
 
         // console.log(res);
 
-        res = '0x60125981380380925939F3' + '646F746E756767' + '00' + res + keccak256('0x' + res).replace('0x', '');
+        res = '0x60125981380380925939F3646F746E75676700' + res + keccak256('0x' + res).replace('0x', '');
 
         return res;
     }
