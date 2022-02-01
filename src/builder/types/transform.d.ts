@@ -1,4 +1,4 @@
-export namespace Transformer {
+export namespace Transform {
     type uint8 = number;
 
     type Dictionary<T> = {

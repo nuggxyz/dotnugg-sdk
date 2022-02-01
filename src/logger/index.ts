@@ -114,7 +114,7 @@ export class Console {
         return res;
     }
 
-    private static getPixelAt = (arr: ethers.BigNumber[], x: number, y: number, width: number): dotnugg.types.log.Pixel => {
+    private static getPixelAt = (arr: ethers.BigNumber[], x: number, y: number, width: number): dotnugg.types.logger.Pixel => {
         const index = x + y * width;
 
         const pix = arr[Math.floor(index / 6)].shr(42 * (index % 6));
@@ -176,7 +176,7 @@ export class Console {
                 (prettyPrint ? '\n' : ''),
         );
 
-        const getRekt = (pix: dotnugg.types.log.Pixel, x: number, y: number, xlen: number, ylen: number): string => {
+        const getRekt = (pix: dotnugg.types.logger.Pixel, x: number, y: number, xlen: number, ylen: number): string => {
             if (pix.color === 'nope') return '';
             return String(
                 (prettyPrint ? '\t' : '') +

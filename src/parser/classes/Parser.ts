@@ -4,11 +4,10 @@ import * as path from 'path';
 
 import * as vsctm from 'vscode-textmate';
 import invariant from 'tiny-invariant';
-import * as bluebird from 'bluebird';
 
 import tokens from '../constants/tokens';
-import { Parser as ParserTypes } from '../types/parser';
 import { dotnugg } from '../..';
+import { Parser as ParserTypes } from '../types';
 
 import { Validator } from './Validator';
 import { Config } from './Config';
@@ -19,6 +18,20 @@ export class Parser {
     private index: number = 0;
     private document: string[];
     public linescopes: { [_: number]: string[] } = {};
+
+    private static _inited: boolean = false;
+
+    public static get inited() {
+        return this._inited;
+    }
+
+    static async init() {
+        if (!this._inited) {
+            await Config.init();
+
+            this._inited = true;
+        }
+    }
 
     private get next() {
         if (this.hasNext) {
@@ -93,6 +106,8 @@ export class Parser {
     }
 
     private constructor(fileData: string, fileName: string) {
+        invariant(Parser._inited, 'ERROR: Parser not initialized');
+
         this.document = fileData.split('\n');
         this.fileName = fileName;
     }
@@ -117,6 +132,8 @@ export class Parser {
         return new Parser(fileData, 'parseData').init();
     }
     public static parsePath(filePath: string) {
+        invariant(this._inited, 'ERROR: Parser not initialized');
+
         const file = fs.readFileSync(filePath, 'utf-8');
         return new Parser(file, filePath).init();
     }
@@ -157,7 +174,7 @@ export class Parser {
                     console.log('compiling...', file);
 
                     const parser = Parser.parsePath(fromPath);
-                    // parser.compile();
+                    // parser.parse();
                     if (parser.results.collection !== undefined) {
                         // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
                         prevParser.results.collection = parser.results.collection;
@@ -208,11 +225,11 @@ export class Parser {
         return res;
     }
 
-    public static parseDirectoryCheckCache(dir: string): dotnugg.types.compile.Transformer.Document {
+    public static parseDirectoryCheckCache(dir: string): dotnugg.types.builder.Transform.Document {
         let files = this.getFilesInDir(dir);
 
         let cacheUpdated = false;
-        let cache: { [_: string]: { items: dotnugg.types.compile.Transformer.Item[]; mtimeMs: number } } = {};
+        let cache: { [_: string]: { items: dotnugg.types.builder.Transform.Item[]; mtimeMs: number } } = {};
 
         try {
             let rawdata = fs.readFileSync(path.join(dir, 'dotnugg-cache.json'), 'utf8');
@@ -223,9 +240,9 @@ export class Parser {
             console.log('error loading cache: ', err);
         }
         let collectionComp = false;
-        let compiledamt = 0;
+        let parsedamt = 0;
         let loadedamt = 0;
-        let parserResults: dotnugg.types.compile.Transformer.Document = { collection: undefined, items: [] };
+        let parserResults: dotnugg.types.builder.Transform.Document = { collection: undefined, items: [] };
 
         let fileKeys = Object.keys(files);
 
@@ -243,7 +260,7 @@ export class Parser {
                     console.log('compiling...', files[fileKeys[i]].path);
                     const tmp0 = this.parsePath(files[fileKeys[i]].path);
                     const tmp = tmp0.json;
-                    const tmp2 = JSON.parse(tmp) as dotnugg.types.compile.Transformer.Document;
+                    const tmp2 = JSON.parse(tmp) as dotnugg.types.builder.Transform.Document;
 
                     parserResults.items.push(
                         ...tmp2.items
@@ -263,7 +280,7 @@ export class Parser {
                                 }),
                         };
                         cacheUpdated = true;
-                        compiledamt++;
+                        parsedamt++;
                     } else {
                         parserResults.collection = tmp2.collection;
                         Parser.globalCollection = tmp0.results.collection;
@@ -276,12 +293,10 @@ export class Parser {
         }
 
         console.log(
-            `loaded ${loadedamt} .item.nugg files from cache and compiled ${compiledamt} items ${
-                collectionComp && ' and 1 .collection.nugg'
-            }`,
+            `loaded ${loadedamt} .item.nugg files from cache and parsed ${parsedamt} items ${collectionComp && ' and 1 .collection.nugg'}`,
         );
 
-        console.log(`compiled ${compiledamt} .item.nugg files ${collectionComp && ' and 1 .collection.nugg file'}`);
+        console.log(`parsed ${parsedamt} .item.nugg files ${collectionComp && ' and 1 .collection.nugg file'}`);
 
         if (cacheUpdated) {
             console.log('updating cache at: ', path.join(dir, 'dotnugg-cache.json'));
@@ -295,72 +310,72 @@ export class Parser {
         return parserResults;
     }
 
-    public static async parseDirectoryAsync(
-        dir: string,
-        prevParser?: Parser,
-        cache?: { [_: string]: { items: ParserTypes.RangeOf<ParserTypes.Item>[]; mtimeMs: number } },
-        saveCache?: boolean,
-    ) {
-        let first = false;
-        try {
-            if (prevParser === undefined) {
-                prevParser = Parser.parseEmpty();
-                try {
-                    let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
-                    cache = rawdata == '' ? {} : JSON.parse(rawdata);
-                } catch (errs) {
-                    cache = {};
-                }
+    // public static async parseDirectoryAsync(
+    //     dir: string,
+    //     prevParser?: Parser,
+    //     cache?: { [_: string]: { items: ParserTypes.RangeOf<ParserTypes.Item>[]; mtimeMs: number } },
+    //     saveCache?: boolean,
+    // ) {
+    //     let first = false;
+    //     try {
+    //         if (prevParser === undefined) {
+    //             prevParser = Parser.parseEmpty();
+    //             try {
+    //                 let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
+    //                 cache = rawdata == '' ? {} : JSON.parse(rawdata);
+    //             } catch (errs) {
+    //                 cache = {};
+    //             }
 
-                first = true;
-            }
+    //             first = true;
+    //         }
 
-            // Get the files as an array
-            const files = await fs.promises.readdir(dir);
+    //         // Get the files as an array
+    //         const files = await fs.promises.readdir(dir);
 
-            await bluebird.Promise.map(files, (file) => {
-                // Loop them all with the new for...of
-                // for (const file of await files) {
-                // Get the full paths
-                const fromPath = path.join(dir, file);
+    //         await bluebird.Promise.map(files, (file) => {
+    //             // Loop them all with the new for...of
+    //             // for (const file of await files) {
+    //             // Get the full paths
+    //             const fromPath = path.join(dir, file);
 
-                // Stat the file to see if we have a file or dir
-                fs.stat(fromPath, (err, stat) => {
-                    if (err) throw new Error(err.message);
-                    if (stat.isFile() && file.endsWith('.nugg')) {
-                        if (cache[file] && stat.mtimeMs === cache[file].mtimeMs) {
-                            prevParser.results.items.push(...cache[file].items);
-                        } else {
-                            console.log('compiling...', file);
+    //             // Stat the file to see if we have a file or dir
+    //             fs.stat(fromPath, (err, stat) => {
+    //                 if (err) throw new Error(err.message);
+    //                 if (stat.isFile() && file.endsWith('.nugg')) {
+    //                     if (cache[file] && stat.mtimeMs === cache[file].mtimeMs) {
+    //                         prevParser.results.items.push(...cache[file].items);
+    //                     } else {
+    //                         console.log('compiling...', file);
 
-                            const parser = Parser.parsePath(fromPath);
-                            // parser.compile();
-                            if (parser.results.collection !== undefined) {
-                                // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
-                                prevParser.results.collection = parser.results.collection;
-                                Parser.globalCollection = parser.results.collection;
-                            }
-                            prevParser.results.items.push(...parser.results.items);
-                            cache[file] = {
-                                items: parser.results.items,
-                                mtimeMs: stat.mtimeMs,
-                            };
-                        }
-                    } else if (stat.isDirectory() && !file.startsWith('.')) {
-                        Parser.parseDirectoryAsync(fromPath, prevParser, cache, false);
-                    }
-                });
-            }).then(() => {});
+    //                         const parser = Parser.parsePath(fromPath);
+    //                         // parser.parse();
+    //                         if (parser.results.collection !== undefined) {
+    //                             // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
+    //                             prevParser.results.collection = parser.results.collection;
+    //                             Parser.globalCollection = parser.results.collection;
+    //                         }
+    //                         prevParser.results.items.push(...parser.results.items);
+    //                         cache[file] = {
+    //                             items: parser.results.items,
+    //                             mtimeMs: stat.mtimeMs,
+    //                         };
+    //                     }
+    //                 } else if (stat.isDirectory() && !file.startsWith('.')) {
+    //                     Parser.parseDirectoryAsync(fromPath, prevParser, cache, false);
+    //                 }
+    //             });
+    //         }).then(() => {});
 
-            // }
-        } catch (e) {
-            // Catch anything bad that happens
-            console.error("We've thrown! Whoops!", e);
-        }
+    //         // }
+    //     } catch (e) {
+    //         // Catch anything bad that happens
+    //         console.error("We've thrown! Whoops!", e);
+    //     }
 
-        // if ()
-        return prevParser;
-    }
+    //     // if ()
+    //     return prevParser;
+    // }
 
     private init() {
         try {
@@ -407,7 +422,7 @@ export class Parser {
 
             this.tokens = tokens;
 
-            this.compile();
+            this.parse();
 
             return this;
         } catch (err) {
@@ -415,11 +430,11 @@ export class Parser {
         }
     }
 
-    compile() {
+    parse() {
         try {
             for (; this.hasNext; this.next) {
-                this.compileCollection();
-                this.compileItem();
+                this.parseCollection();
+                this.parseItem();
             }
             if (!this.results.collection) {
                 this.results.collection = Parser.globalCollection;
@@ -429,7 +444,7 @@ export class Parser {
         }
     }
 
-    compileCollection() {
+    parseCollection() {
         if (this.has(tokens.Collection)) {
             let features: ParserTypes.RangeOf<ParserTypes.CollectionFeatures> = undefined;
 
@@ -439,7 +454,7 @@ export class Parser {
             let widthToken: ParserTypes.ParsedToken = undefined;
 
             for (; this.has(tokens.Collection) && this.hasNext; this.next) {
-                const collectionFeatures = this.compileCollectionFeatures();
+                const collectionFeatures = this.parseCollectionFeatures();
                 if (collectionFeatures) {
                     features = collectionFeatures;
                 }
@@ -467,13 +482,13 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileCollection', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileCollection');
+                console.error('ERROR', 'blank value returned from: parseCollection', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseCollection');
             }
         }
     }
 
-    compileCollectionFeatures() {
+    parseCollectionFeatures() {
         if (this.has(tokens.CollectionFeatures)) {
             const token = this.current;
             let endToken = undefined;
@@ -481,11 +496,11 @@ export class Parser {
             const collectionFeatures: ParserTypes.RangeOf<ParserTypes.CollectionFeature>[] = [];
 
             for (; this.has(tokens.CollectionFeatures) && Validator.anyUndefined({ token, endToken, collectionFeatures }); this.next) {
-                const collectionfeature = this.compileCollectionFeature();
+                const collectionfeature = this.parseCollectionFeature();
                 if (collectionfeature) {
                     collectionFeatures.push(collectionfeature);
                 }
-                const collectionfeatureLong = this.compileCollectionFeatureLong();
+                const collectionfeatureLong = this.parseCollectionFeatureLong();
                 if (collectionfeatureLong) {
                     collectionFeatures.push(collectionfeatureLong);
                 }
@@ -507,14 +522,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileCollectionFeatures', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileCollectionFeatures');
+                console.error('ERROR', 'blank value returned from: parseCollectionFeatures', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseCollectionFeatures');
             }
         }
         return undefined;
     }
 
-    compileCollectionFeature() {
+    parseCollectionFeature() {
         if (this.has(tokens.CollectionFeature)) {
             const token = this.current;
             let endToken = undefined;
@@ -682,14 +697,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileCollectionFeature', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileCollectionFeature');
+                console.error('ERROR', 'blank value returned from: parseCollectionFeature', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseCollectionFeature');
             }
         }
         return undefined;
     }
 
-    compileCollectionFeatureLong() {
+    parseCollectionFeatureLong() {
         if (this.has(tokens.CollectionFeatureLong)) {
             const token = this.current;
             let endToken = undefined;
@@ -717,17 +732,17 @@ export class Parser {
                     name = this.currentValue;
                     nameToken = this.current;
                 }
-                const expandableAt_ = this.compileCollectionFeatureLongExpandableAt();
+                const expandableAt_ = this.parseCollectionFeatureLongExpandableAt();
                 if (expandableAt_) {
                     expandableAt = expandableAt_;
                 }
 
-                const zindex_ = this.compileCollectionFeatureLongZIndex();
+                const zindex_ = this.parseCollectionFeatureLongZIndex();
                 if (zindex_) {
                     zindex = zindex_;
                 }
 
-                const receiver_ = this.compileGeneralReceiver('calculated');
+                const receiver_ = this.parseGeneralReceiver('calculated');
                 if (receiver_) {
                     receivers.push(receiver_);
                 }
@@ -765,15 +780,15 @@ export class Parser {
                         endToken,
                     };
                 } else {
-                    console.error('ERROR', 'blank value returned from: compileCollectionFeatureLong', validator.undefinedVarNames);
-                    throw new Error('blank value returned from: compileCollectionFeatureLong');
+                    console.error('ERROR', 'blank value returned from: parseCollectionFeatureLong', validator.undefinedVarNames);
+                    throw new Error('blank value returned from: parseCollectionFeatureLong');
                 }
             }
             return undefined;
         }
     }
 
-    compileCollectionFeatureLongExpandableAt() {
+    parseCollectionFeatureLongExpandableAt() {
         if (this.has(tokens.CollectionFeatureLongExpandableAt)) {
             const token = this.current;
             let endToken = undefined;
@@ -866,14 +881,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileCollectionFeatureLongExpandableAt', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileCollectionFeatureLongExpandableAt');
+                console.error('ERROR', 'blank value returned from: parseCollectionFeatureLongExpandableAt', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseCollectionFeatureLongExpandableAt');
             }
         }
         return undefined;
     }
 
-    compileCollectionFeatureLongZIndex() {
+    parseCollectionFeatureLongZIndex() {
         if (this.has(tokens.CollectionFeatureLongZIndex)) {
             let token = undefined;
             let endToken = undefined;
@@ -914,14 +929,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileItemVersionAnchor', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileItemVersionAnchor');
+                console.error('ERROR', 'blank value returned from: parseItemVersionAnchor', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseItemVersionAnchor');
             }
         }
         return undefined;
     }
 
-    compileGeneralColors() {
+    parseGeneralColors() {
         if (this.has(tokens.GeneralColors)) {
             const token = this.current;
             let endToken = undefined;
@@ -929,7 +944,7 @@ export class Parser {
             const colors: ParserTypes.RangeOf<ParserTypes.Color>[] = [];
 
             for (; this.has(tokens.GeneralColors) && Validator.anyUndefined({ token, endToken, colors }); this.next) {
-                const color = this.compileGeneralColor();
+                const color = this.parseGeneralColor();
                 if (color) {
                     colors.push(color);
                 }
@@ -950,14 +965,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from compileGeneralColors:', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileGeneralColors');
+                console.error('ERROR', 'blank value returned from parseGeneralColors:', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseGeneralColors');
             }
         }
         return undefined;
     }
 
-    compileGeneralColor() {
+    parseGeneralColor() {
         if (this.has(tokens.GeneralColor)) {
             const token = this.current;
             let endToken = undefined;
@@ -1047,14 +1062,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileGeneralColor', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileGeneralColor');
+                console.error('ERROR', 'blank value returned from: parseGeneralColor', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseGeneralColor');
             }
         }
         return undefined;
     }
 
-    compileGeneralData(): ParserTypes.RangeOf<ParserTypes.Data> {
+    parseGeneralData(): ParserTypes.RangeOf<ParserTypes.Data> {
         if (this.has(tokens.GeneralData)) {
             let matrix: ParserTypes.RangeOf<ParserTypes.DataRow>[] = [];
             let token = undefined;
@@ -1066,7 +1081,7 @@ export class Parser {
                     token = this.current;
                     continue;
                 }
-                const row = this.compileGeneralDataRow();
+                const row = this.parseGeneralDataRow();
                 if (row) {
                     matrix.push(row);
                 }
@@ -1084,15 +1099,15 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileGeneralData', validator.undefinedVarNames);
+                console.error('ERROR', 'blank value returned from: parseGeneralData', validator.undefinedVarNames);
 
-                throw new Error('blank value returned from: compileGeneralData');
+                throw new Error('blank value returned from: parseGeneralData');
             }
         }
         return undefined;
     }
 
-    compileGeneralDataRow(): ParserTypes.RangeOf<ParserTypes.DataRow> {
+    parseGeneralDataRow(): ParserTypes.RangeOf<ParserTypes.DataRow> {
         if (this.has(tokens.GeneralDataRow)) {
             const token = this.current;
             let pixels: ParserTypes.RangeOf<ParserTypes.Pixel>[] = [];
@@ -1104,7 +1119,7 @@ export class Parser {
                     this.back();
                     break;
                 }
-                const pixel = this.compileGeneralDataPixel();
+                const pixel = this.parseGeneralDataPixel();
 
                 if (pixel) {
                     pixels.push(pixel);
@@ -1120,15 +1135,15 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compilePixel', validator.undefinedVarNames);
+                console.error('ERROR', 'blank value returned from: parsePixel', validator.undefinedVarNames);
 
-                throw new Error('blank value returned from: compilePixel');
+                throw new Error('blank value returned from: parsePixel');
             }
         }
         return undefined;
     }
 
-    compileGeneralDataPixel() {
+    parseGeneralDataPixel() {
         if (this.has(tokens.GeneralDataRowPixel)) {
             const token = this.current;
             let endToken = this.current;
@@ -1197,15 +1212,15 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compilePixel', validator.undefinedVarNames);
+                console.error('ERROR', 'blank value returned from: parsePixel', validator.undefinedVarNames);
 
-                throw new Error('blank value returned from: compilePixel');
+                throw new Error('blank value returned from: parsePixel');
             }
         }
         return undefined;
     }
 
-    compileGeneralReceiver(type: 'calculated' | 'static') {
+    parseGeneralReceiver(type: 'calculated' | 'static') {
         if (this.has(tokens.GeneralReceiver)) {
             const token = this.current;
             let endToken = undefined;
@@ -1307,14 +1322,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileGeneralReceiver', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileGeneralReceiver');
+                console.error('ERROR', 'blank value returned from: parseGeneralReceiver', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseGeneralReceiver');
             }
         }
         return undefined;
     }
 
-    compileItem() {
+    parseItem() {
         if (this.has(tokens.Item)) {
             const token = this.current;
             let endToken = undefined;
@@ -1346,11 +1361,11 @@ export class Parser {
                 if (this.has(tokens.ItemOpenDefaultOrItem)) {
                     isDefault = this.currentValue === 'default';
                 }
-                const colors_ = this.compileGeneralColors();
+                const colors_ = this.parseGeneralColors();
                 if (colors_) {
                     colors = colors_;
                 }
-                const versions_ = this.compileItemVersions();
+                const versions_ = this.parseItemVersions();
                 if (versions_) {
                     versions = versions_;
                 }
@@ -1384,14 +1399,14 @@ export class Parser {
                     endToken,
                 });
             } else {
-                console.error('ERROR', 'blank value returned from: compileItem', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileItem');
+                console.error('ERROR', 'blank value returned from: parseItem', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseItem');
             }
         }
         return undefined;
     }
 
-    compileItemVersions() {
+    parseItemVersions() {
         if (this.has(tokens.ItemVersions)) {
             const token = this.current;
             let endToken = undefined;
@@ -1399,7 +1414,7 @@ export class Parser {
             const versions: ParserTypes.RangeOf<ParserTypes.Version>[] = [];
 
             for (; this.has(tokens.ItemVersions) && Validator.anyUndefined({ token, endToken, versions }); this.next) {
-                const version = this.compileItemVersion();
+                const version = this.parseItemVersion();
                 if (version) {
                     versions.push(version);
                 }
@@ -1420,14 +1435,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from compileGeneralColors:', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileGeneralColors');
+                console.error('ERROR', 'blank value returned from parseGeneralColors:', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseGeneralColors');
             }
         }
         return undefined;
     }
 
-    compileItemVersion() {
+    parseItemVersion() {
         if (this.has(tokens.ItemVersion)) {
             let data: ParserTypes.RangeOf<ParserTypes.Data> = undefined;
             let radii: ParserTypes.RangeOf<ParserTypes.RLUD<number>> = undefined;
@@ -1459,26 +1474,26 @@ export class Parser {
                     name = this.currentValue;
                     nameToken = this.current;
                 }
-                const radii_ = this.compileItemVersionRadii();
+                const radii_ = this.parseItemVersionRadii();
                 if (radii_) {
                     radii = radii_;
                 }
                 // Logger.out(this.current.token.scopes);
-                const expanders_ = this.compileItemVersionExpanders();
+                const expanders_ = this.parseItemVersionExpanders();
                 if (expanders_) {
                     expanders = expanders_;
                 }
 
-                const anchor_ = this.compileItemVersionAnchor();
+                const anchor_ = this.parseItemVersionAnchor();
                 if (anchor_) {
                     anchor = anchor_;
                 }
-                const generalData = this.compileGeneralData();
+                const generalData = this.parseGeneralData();
                 if (generalData) {
                     data = generalData;
                 }
 
-                const receiver_ = this.compileGeneralReceiver('static');
+                const receiver_ = this.parseGeneralReceiver('static');
                 if (receiver_) {
                     receivers.push(receiver_);
                 }
@@ -1513,14 +1528,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileItemVersion', validator.undefinedVarNames);
+                console.error('ERROR', 'blank value returned from: parseItemVersion', validator.undefinedVarNames);
 
-                throw new Error('blank value returned from: compileItemVersion');
+                throw new Error('blank value returned from: parseItemVersion');
             }
         }
     }
 
-    compileItemVersionRadii() {
+    parseItemVersionRadii() {
         if (this.has(tokens.ItemVersionRadii)) {
             const token = this.current;
             let endToken = undefined;
@@ -1613,14 +1628,14 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileItemVersionRadii', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileItemVersionRadii');
+                console.error('ERROR', 'blank value returned from: parseItemVersionRadii', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseItemVersionRadii');
             }
         }
         return undefined;
     }
 
-    compileItemVersionExpanders() {
+    parseItemVersionExpanders() {
         if (this.has(tokens.ItemVersionExpanders)) {
             const token = this.current;
             let endToken = undefined;
@@ -1713,13 +1728,13 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileItemVersionExpanders', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileItemVersionExpanders');
+                console.error('ERROR', 'blank value returned from: parseItemVersionExpanders', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseItemVersionExpanders');
             }
         }
         return undefined;
     }
-    compileItemVersionAnchor() {
+    parseItemVersionAnchor() {
         if (this.has(tokens.ItemVersionAnchor)) {
             const token = this.current;
             let endToken = undefined;
@@ -1765,8 +1780,8 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: compileItemVersionAnchor', validator.undefinedVarNames);
-                throw new Error('blank value returned from: compileItemVersionAnchor');
+                console.error('ERROR', 'blank value returned from: parseItemVersionAnchor', validator.undefinedVarNames);
+                throw new Error('blank value returned from: parseItemVersionAnchor');
             }
         }
         return undefined;

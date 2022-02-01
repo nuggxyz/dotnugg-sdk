@@ -1,13 +1,10 @@
 import invariant from 'tiny-invariant';
 
-import { Transformer as TransformerTypes } from '../types/transformer';
+import { Transform as TransformTypes } from '../types/transform';
 import { Encoder as EncoderTypes } from '../types/encoder';
-import { dotnugg } from '../..';
 
-import { Parser } from './Parser';
-
-export class Transformer {
-    input: TransformerTypes.Document;
+export class Transform {
+    input: TransformTypes.Document;
     output: EncoderTypes.Document;
 
     featureMap: Dictionary<uint8> = {};
@@ -17,32 +14,32 @@ export class Transformer {
     sortedFeatureStrings: string[] = [];
     sortedFeatureUints: uint8[] = [];
 
-    private constructor(input: TransformerTypes.Document) {
+    private constructor(input: TransformTypes.Document) {
         this.input = input;
 
         this.output = {
             collection: this.input.collection ? this.transformCollection(this.input.collection) : undefined,
-            items: this.input.items.map((x) => new ItemTransformer(this).transformItem(x)),
+            items: this.input.items.map((x) => new ItemTransform(this).transformItem(x)),
         };
     }
-    public static fromObject(obj: TransformerTypes.Document) {
-        return new Transformer(obj);
+    public static fromObject(obj: TransformTypes.Document) {
+        return new Transform(obj);
     }
     public static fromString(json: string) {
-        return new Transformer(JSON.parse(json));
+        return new Transform(JSON.parse(json));
     }
 
-    public static fromParser(parser: Parser) {
-        return new Transformer(JSON.parse(parser.json));
-    }
+    // public static fromParser(parser: dotnugg.parser) {
+    //     return new Transform(JSON.parse(parser.json));
+    // }
 
-    transformCollection(input: TransformerTypes.Collection): EncoderTypes.Collection {
+    transformCollection(input: TransformTypes.Collection): EncoderTypes.Collection {
         invariant(input !== undefined, 'UND');
         Object.entries(input.features)
             .reverse()
             .map((args, i) => {
                 this.featureMap[args[0]] = i;
-                this.defaultLayerMap[args[0]] = new ItemTransformer(this).transformLevel(args[1].zindex as TransformerTypes.Level) - 4;
+                this.defaultLayerMap[args[0]] = new ItemTransform(this).transformLevel(args[1].zindex as TransformTypes.Level) - 4;
                 // console.log(args[0], this.defaultLayerMap[args[0]].toString());
                 return args;
             })
@@ -56,20 +53,20 @@ export class Transformer {
         };
     }
 
-    transformCoordinate(input: TransformerTypes.Coordinate): EncoderTypes.Coordinate {
+    transformCoordinate(input: TransformTypes.Coordinate): EncoderTypes.Coordinate {
         return {
             x: input.x,
             y: input.y,
         };
     }
-    transformRlud(input: TransformerTypes.Rlud): EncoderTypes.Rlud {
+    transformRlud(input: TransformTypes.Rlud): EncoderTypes.Rlud {
         return {
             exists: input.d != 0 || input.l != 0 || input.r != 0 || input.u != 0,
             ...input,
         };
     }
 
-    transformReceiver(input: TransformerTypes.Receiver): EncoderTypes.Receiver {
+    transformReceiver(input: TransformTypes.Receiver): EncoderTypes.Receiver {
         return {
             xorZindex: input.a.offset, // zindex or x
             yorYoffset: input.b.offset + (input.type === 'calculated' && input.b.direction === '-' ? 32 : 0), // yoffset or y
@@ -77,18 +74,18 @@ export class Transformer {
             calculated: input.type === 'calculated',
         };
     }
-    transformReceivers(input: TransformerTypes.Receiver[]): EncoderTypes.Receiver[] {
+    transformReceivers(input: TransformTypes.Receiver[]): EncoderTypes.Receiver[] {
         return input.map((x) => this.transformReceiver(x));
     }
 
-    transformLevelNullable(input: TransformerTypes.LevelNullable): EncoderTypes.uint8 {
-        return input == null ? 0 : new ItemTransformer(this).transformLevel(input);
+    transformLevelNullable(input: TransformTypes.LevelNullable): EncoderTypes.uint8 {
+        return input == null ? 0 : new ItemTransform(this).transformLevel(input);
     }
 
-    transformMatrixPixel(input: TransformerTypes.MatrixPixel[]): uint8[] {
+    transformMatrixPixel(input: TransformTypes.MatrixPixel[]): uint8[] {
         return input.map((x) => +x.label);
     }
-    rgba2hex(orig: string): TransformerTypes.Rgba {
+    rgba2hex(orig: string): TransformTypes.Rgba {
         const res = orig.split('(')[1].split(')')[0].split(',');
 
         // var a,
@@ -117,20 +114,20 @@ export class Transformer {
     }
 }
 
-export class ItemTransformer {
+export class ItemTransform {
     newColors: Dictionary<number> = {};
     feature?: string;
-    transformer: Transformer;
+    transformer: Transform;
 
-    constructor(transformer: Transformer) {
+    constructor(transformer: Transform) {
         this.transformer = transformer;
     }
 
     // public get init() {
-    //     return new ItemTransformer();
+    //     return new ItemTransform();
     // }
 
-    public transformItem(input: TransformerTypes.Item): EncoderTypes.Item {
+    public transformItem(input: TransformTypes.Item): EncoderTypes.Item {
         this.feature = input.feature;
         const fileName = input.fileName.split('/')[input.fileName.split('/').length - 1];
         const folderName = input.fileName.split('/')[input.fileName.split('/').length - 2];
@@ -151,7 +148,7 @@ export class ItemTransformer {
         };
     }
 
-    transformLevel(input: TransformerTypes.Level): EncoderTypes.uint8 {
+    transformLevel(input: TransformTypes.Level): EncoderTypes.uint8 {
         invariant(input.direction == '-' || input.direction == '+', 'TRANSLEV:DIR');
         let val = input.direction == '+' ? input.offset : input.offset * -1;
         if (val == 100) {
@@ -167,7 +164,7 @@ export class ItemTransformer {
         return val + 4;
     }
 
-    transformVersion(input: TransformerTypes.Version): EncoderTypes.Version {
+    transformVersion(input: TransformTypes.Version): EncoderTypes.Version {
         return {
             anchor: this.transformer.transformCoordinate(input.anchor),
             expanders: this.transformer.transformRlud(input.expanders),
@@ -181,24 +178,24 @@ export class ItemTransformer {
         };
     }
 
-    transformVersions(input: Dictionary<TransformerTypes.Version>): EncoderTypes.Version[] {
+    transformVersions(input: Dictionary<TransformTypes.Version>): EncoderTypes.Version[] {
         return Object.values(input).map((x) => this.transformVersion(x));
     }
-    transformPixels(input: Dictionary<TransformerTypes.Pixel>): EncoderTypes.Pixel[] {
+    transformPixels(input: Dictionary<TransformTypes.Pixel>): EncoderTypes.Pixel[] {
         return Object.entries(input).map(([k, v], i) => {
             this.newColors[k] = i + 1;
             return this.transformPixel(v);
         });
     }
 
-    transformPixel(input: TransformerTypes.Pixel): EncoderTypes.Pixel {
+    transformPixel(input: TransformTypes.Pixel): EncoderTypes.Pixel {
         return {
             rgba: this.transformer.rgba2hex(input.rgba),
             zindex: this.transformLevel(input.zindex),
         };
     }
 
-    transformMatrix(input: TransformerTypes.Matrix): EncoderTypes.Group[] {
+    transformMatrix(input: TransformTypes.Matrix): EncoderTypes.Group[] {
         let res: EncoderTypes.Group[] = [];
         let currlen = 0;
         let lastkey = this.newColors[input.matrix[0][0].label];

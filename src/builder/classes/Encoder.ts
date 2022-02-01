@@ -9,7 +9,7 @@ import { Compiler as CompilerTypes } from '../types';
 import { dotnugg } from '../..';
 import { DotnuggV1Storage, DotnuggV1Storage__factory } from '../../typechain';
 
-import { Transformer } from './Transformer';
+import { Transform } from './Transform';
 import { Builder } from './Builder';
 
 interface func {
@@ -20,116 +20,7 @@ interface func {
 }
 
 export class Encoder {
-    output: EncoderTypes.EncoderOutput[] = [];
-
-    stats: EncoderTypes.Stats = { features: {} };
-
-    outputByItem: EncoderTypes.OutputByItem = {};
-    outputByItemArray: Dictionary<BigNumber[][]> = {};
-
-    ouputByFeatureHex: BigNumber[][][] = [];
-
-    ouputByFeaturePlain: BigNumber[][] = [];
-    unbrokenArray: BigNumber[][] = [];
-
-    bulkupload: Promise<BytesLike>;
-
-    encoded: BytesLike;
-    compressed: BytesLike;
     static fileHeader: CompilerTypes.Byter = { dat: 0x420690_01, bit: 32, nam: 'nuggcheck' };
-
-    constructor(transformer: Transformer) {
-        const input = transformer.output;
-
-        for (var i = 0; i < 8; i++) {
-            this.outputByItemArray[i] = [];
-            this.outputByItem[i] = {};
-            this.unbrokenArray[i] = [];
-
-            this.ouputByFeatureHex[i] = [];
-            this.ouputByFeaturePlain[i] = [];
-        }
-
-        const res = input.items.map((x: dotnugg.types.compile.Encoder.Item) => {
-            const item = Encoder.encodeItem(x);
-
-            const bet = Encoder.strarr(item.bits);
-
-            const bu = Builder.breakup(bet);
-
-            const res = { ...item, hex: bu, hexMocked: dotnugg.Matrix.mockHexArray(bu) };
-
-            if (this.stats.features[x.feature] === undefined) {
-                this.stats.features[x.feature] = { name: x.folderName, amount: 0 };
-            }
-            this.unbrokenArray[x.feature].push(bet);
-
-            this.outputByItem[x.feature][x.id] = res;
-            this.outputByItemArray[x.feature].push(res.hex);
-
-            this.ouputByFeatureHex[x.feature].push(res.hex);
-            this.ouputByFeaturePlain[x.feature].push(
-                BigNumber.from(new ethers.utils.AbiCoder().encode(['uint256[]'], [res.hex.map((x) => x._hex)])),
-            );
-
-            this.stats.features[x.feature].amount++;
-
-            return res;
-        });
-
-        this.compressed = new AbiCoder().encode(
-            [ethers.utils.ParamType.fromString('bytes[]')],
-            [
-                [
-                    Builder.squish(this.unbrokenArray[0]),
-                    Builder.squish(this.unbrokenArray[1]),
-                    Builder.squish(this.unbrokenArray[2]),
-                    Builder.squish(this.unbrokenArray[3]),
-                    Builder.squish(this.unbrokenArray[4]),
-                    Builder.squish(this.unbrokenArray[5]),
-                    Builder.squish(this.unbrokenArray[6]),
-                    Builder.squish(this.unbrokenArray[7]),
-                ],
-            ],
-        );
-
-        this.encoded = new AbiCoder().encode(
-            [ethers.utils.ParamType.fromString('uint256[][][]')],
-            [
-                [
-                    this.outputByItemArray[0],
-                    this.outputByItemArray[1],
-                    this.outputByItemArray[2],
-                    this.outputByItemArray[3],
-                    this.outputByItemArray[4],
-                    this.outputByItemArray[5],
-                    this.outputByItemArray[6],
-                    this.outputByItemArray[7],
-                ],
-            ],
-        );
-
-        this.bulkupload = (
-            new ethers.Contract(
-                ethers.constants.AddressZero,
-                DotnuggV1Storage__factory.abi,
-                ethers.getDefaultProvider(),
-            ) as DotnuggV1Storage
-        ).populateTransaction
-            .unsafeBulkStore([
-                this.outputByItemArray[0],
-                this.outputByItemArray[1],
-                this.outputByItemArray[2],
-                this.outputByItemArray[3],
-                this.outputByItemArray[4],
-                this.outputByItemArray[5],
-                this.outputByItemArray[6],
-                this.outputByItemArray[7],
-            ])
-            .then((tx) => tx.data);
-
-        this.output = res;
-    }
 
     public static init() {}
 
