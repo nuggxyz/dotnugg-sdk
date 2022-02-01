@@ -6,11 +6,9 @@
         "esModuleInterop": true,
         "resolveJsonModule": true,
         "downlevelIteration": true,
-        "outDir": "./build" /* Redirect output structure to the directory. */,
-        //   "rootDir": "./src"
+        "outDir": "./build",
         "sourceMap": true
     },
-
     "include": ["src/**/*"],
     "exclude": []
 }

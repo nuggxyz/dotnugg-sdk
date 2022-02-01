@@ -1,12 +1,13 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
     "version": "0.1.0",
-    "description": "A sdk for working with dotnugg files written in typescript",
-    "main": "./build/index.ts",
+    "description": "sdk for working with dotnugg files written in typescript",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
     "author": "dub6ix <dub6ix@nugg.xyz>",
     "private": false,
+    "main": "./build/index.js",
+    "typings": "./index.d.ts",
     "files": [
         "build",
         "LICENSE",
