@@ -4,7 +4,6 @@ import * as path from 'path';
 
 import * as oniguruma from 'vscode-oniguruma';
 import * as vsctm from 'vscode-textmate';
-import * as plist from 'plist';
 import * as dng from '@nuggxyz/dotnugg-grammar';
 
 // Create a registry that can create a grammar from a scope name.
@@ -29,32 +28,8 @@ const registry = () =>
             });
 
             return vsctm.parseRawGrammar(await dng.asPlist());
-
-            // return readJSON2plist(dotnuggPath)
-            //     .then((data) => {
-            //     })
-            //     .catch((e) => {
-            //         throw new Error(e);
-            //     });
         },
     });
-
-/**
- * Read a json file and convert to plist as a promise
- */
-function readJSON2plist(path: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-        fs.readFile(path, (error, data) => {
-            if (error) {
-                reject(error);
-            } else {
-                const js_g = data.toString();
-                const pl_g = plist.build(JSON.parse(js_g));
-                resolve(pl_g);
-            }
-        });
-    });
-}
 
 export class Config {
     /**

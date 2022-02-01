@@ -36,10 +36,6 @@ export class Builder {
         return new Builder(Transform.fromString(json));
     }
 
-    // public static fromParser(parser: dotnugg.parser) {
-    //     return new Builder(Transform.fromParser(parser));
-    // }
-
     protected constructor(transform: Transform) {
         const input = transform.output;
 
@@ -59,7 +55,7 @@ export class Builder {
 
             const bu = Builder.breakup(bet);
 
-            const res = { ...item, hex: bu, hexMocked: dotnugg.Matrix.mockHexArray(bu) };
+            const res = { ...item, hex: bu, hexMocked: bu };
 
             if (this.stats.features[x.feature] === undefined) {
                 this.stats.features[x.feature] = { name: x.folderName, amount: 0 };
