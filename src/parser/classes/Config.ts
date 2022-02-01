@@ -1,19 +1,21 @@
 /* eslint-disable prefer-const */
 import * as fs from 'fs';
+import * as path from 'path';
 
 import * as oniguruma from 'vscode-oniguruma';
 import * as vsctm from 'vscode-textmate';
 import * as plist from 'plist';
+import * as dng from '@nuggxyz/dotnugg-grammar';
 
 // Create a registry that can create a grammar from a scope name.
-const registry = (onigPath: string, dotnuggPath: string) =>
+const registry = () =>
     new vsctm.Registry({
         onigLib: Promise.resolve({
             createOnigScanner: (sources) => new oniguruma.OnigScanner(sources),
             createOnigString: (str) => new oniguruma.OnigString(str),
         }),
         loadGrammar: async () => {
-            const wasm = fs.readFileSync(onigPath).buffer;
+            const wasm = fs.readFileSync(path.join(require.resolve('vscode-oniguruma'), '../onig.wasm')).buffer;
 
             await oniguruma.loadWASM(wasm).then(() => {
                 return {
@@ -26,13 +28,14 @@ const registry = (onigPath: string, dotnuggPath: string) =>
                 };
             });
 
-            return readJSON2plist(dotnuggPath)
-                .then((data) => {
-                    return vsctm.parseRawGrammar(data);
-                })
-                .catch((e) => {
-                    throw new Error(e);
-                });
+            return vsctm.parseRawGrammar(await dng.asPlist());
+
+            // return readJSON2plist(dotnuggPath)
+            //     .then((data) => {
+            //     })
+            //     .catch((e) => {
+            //         throw new Error(e);
+            //     });
         },
     });
 
@@ -61,8 +64,8 @@ export class Config {
     static _grammer: vsctm.IGrammar;
     static _registry: vsctm.Registry;
 
-    static async init(onigPath: string, dotnuggPath: string) {
-        Config._registry = registry(onigPath, dotnuggPath);
+    static async init() {
+        Config._registry = registry();
 
         const tmp = await Config._registry.loadGrammar('source.dotnugg');
         if (tmp !== null) Config._grammer = tmp;

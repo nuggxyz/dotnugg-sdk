@@ -5,3 +5,4 @@ archive
 typechain
 src/_generated
 archive
+yarn-error.log

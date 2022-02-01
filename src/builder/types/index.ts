@@ -1,8 +1,7 @@
 import { Encoder } from './encoder';
-import { Transformer } from './transformer';
-import { Parser } from './parser';
+import { Transform } from './transform';
 
-export {Encoder, Transformer, Parser}
+export {Encoder, Transform}
 
 
 export namespace Compiler {
