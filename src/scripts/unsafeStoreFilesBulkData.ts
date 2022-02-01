@@ -4,11 +4,11 @@ import * as path from 'path';
 import { dotnugg } from '..';
 
 const main = async (repo: string, solFileDir: string) => {
-    await dotnugg.compile.Compiler.init();
+    await dotnugg.compiler.init();
 
-    const res = dotnugg.compile.Compiler.compileDirectoryWithCache(repo);
+    const res = dotnugg.compiler.compileDirectoryWithCache(repo);
 
-    const data = await res.encoder.bulkupload;
+    const data = await res.bulkupload;
 
     var dir = path.join(solFileDir);
 

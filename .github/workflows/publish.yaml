@@ -1,29 +1,20 @@
-# name: Node.js CI
-
+# name: Publish to npm
 # on:
-#     pull_request:
-#         branches:
-#             - main
-
+#     release:
+#         types: [created]
 # jobs:
 #     build:
 #         runs-on: ubuntu-latest
-
-#         strategy:
-#             matrix:
-#                 node-version:
-#                     - 16.x
-#                 # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 #         steps:
 #             - uses: actions/checkout@v2
-#             - name: Use Node.js ${{ matrix.node-version }}
-#               uses: actions/setup-node@v2
+#             # Setup .npmrc file to publish to npm
+#             - uses: actions/setup-node@v2
 #               with:
-#                   node-version: ${{ matrix.node-version }}
-#                   cache: 'npm'
-#             - run: npm install -g yarn
-#             - run: yarn install --frozen-lockfile
-#             - run: yarn build
-#             - uses: JS-DevTools/npm-publish@v1
-#               with:
-#                   token: ${{ secrets.NPM_TOKEN }}
+#                   node-version: '17.x'
+#                   registry-url: 'https://registry.npmjs.org'
+#                   # Defaults to the user or organization that owns the workflow file
+#                   scope: '@nuggxyz'
+#             - run: yarn
+#             - run: yarn publish --access public
+#               env:
+#                   NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTOMATION_KEY }}

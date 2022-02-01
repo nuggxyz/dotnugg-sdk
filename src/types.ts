@@ -1,4 +1,6 @@
-import * as compile from './compile/types';
-import * as log from './log/types';
+import * as compiler from './builder/types';
+import * as logger from './logger/types';
+import * as parser from './parser/types';
+import * as builder from './builder/types';
 
-export { compile, log };
+export { parser, compiler, logger, builder };

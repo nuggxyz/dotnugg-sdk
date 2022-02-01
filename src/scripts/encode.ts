@@ -1,9 +1,9 @@
 import { dotnugg } from '..';
 
 const main = async (repo: string) => {
-    await dotnugg.compile.Compiler.init();
+    await dotnugg.compiler.init();
 
-    const enc = dotnugg.compile.Compiler.compileDirectoryWithCache(repo).encoder;
+    const enc = dotnugg.compiler.compileDirectoryWithCache(repo);
 
     console.log('encoded:    ', (enc.encoded.toString().length / 1000).toFixed(3), 'KB');
     console.log('compressed: ', (enc.compressed.toString().length / 1000).toFixed(3), 'KB');

@@ -1,41 +1,48 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "A sdk for working with dotnugg files written in typescript",
-    "main": "index.ts",
+    "main": "./build/index.ts",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
     "author": "dub6ix <dub6ix@nugg.xyz>",
+    "private": false,
+    "files": [
+        "build",
+        "LICENSE",
+        "src"
+    ],
     "scripts": {
-        "build": "yarn install && tsc",
+        "build:clean": "rm -rf build && yarn build",
+        "build": "yarn install && yarn typechain && tsc",
         "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs",
         "generate-uploader": "tsc && node ./build/scripts/unsafeStoreFilesBulkData.js",
         "encode": "tsc && node ./build/scripts/encode.js",
         "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'"
     },
     "dependencies": {
-        "bluebird": "^3.7.2",
-        "ethers": "^5.5.2",
+        "@ethersproject/abi": "^5.0.0",
+        "@ethersproject/bytes": "^5.0.0",
+        "@ethersproject/providers": "^5.0.0",
+        "@nuggxyz/dotnugg-grammar": "^0.1.5",
+        "ethers": "^5.5.4",
         "minimist": "^1.2.5",
-        "plist": "^3.0.4",
         "tiny-invariant": "^1.2.0",
-        "ts-node": "^10.4.0",
         "vscode-oniguruma": "^1.5.1",
         "vscode-textmate": "^5.4.1"
     },
     "devDependencies": {
-        "@typechain/ethers-v5": "^8.0.5",
-        "@types/bluebird": "^3.5.36",
+        "@babel/core": "^7.16.12",
+        "@typechain/ethers-v5": "^9.0.0",
         "@types/fs-extra": "^9.0.13",
-        "@types/plist": "^3.0.2",
         "@types/vscode": "^1.62.0",
         "@typescript-eslint/eslint-plugin": "^5.3.1",
         "@typescript-eslint/parser": "^5.3.1",
         "eslint": "^8.2.0",
-        "eslint-config-universe": "^8.0.0",
+        "eslint-config-universe": "^10.0.0",
         "eslint-plugin-import": "^2.25.3",
         "prettier": "^2.4.1",
-        "typechain": "^6.1.0",
+        "typechain": "^7.0.0",
         "typescript": "^4.4.4"
     }
 }
