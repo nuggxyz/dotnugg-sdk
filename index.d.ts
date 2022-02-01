@@ -1,3 +1,5 @@
+declare module '@nuggxyz/dotnugg-sdk' {}
+
 type uint8 = number;
 type uint12 = number;
 type uint16 = number;

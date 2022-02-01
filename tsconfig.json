@@ -7,8 +7,11 @@
         "resolveJsonModule": true,
         "downlevelIteration": true,
         "outDir": "./build",
-        "sourceMap": true
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true
+        // "sourceMap": true
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "index.d.ts"],
     "exclude": []
 }
