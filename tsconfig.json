@@ -10,7 +10,6 @@
         "sourceMap": true,
         "declaration": true,
         "declarationMap": true
-        // "sourceMap": true
     },
     "include": ["src/**/*", "index.d.ts"],
     "exclude": []

@@ -5,9 +5,10 @@ import * as path from 'path';
 import * as vsctm from 'vscode-textmate';
 import invariant from 'tiny-invariant';
 
+import * as TransformTypes from '../../builder/types/TransformTypes';
 import tokens from '../constants/tokens';
 import { dotnugg } from '../..';
-import { Parser as ParserTypes } from '../types';
+import * as ParserTypes from '../types/ParserTypes';
 
 import { Validator } from './Validator';
 import { Config } from './Config';
@@ -225,11 +226,11 @@ export class Parser {
         return res;
     }
 
-    public static parseDirectoryCheckCache(dir: string): dotnugg.types.builder.Transform.Document {
+    public static parseDirectoryCheckCache(dir: string): TransformTypes.Document {
         let files = this.getFilesInDir(dir);
 
         let cacheUpdated = false;
-        let cache: { [_: string]: { items: dotnugg.types.builder.Transform.Item[]; mtimeMs: number } } = {};
+        let cache: { [_: string]: { items: TransformTypes.Item[]; mtimeMs: number } } = {};
 
         try {
             let rawdata = fs.readFileSync(path.join(dir, 'dotnugg-cache.json'), 'utf8');
@@ -242,7 +243,7 @@ export class Parser {
         let collectionComp = false;
         let parsedamt = 0;
         let loadedamt = 0;
-        let parserResults: dotnugg.types.builder.Transform.Document = { collection: undefined, items: [] };
+        let parserResults: TransformTypes.Document = { collection: undefined, items: [] };
 
         let fileKeys = Object.keys(files);
 
@@ -260,7 +261,7 @@ export class Parser {
                     console.log('compiling...', files[fileKeys[i]].path);
                     const tmp0 = this.parsePath(files[fileKeys[i]].path);
                     const tmp = tmp0.json;
-                    const tmp2 = JSON.parse(tmp) as dotnugg.types.builder.Transform.Document;
+                    const tmp2 = JSON.parse(tmp) as TransformTypes.Document;
 
                     parserResults.items.push(
                         ...tmp2.items

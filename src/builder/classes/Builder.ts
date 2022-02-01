@@ -1,11 +1,10 @@
 import { BigNumber, BytesLike, ethers } from 'ethers';
 import { AbiCoder, keccak256 } from 'ethers/lib/utils';
 
-import { dotnugg } from '../..';
 import { DotnuggV1Storage, DotnuggV1Storage__factory } from '../../typechain';
-import { Compiler as CompilerTypes } from '../types';
-import { Encoder as EncoderTypes } from '../types';
-import { Transform as TransformTypes } from '../types/transform';
+import * as TransformTypes from '../types/TransformTypes';
+import * as EncoderTypes from '../types/EncoderTypes';
+import * as BuilderTypes from '../types/BuilderTypes';
 
 import { Transform } from './Transform';
 import { Encoder } from './Encoder';
@@ -16,7 +15,7 @@ export class Builder {
     stats: EncoderTypes.Stats = { features: {} };
 
     outputByItem: EncoderTypes.OutputByItem = {};
-    outputByItemArray: Dictionary<BigNumber[][]> = {};
+    outputByItemArray: BuilderTypes.Dictionary<BigNumber[][]> = {};
 
     ouputByFeatureHex: BigNumber[][][] = [];
 
@@ -48,7 +47,7 @@ export class Builder {
             this.ouputByFeaturePlain[i] = [];
         }
 
-        const res = input.items.map((x: dotnugg.types.compiler.Encoder.Item) => {
+        const res = input.items.map((x: EncoderTypes.Item) => {
             const item = Encoder.encodeItem(x);
 
             const bet = Encoder.strarr(item.bits);
@@ -144,7 +143,7 @@ export class Builder {
     }
 
     public static squish(input: BigNumber[]): BytesLike {
-        let working: CompilerTypes.Byter[] = [];
+        let working: EncoderTypes.Byter[] = [];
         working.push({
             dat: input.length,
             bit: 8,

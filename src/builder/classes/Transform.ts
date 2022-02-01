@@ -1,18 +1,19 @@
 import invariant from 'tiny-invariant';
 
-import { Transform as TransformTypes } from '../types/transform';
-import { Encoder as EncoderTypes } from '../types/encoder';
+import * as TransformTypes from '../types/TransformTypes';
+import * as EncoderTypes from '../types/EncoderTypes';
+import * as BuilderTypes from '../types/BuilderTypes';
 
 export class Transform {
     input: TransformTypes.Document;
     output: EncoderTypes.Document;
 
-    featureMap: Dictionary<uint8> = {};
-    calculatedReceiversByFeature: Dictionary<EncoderTypes.Receiver[]> = {};
+    featureMap: BuilderTypes.Dictionary<BuilderTypes.uint8> = {};
+    calculatedReceiversByFeature: BuilderTypes.Dictionary<EncoderTypes.Receiver[]> = {};
 
-    defaultLayerMap: Dictionary<uint8> = {};
+    defaultLayerMap: BuilderTypes.Dictionary<BuilderTypes.uint8> = {};
     sortedFeatureStrings: string[] = [];
-    sortedFeatureUints: uint8[] = [];
+    sortedFeatureUints: BuilderTypes.uint8[] = [];
 
     private constructor(input: TransformTypes.Document) {
         this.input = input;
@@ -78,11 +79,11 @@ export class Transform {
         return input.map((x) => this.transformReceiver(x));
     }
 
-    transformLevelNullable(input: TransformTypes.LevelNullable): EncoderTypes.uint8 {
+    transformLevelNullable(input: TransformTypes.LevelNullable): BuilderTypes.uint8 {
         return input == null ? 0 : new ItemTransform(this).transformLevel(input);
     }
 
-    transformMatrixPixel(input: TransformTypes.MatrixPixel[]): uint8[] {
+    transformMatrixPixel(input: TransformTypes.MatrixPixel[]): BuilderTypes.uint8[] {
         return input.map((x) => +x.label);
     }
     rgba2hex(orig: string): TransformTypes.Rgba {
@@ -115,7 +116,7 @@ export class Transform {
 }
 
 export class ItemTransform {
-    newColors: Dictionary<number> = {};
+    newColors: BuilderTypes.Dictionary<number> = {};
     feature?: string;
     transformer: Transform;
 
@@ -148,7 +149,7 @@ export class ItemTransform {
         };
     }
 
-    transformLevel(input: TransformTypes.Level): EncoderTypes.uint8 {
+    transformLevel(input: TransformTypes.Level): BuilderTypes.uint8 {
         invariant(input.direction == '-' || input.direction == '+', 'TRANSLEV:DIR');
         let val = input.direction == '+' ? input.offset : input.offset * -1;
         if (val == 100) {
@@ -178,10 +179,10 @@ export class ItemTransform {
         };
     }
 
-    transformVersions(input: Dictionary<TransformTypes.Version>): EncoderTypes.Version[] {
+    transformVersions(input: BuilderTypes.Dictionary<TransformTypes.Version>): EncoderTypes.Version[] {
         return Object.values(input).map((x) => this.transformVersion(x));
     }
-    transformPixels(input: Dictionary<TransformTypes.Pixel>): EncoderTypes.Pixel[] {
+    transformPixels(input: BuilderTypes.Dictionary<TransformTypes.Pixel>): EncoderTypes.Pixel[] {
         return Object.entries(input).map(([k, v], i) => {
             this.newColors[k] = i + 1;
             return this.transformPixel(v);
