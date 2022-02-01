@@ -25,8 +25,8 @@ export class Compiler {
     static async init() {
         if (!Compiler.inited) {
             await Config.init(
-                path.join(__dirname, '../../reference/onig.wasm'),
-                path.join(__dirname, '../../syntax/dotnugg.tmLanguage.json'),
+                path.join(__dirname, '../../node_modules/vscode-oniguruma/release/onig.wasm'),
+                path.join(__dirname, '../../node_modules/@nuggxyz/dotnugg-grammar/dotnugg.tmLanguage.json'),
             );
 
             Compiler.inited = true;

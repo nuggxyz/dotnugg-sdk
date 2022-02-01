@@ -2,7 +2,6 @@ import invariant from 'tiny-invariant';
 
 import { Transformer as TransformerTypes } from '../types/transformer';
 import { Encoder as EncoderTypes } from '../types/encoder';
-import { dotnugg } from '../..';
 
 import { Parser } from './Parser';
 

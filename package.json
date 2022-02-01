@@ -1,31 +1,30 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "A sdk for working with dotnugg files written in typescript",
     "main": "index.ts",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
     "author": "dub6ix <dub6ix@nugg.xyz>",
+    "private": false,
     "scripts": {
-        "build": "yarn install && tsc",
+        "build": "yarn install && yarn typechain && tsc",
         "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs",
         "generate-uploader": "tsc && node ./build/scripts/unsafeStoreFilesBulkData.js",
         "encode": "tsc && node ./build/scripts/encode.js",
         "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'"
     },
     "dependencies": {
-        "bluebird": "^3.7.2",
+        "@nuggxyz/dotnugg-grammar": "^0.1.0",
         "ethers": "^5.5.2",
         "minimist": "^1.2.5",
         "plist": "^3.0.4",
         "tiny-invariant": "^1.2.0",
-        "ts-node": "^10.4.0",
         "vscode-oniguruma": "^1.5.1",
         "vscode-textmate": "^5.4.1"
     },
     "devDependencies": {
         "@typechain/ethers-v5": "^8.0.5",
-        "@types/bluebird": "^3.5.36",
         "@types/fs-extra": "^9.0.13",
         "@types/plist": "^3.0.2",
         "@types/vscode": "^1.62.0",

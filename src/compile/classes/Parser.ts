@@ -3,8 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import * as vsctm from 'vscode-textmate';
-import invariant from 'tiny-invariant';
-import * as bluebird from 'bluebird';
 
 import tokens from '../constants/tokens';
 import { Parser as ParserTypes } from '../types/parser';
@@ -295,72 +293,72 @@ export class Parser {
         return parserResults;
     }
 
-    public static async parseDirectoryAsync(
-        dir: string,
-        prevParser?: Parser,
-        cache?: { [_: string]: { items: ParserTypes.RangeOf<ParserTypes.Item>[]; mtimeMs: number } },
-        saveCache?: boolean,
-    ) {
-        let first = false;
-        try {
-            if (prevParser === undefined) {
-                prevParser = Parser.parseEmpty();
-                try {
-                    let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
-                    cache = rawdata == '' ? {} : JSON.parse(rawdata);
-                } catch (errs) {
-                    cache = {};
-                }
+    // public static async parseDirectoryAsync(
+    //     dir: string,
+    //     prevParser?: Parser,
+    //     cache?: { [_: string]: { items: ParserTypes.RangeOf<ParserTypes.Item>[]; mtimeMs: number } },
+    //     saveCache?: boolean,
+    // ) {
+    //     let first = false;
+    //     try {
+    //         if (prevParser === undefined) {
+    //             prevParser = Parser.parseEmpty();
+    //             try {
+    //                 let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
+    //                 cache = rawdata == '' ? {} : JSON.parse(rawdata);
+    //             } catch (errs) {
+    //                 cache = {};
+    //             }
 
-                first = true;
-            }
+    //             first = true;
+    //         }
 
-            // Get the files as an array
-            const files = await fs.promises.readdir(dir);
+    //         // Get the files as an array
+    //         const files = await fs.promises.readdir(dir);
 
-            await bluebird.Promise.map(files, (file) => {
-                // Loop them all with the new for...of
-                // for (const file of await files) {
-                // Get the full paths
-                const fromPath = path.join(dir, file);
+    //         await bluebird.Promise.map(files, (file) => {
+    //             // Loop them all with the new for...of
+    //             // for (const file of await files) {
+    //             // Get the full paths
+    //             const fromPath = path.join(dir, file);
 
-                // Stat the file to see if we have a file or dir
-                fs.stat(fromPath, (err, stat) => {
-                    if (err) throw new Error(err.message);
-                    if (stat.isFile() && file.endsWith('.nugg')) {
-                        if (cache[file] && stat.mtimeMs === cache[file].mtimeMs) {
-                            prevParser.results.items.push(...cache[file].items);
-                        } else {
-                            console.log('compiling...', file);
+    //             // Stat the file to see if we have a file or dir
+    //             fs.stat(fromPath, (err, stat) => {
+    //                 if (err) throw new Error(err.message);
+    //                 if (stat.isFile() && file.endsWith('.nugg')) {
+    //                     if (cache[file] && stat.mtimeMs === cache[file].mtimeMs) {
+    //                         prevParser.results.items.push(...cache[file].items);
+    //                     } else {
+    //                         console.log('compiling...', file);
 
-                            const parser = Parser.parsePath(fromPath);
-                            // parser.compile();
-                            if (parser.results.collection !== undefined) {
-                                // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
-                                prevParser.results.collection = parser.results.collection;
-                                Parser.globalCollection = parser.results.collection;
-                            }
-                            prevParser.results.items.push(...parser.results.items);
-                            cache[file] = {
-                                items: parser.results.items,
-                                mtimeMs: stat.mtimeMs,
-                            };
-                        }
-                    } else if (stat.isDirectory() && !file.startsWith('.')) {
-                        Parser.parseDirectoryAsync(fromPath, prevParser, cache, false);
-                    }
-                });
-            }).then(() => {});
+    //                         const parser = Parser.parsePath(fromPath);
+    //                         // parser.compile();
+    //                         if (parser.results.collection !== undefined) {
+    //                             // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
+    //                             prevParser.results.collection = parser.results.collection;
+    //                             Parser.globalCollection = parser.results.collection;
+    //                         }
+    //                         prevParser.results.items.push(...parser.results.items);
+    //                         cache[file] = {
+    //                             items: parser.results.items,
+    //                             mtimeMs: stat.mtimeMs,
+    //                         };
+    //                     }
+    //                 } else if (stat.isDirectory() && !file.startsWith('.')) {
+    //                     Parser.parseDirectoryAsync(fromPath, prevParser, cache, false);
+    //                 }
+    //             });
+    //         }).then(() => {});
 
-            // }
-        } catch (e) {
-            // Catch anything bad that happens
-            console.error("We've thrown! Whoops!", e);
-        }
+    //         // }
+    //     } catch (e) {
+    //         // Catch anything bad that happens
+    //         console.error("We've thrown! Whoops!", e);
+    //     }
 
-        // if ()
-        return prevParser;
-    }
+    //     // if ()
+    //     return prevParser;
+    // }
 
     private init() {
         try {
