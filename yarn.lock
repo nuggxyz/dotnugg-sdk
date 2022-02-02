@@ -606,11 +606,12 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@nuggxyz/dotnugg-grammar@^0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.1.6.tgz#ca43387d67bfb8dc678446c6a2d6929605eab709"
-  integrity sha512-Kk36aqE33bkbKe17QTsvGJtQEEJa0Lu4vKitdYMCF7cC/n05/2sqV57SzFECsoYVT64U8lt3yRO2p2Iv9mYysw==
+"@nuggxyz/dotnugg-grammar@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.1.7.tgz#7335f325404cb9d89a776b3d1864c51e2ce00096"
+  integrity sha512-D3rCmQBJi5Dh4vteMP8o01qAyBboNMMxZNEzNvBK/1wfkHXOZ9hm8lcOgGv1buNwlYhk7PIqgyZ5/j1+a9Yv8w==
   dependencies:
+    fs "^0.0.1-security"
     plist "^3.0.4"
 
 "@typechain/ethers-v5@^9.0.0":
@@ -1589,6 +1590,11 @@ fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
+
+fs@^0.0.1-security:
+  version "0.0.1-security"
+  resolved "https://registry.yarnpkg.com/fs/-/fs-0.0.1-security.tgz#8a7bd37186b6dddf3813f23858b57ecaaf5e41d4"
+  integrity sha1-invTcYa23d84E/I4WLV+yq9eQdQ=
 
 function-bind@^1.1.1:
   version "1.1.1"
