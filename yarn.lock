@@ -606,10 +606,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@nuggxyz/dotnugg-grammar@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.1.5.tgz#172890f4a6ce3fd1df10e57c32dde222ec1f6075"
-  integrity sha512-G+BCawWk3ISL/90iYYCmw99RbgAXq+qb5d85eBmUon3tiNfsrizWx9ZoJ7OhYGJ6UXV+2lNjmF3G4IK/nfqe1w==
+"@nuggxyz/dotnugg-grammar@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.1.6.tgz#ca43387d67bfb8dc678446c6a2d6929605eab709"
+  integrity sha512-Kk36aqE33bkbKe17QTsvGJtQEEJa0Lu4vKitdYMCF7cC/n05/2sqV57SzFECsoYVT64U8lt3yRO2p2Iv9mYysw==
   dependencies:
     plist "^3.0.4"
 
