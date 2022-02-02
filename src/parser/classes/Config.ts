@@ -7,6 +7,24 @@ import * as oniguruma from 'vscode-oniguruma';
 import * as vsctm from 'vscode-textmate';
 import dotnuggGrammer from '@nuggxyz/dotnugg-grammar/dotnugg.tmLanguage.json';
 
+// // ES Module
+// import fetch from 'node-fetch';
+
+class FuckYouWebpack {
+    constructor() {
+
+    }
+}
+
+// // @ts-ignore
+// global.fetch = fetch;
+// // @ts-ignore
+// global.Headers = fetch.Headers;
+// @ts-ignore
+// global.Response = new Array()
+// // @ts-ignore
+// global.Response = fetch.Response;
+
 // Create a registry that can create a grammar from a scope name.
 const registry = () =>
     new vsctm.Registry({
@@ -15,9 +33,18 @@ const registry = () =>
             createOnigString: (str) => new oniguruma.OnigString(str),
         }),
         loadGrammar: async () => {
-            const wasm = fs.readFileSync(path.join(require.resolve('vscode-oniguruma'), '../onig.wasm')).buffer;
 
-            await oniguruma.loadWASM(wasm).then(() => {
+            const res = require('vscode-oniguruma/release/onig.wasm') as ArrayBuffer
+                console.log({res})
+
+            //     const aaa = await new Blob(res).arrayBuffer()
+
+            // console.log(aaa)
+            // console.log((await res(res)).env)
+
+            // const wasm = fs.readFileSync(path.join(require.resolve('vscode-oniguruma'), '../onig.wasm')).buffer;
+
+            await oniguruma.loadWASM(res ).then(() => {
                 return {
                     createOnigScanner(patterns: string[]) {
                         return new oniguruma.OnigScanner(patterns);

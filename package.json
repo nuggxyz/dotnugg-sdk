@@ -1,17 +1,16 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "description": "sdk for working with dotnugg files written in typescript",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
     "author": "dub6ix <dub6ix@nugg.xyz>",
     "private": false,
-    "main": "./build/index.js",
-    "typings": "./build/index.d.ts",
+    "main": "./dist/index.js",
+    "typings": "./dist/index.d.ts",
     "files": [
-        "build",
-        "LICENSE",
-        "src"
+        "dist",
+        "LICENSE"
     ],
     "scripts": {
         "build:clean": "rm -rf build && yarn build",
@@ -19,7 +18,10 @@
         "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs",
         "generate-uploader": "tsc && node ./build/scripts/unsafeStoreFilesBulkData.js",
         "encode": "tsc && node ./build/scripts/encode.js",
-        "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'"
+        "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
+        "package": "webpack --mode production --devtool hidden-source-map"
     },
     "dependencies": {
         "@ethersproject/abi": "^5.0.0",
@@ -28,9 +30,10 @@
         "@nuggxyz/dotnugg-grammar": "^0.1.8",
         "ethers": "^5.5.4",
         "minimist": "^1.2.5",
+        "node-fetch": "^3.2.0",
         "plist": "^3.0.4",
         "tiny-invariant": "^1.2.0",
-        "vscode-oniguruma": "^1.5.1",
+        "vscode-oniguruma": "^1.6.1",
         "vscode-textmate": "^5.4.1"
     },
     "devDependencies": {
@@ -41,11 +44,15 @@
         "@types/vscode": "^1.62.0",
         "@typescript-eslint/eslint-plugin": "^5.3.1",
         "@typescript-eslint/parser": "^5.3.1",
+        "arraybuffer-loader": "^1.0.8",
         "eslint": "^8.2.0",
         "eslint-config-universe": "^10.0.0",
         "eslint-plugin-import": "^2.25.3",
         "prettier": "^2.4.1",
+        "ts-loader": "^9.2.6",
         "typechain": "^7.0.0",
-        "typescript": "^4.4.4"
+        "typescript": "^4.4.4",
+        "webpack": "^5.68.0",
+        "webpack-cli": "^4.9.2"
     }
 }
