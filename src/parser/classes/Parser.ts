@@ -7,7 +7,6 @@ import invariant from 'tiny-invariant';
 
 import * as TransformTypes from '../../builder/types/TransformTypes';
 import tokens from '../constants/tokens';
-import { dotnugg } from '../..';
 import * as ParserTypes from '../types/ParserTypes';
 
 import { Validator } from './Validator';
@@ -137,6 +136,68 @@ export class Parser {
 
         const file = fs.readFileSync(filePath, 'utf-8');
         return new Parser(file, filePath).init();
+    }
+
+    public static parseDirectoryFromObject(
+        dir: string,
+        prevParser?: Parser,
+        cache?: { [_: string]: { items: ParserTypes.RangeOf<ParserTypes.Item>[]; mtimeMs: number } },
+        saveCache?: boolean,
+    ) {
+        let first = false;
+        try {
+            if (prevParser === undefined) {
+                prevParser = Parser.parseEmpty();
+                try {
+                    let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
+                    cache = rawdata == '' ? {} : JSON.parse(rawdata);
+                } catch (errs) {
+                    cache = {};
+                }
+
+                saveCache = true;
+            }
+
+            // Get the files as an array
+            const files = fs.readdirSync(dir);
+
+            // Loop them all with the new for...of
+            for (const file of files) {
+                // Get the full paths
+                const fromPath = path.join(dir, file);
+
+                // Stat the file to see if we have a file or dir
+                const stat = fs.statSync(fromPath);
+                // console.log('checking...', file);
+
+                if (stat.isFile() && file.endsWith('.nugg')) {
+                    console.log('compiling...', file);
+
+                    const parser = Parser.parsePath(fromPath);
+                    // parser.parse();
+                    if (parser.results.collection !== undefined) {
+                        // invariant(prevParser.results.collection === undefined, 'PARSE:PARSEDIR:MULTIPLECOLL');
+                        prevParser.results.collection = parser.results.collection;
+                        Parser.globalCollection = parser.results.collection;
+                    }
+                    prevParser.results.items.push(...parser.results.items);
+                } else if (stat.isDirectory() && !file.startsWith('.')) {
+                    Parser.parseDirectory(fromPath, prevParser, cache, false);
+                }
+                // Log because we're crazy
+                // console.log("Moved '%s'->'%s'", fromPath, toPath);
+            } // End for...of
+        } catch (e) {
+            // Catch anything bad that happens
+            console.error("We've thrown! Whoops!", e);
+        }
+
+        if (saveCache) {
+            console.log('updating cache at: ', path.join(dir, '/dotnugg-cache.json'));
+            fs.writeFileSync(path.join(dir, '/dotnugg-cache.json'), JSON.stringify(cache));
+        }
+        // if ()
+        return prevParser;
     }
 
     public static parseDirectory(

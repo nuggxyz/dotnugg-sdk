@@ -606,13 +606,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@nuggxyz/dotnugg-grammar@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.1.7.tgz#7335f325404cb9d89a776b3d1864c51e2ce00096"
-  integrity sha512-D3rCmQBJi5Dh4vteMP8o01qAyBboNMMxZNEzNvBK/1wfkHXOZ9hm8lcOgGv1buNwlYhk7PIqgyZ5/j1+a9Yv8w==
-  dependencies:
-    fs "^0.0.1-security"
-    plist "^3.0.4"
+"@nuggxyz/dotnugg-grammar@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.1.8.tgz#47422fba0d24a7053a06fee27388f42278afc527"
+  integrity sha512-spDOzIUe7QLc1NO547fti+lqUu8XLQea6XcG24QZJP0BYQbAtARUUPysToFAb421zeFXbm2s1TfzYHHuYzp2MA==
 
 "@typechain/ethers-v5@^9.0.0":
   version "9.0.0"
@@ -643,6 +640,14 @@
   version "16.11.7"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.7.tgz#36820945061326978c42a01e56b61cd223dfdc42"
   integrity sha512-QB5D2sqfSjCmTuWcBWyJ+/44bcjO7VbjSbOE0ucoVbAsSNQc4Lt6QkgkVXkTDwkL4z/beecZNDvVX15D4P8Jbw==
+
+"@types/plist@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@types/plist/-/plist-3.0.2.tgz#61b3727bba0f5c462fe333542534a0c3e19ccb01"
+  integrity sha512-ULqvZNGMv0zRFvqn8/4LSPtnmN4MfhlPNtJCTpKuIIxGVGZ2rYWzFXrvEBoh9CVyqSE7D6YFRJ1hydLHI6kbWw==
+  dependencies:
+    "@types/node" "*"
+    xmlbuilder ">=11.0.1"
 
 "@types/prettier@^2.1.1":
   version "2.4.2"
@@ -1590,11 +1595,6 @@ fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
-
-fs@^0.0.1-security:
-  version "0.0.1-security"
-  resolved "https://registry.yarnpkg.com/fs/-/fs-0.0.1-security.tgz#8a7bd37186b6dddf3813f23858b57ecaaf5e41d4"
-  integrity sha1-invTcYa23d84E/I4WLV+yq9eQdQ=
 
 function-bind@^1.1.1:
   version "1.1.1"
@@ -2660,6 +2660,11 @@ ws@7.4.6:
   version "7.4.6"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
+
+xmlbuilder@>=11.0.1:
+  version "15.1.1"
+  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-15.1.1.tgz#9dcdce49eea66d8d10b42cae94a79c3c8d0c2ec5"
+  integrity sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg==
 
 xmlbuilder@^9.0.7:
   version "9.0.7"

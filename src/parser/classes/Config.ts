@@ -2,9 +2,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import * as plist from 'plist';
 import * as oniguruma from 'vscode-oniguruma';
 import * as vsctm from 'vscode-textmate';
-import * as dng from '@nuggxyz/dotnugg-grammar';
+import dotnuggGrammer from '@nuggxyz/dotnugg-grammar/dotnugg.tmLanguage.json';
 
 // Create a registry that can create a grammar from a scope name.
 const registry = () =>
@@ -27,7 +28,7 @@ const registry = () =>
                 };
             });
 
-            return vsctm.parseRawGrammar(await dng.asPlist());
+            return vsctm.parseRawGrammar(plist.build(dotnuggGrammer));
         },
     });
 
