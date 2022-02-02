@@ -1,3 +1,3 @@
 import { Parser } from './classes/Parser';
-
-export { Parser };
+import tokens from './constants/tokens';
+export { Parser, tokens };

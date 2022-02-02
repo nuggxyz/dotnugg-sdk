@@ -45,6 +45,8 @@ export class Parser {
         this.index--;
     }
 
+    public static semanticTokens = tokens;
+
     public static globalCollection: ParserTypes.RangeOf<ParserTypes.Collection>;
 
     public results: ParserTypes.Document = {
