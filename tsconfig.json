@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES2021",
-        "module": "esnext",
+        "module": "commonjs",
         "moduleResolution": "node",
         "strict": false,
         "resolveJsonModule": true,
