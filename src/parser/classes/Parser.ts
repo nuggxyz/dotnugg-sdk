@@ -132,7 +132,7 @@ export class Parser {
     }
 
     public static parseData(fileData: string) {
-        return new Parser(fileData, 'parseData').init();
+        return new Parser(fileData, 'parseData').initSingle();
     }
     public static parsePath(filePath: string) {
         invariant(this._inited, 'ERROR: Parser not initialized');
@@ -498,6 +498,73 @@ export class Parser {
         }
     }
 
+    private initSingle() {
+        try {
+            const tokens: ParserTypes.ParsedToken[] = [];
+            timer.start('token loop craziness');
+            for (let i = 0; i < this.lineCount; i++) {
+                let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
+
+                while (p.ruleStack.depth > 1) {
+                    p.tokens.forEach((x) => {
+                        if (this.linescopes[i] === undefined) {
+                            this.linescopes[i] = [...x.scopes];
+                        } else {
+                            this.linescopes[i].push(...x.scopes);
+                        }
+
+                        tokens.push({
+                            token: x,
+                            ruleStack: p.ruleStack,
+                            line: this.lineAt(i),
+                            value: this.valueAt(i, x),
+                            lineNumber: i,
+                        });
+                    });
+
+                    p = Config.grammer.tokenizeLine(this.lineAt(++i), p.ruleStack);
+                }
+                p.tokens.forEach((x) => {
+                    if (this.linescopes[i] === undefined) {
+                        this.linescopes[i] = [...x.scopes];
+                    } else {
+                        this.linescopes[i].push(...x.scopes);
+                    }
+
+                    tokens.push({
+                        token: x,
+                        ruleStack: p.ruleStack,
+                        line: this.lineAt(i),
+                        value: this.valueAt(i, x),
+                        lineNumber: i,
+                    });
+                });
+            }
+            timer.stop('token loop craziness');
+
+            this.tokens = tokens;
+            timer.start('this.parse()');
+
+            this.parseSingleItem();
+            timer.stop('this.parse()');
+
+            return this;
+        } catch (err) {
+            console.log('error', 'ERROR IN INIT', err);
+        }
+    }
+
+    parseSingleItem() {
+        try {
+            for (; this.hasNext; this.next) {
+                this.parseItem();
+                if (this.results.items.length > 0) return;
+            }
+        } catch (err) {
+            console.log('ERROR', 'failed compilattion', { err });
+        }
+    }
+
     parse() {
         try {
             for (; this.hasNext; this.next) {
@@ -536,23 +603,23 @@ export class Parser {
                     endToken = this.current;
                 }
             }
-            const validator = new Validator({
+            // const validator = new Validator({
+            //     token,
+            //     endToken,
+            //     features,
+            //     width,
+            //     widthToken,
+            // });
+            // if (validator.complete) {
+            this.results.collection = {
+                value: { features, width: { value: width, token: widthToken } },
                 token,
                 endToken,
-                features,
-                width,
-                widthToken,
-            });
-            if (validator.complete) {
-                this.results.collection = {
-                    value: { features, width: { value: width, token: widthToken } },
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseCollection', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseCollection');
-            }
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseCollection', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseCollection');
+            // }
         }
     }
 
@@ -563,7 +630,7 @@ export class Parser {
 
             const collectionFeatures: ParserTypes.RangeOf<ParserTypes.CollectionFeature>[] = [];
 
-            for (; this.has(tokens.CollectionFeatures) && Validator.anyUndefined({ token, endToken, collectionFeatures }); this.next) {
+            for (; this.has(tokens.CollectionFeatures) && endToken === undefined; this.next) {
                 const collectionfeature = this.parseCollectionFeature();
                 if (collectionfeature) {
                     collectionFeatures.push(collectionfeature);
@@ -577,22 +644,22 @@ export class Parser {
                 }
             }
 
-            const validator = new Validator({ token, endToken, collectionFeatures });
+            // const validator = new Validator({ token, endToken, collectionFeatures });
 
-            if (validator.complete) {
-                const value: ParserTypes.CollectionFeatures = collectionFeatures.reduce((prev, curr) => {
-                    return { [curr.value.name.value]: curr, ...prev };
-                }, {});
+            // if (validator.complete) {
+            const value: ParserTypes.CollectionFeatures = collectionFeatures.reduce((prev, curr) => {
+                return { [curr.value.name.value]: curr, ...prev };
+            }, {});
 
-                return {
-                    token,
-                    value,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseCollectionFeatures', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseCollectionFeatures');
-            }
+            return {
+                token,
+                value,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseCollectionFeatures', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseCollectionFeatures');
+            // }
         }
         return undefined;
     }
@@ -621,31 +688,7 @@ export class Parser {
             let name: string = undefined;
             let nameToken: ParserTypes.ParsedToken = undefined;
 
-            for (
-                ;
-                this.has(tokens.CollectionFeature) &&
-                Validator.anyUndefined({
-                    token,
-                    //   anchorDirection,
-                    //   anchorOffset,
-                    //   anchorToken,
-                    zindexDirection,
-                    zindexOffset,
-                    zindexToken,
-                    name,
-                    nameToken,
-                    endToken,
-                    r,
-                    rToken,
-                    l,
-                    lToken,
-                    d,
-                    dToken,
-                    u,
-                    uToken,
-                });
-                this.next
-            ) {
+            for (; this.has(tokens.CollectionFeature) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -698,76 +741,76 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({
+            // let validator = new Validator({
+            //     token,
+            //     //  anchorKey,
+            //     //  anchorDirection,
+            //     //  anchorOffset,
+            //     //  anchorToken,
+            //     zindexDirection,
+            //     zindexOffset,
+            //     zindexToken,
+            //     name,
+            //     nameToken,
+            //     endToken,
+            //     r,
+            //     rToken,
+            //     l,
+            //     lToken,
+            //     d,
+            //     dToken,
+            //     u,
+            //     uToken,
+            //     radiiToken,
+            // });
+
+            // if (validator.complete) {
+            const value: ParserTypes.CollectionFeature = {
+                zindex: {
+                    token: zindexToken,
+                    value: {
+                        direction: zindexDirection,
+                        offset: zindexOffset,
+                    },
+                },
+                name: {
+                    token: nameToken,
+                    value: name,
+                },
+
+                receivers: [], // empty bc these only exist in long version
+                expandableAt: {
+                    token: radiiToken,
+                    value: {
+                        r: {
+                            value: r,
+                            token: rToken,
+                        },
+                        l: {
+                            value: l,
+                            token: lToken,
+                        },
+                        u: {
+                            value: u,
+                            token: uToken,
+                        },
+                        d: {
+                            value: d,
+                            token: dToken,
+                        },
+                    },
+                },
+            };
+
+            return {
+                value,
                 token,
-                //  anchorKey,
-                //  anchorDirection,
-                //  anchorOffset,
-                //  anchorToken,
-                zindexDirection,
-                zindexOffset,
-                zindexToken,
-                name,
-                nameToken,
                 endToken,
-                r,
-                rToken,
-                l,
-                lToken,
-                d,
-                dToken,
-                u,
-                uToken,
-                radiiToken,
-            });
-
-            if (validator.complete) {
-                const value: ParserTypes.CollectionFeature = {
-                    zindex: {
-                        token: zindexToken,
-                        value: {
-                            direction: zindexDirection,
-                            offset: zindexOffset,
-                        },
-                    },
-                    name: {
-                        token: nameToken,
-                        value: name,
-                    },
-
-                    receivers: [], // empty bc these only exist in long version
-                    expandableAt: {
-                        token: radiiToken,
-                        value: {
-                            r: {
-                                value: r,
-                                token: rToken,
-                            },
-                            l: {
-                                value: l,
-                                token: lToken,
-                            },
-                            u: {
-                                value: u,
-                                token: uToken,
-                            },
-                            d: {
-                                value: d,
-                                token: dToken,
-                            },
-                        },
-                    },
-                };
-
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseCollectionFeature', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseCollectionFeature');
-            }
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseCollectionFeature', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseCollectionFeature');
+            // }
         }
         return undefined;
     }
@@ -782,20 +825,7 @@ export class Parser {
             let expandableAt: ParserTypes.RangeOf<ParserTypes.RLUD<number>> = undefined;
             let receivers: ParserTypes.RangeOf<ParserTypes.Receiver>[] = [];
 
-            for (
-                ;
-                this.has(tokens.CollectionFeatureLong) &&
-                Validator.anyUndefined({
-                    token,
-                    endToken,
-                    name,
-                    nameToken,
-                    zindex,
-                    expandableAt,
-                    receivers,
-                });
-                this.next
-            ) {
+            for (; this.has(tokens.CollectionFeatureLong) && endToken === undefined; this.next) {
                 if (this.has(tokens.CollectionFeatureLongName)) {
                     name = this.currentValue;
                     nameToken = this.current;
@@ -820,38 +850,38 @@ export class Parser {
                 }
             }
 
-            const validator = new Validator({
-                token,
-                endToken,
-                name,
-                nameToken,
+            // const validator = new Validator({
+            //     token,
+            //     endToken,
+            //     name,
+            //     nameToken,
+            //     zindex,
+            //     expandableAt,
+            //     receivers,
+            // });
+
+            // if (validator.complete) {
+            //     if (validator.complete) {
+            const value: ParserTypes.CollectionFeature = {
                 zindex,
+                name: {
+                    value: name,
+                    token: nameToken,
+                },
+                receivers, // empty bc these only exist in long version
                 expandableAt,
-                receivers,
-            });
+            };
 
-            if (validator.complete) {
-                if (validator.complete) {
-                    const value: ParserTypes.CollectionFeature = {
-                        zindex,
-                        name: {
-                            value: name,
-                            token: nameToken,
-                        },
-                        receivers, // empty bc these only exist in long version
-                        expandableAt,
-                    };
-
-                    return {
-                        token,
-                        value,
-                        endToken,
-                    };
-                } else {
-                    console.error('ERROR', 'blank value returned from: parseCollectionFeatureLong', validator.undefinedVarNames);
-                    throw new Error('blank value returned from: parseCollectionFeatureLong');
-                }
-            }
+            return {
+                token,
+                value,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseCollectionFeatureLong', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseCollectionFeatureLong');
+            // }
+            // }
             return undefined;
         }
     }
@@ -870,23 +900,7 @@ export class Parser {
             let d: number = undefined;
             let dToken: ParserTypes.ParsedToken = undefined;
 
-            for (
-                ;
-                this.has(tokens.CollectionFeatureLongExpandableAt) &&
-                Validator.anyUndefined({
-                    token,
-                    r,
-                    rToken,
-                    l,
-                    lToken,
-                    d,
-                    dToken,
-                    u,
-                    uToken,
-                    endToken,
-                });
-                this.next
-            ) {
+            for (; this.has(tokens.CollectionFeatureLongExpandableAt) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -911,47 +925,47 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({
-                token,
-                r,
-                rToken,
-                l,
-                lToken,
-                d,
-                dToken,
-                u,
-                uToken,
-                endToken,
-            });
+            // let validator = new Validator({
+            //     token,
+            //     r,
+            //     rToken,
+            //     l,
+            //     lToken,
+            //     d,
+            //     dToken,
+            //     u,
+            //     uToken,
+            //     endToken,
+            // });
 
-            if (validator.complete) {
-                const value: ParserTypes.RLUD<number> = {
-                    r: {
-                        value: r,
-                        token: rToken,
-                    },
-                    l: {
-                        value: l,
-                        token: lToken,
-                    },
-                    u: {
-                        value: u,
-                        token: uToken,
-                    },
-                    d: {
-                        value: d,
-                        token: dToken,
-                    },
-                };
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseCollectionFeatureLongExpandableAt', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseCollectionFeatureLongExpandableAt');
-            }
+            // if (validator.complete) {
+            const value: ParserTypes.RLUD<number> = {
+                r: {
+                    value: r,
+                    token: rToken,
+                },
+                l: {
+                    value: l,
+                    token: lToken,
+                },
+                u: {
+                    value: u,
+                    token: uToken,
+                },
+                d: {
+                    value: d,
+                    token: dToken,
+                },
+            };
+            return {
+                value,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseCollectionFeatureLongExpandableAt', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseCollectionFeatureLongExpandableAt');
+            // }
         }
         return undefined;
     }
@@ -964,11 +978,7 @@ export class Parser {
             let direction: ParserTypes.Operator = undefined;
             let offset: number = undefined;
 
-            for (
-                ;
-                this.has(tokens.CollectionFeatureLongZIndex) && Validator.anyUndefined({ token, direction, offset, endToken });
-                this.next
-            ) {
+            for (; this.has(tokens.CollectionFeatureLongZIndex) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -984,22 +994,22 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({ token, direction, offset, endToken });
+            // let validator = new Validator({ token, direction, offset, endToken });
 
-            if (validator.complete) {
-                const value: ParserTypes.ZIndex = {
-                    direction,
-                    offset,
-                };
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseItemVersionAnchor', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseItemVersionAnchor');
-            }
+            // if (validator.complete) {
+            const value: ParserTypes.ZIndex = {
+                direction,
+                offset,
+            };
+            return {
+                value,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseItemVersionAnchor', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseItemVersionAnchor');
+            // }
         }
         return undefined;
     }
@@ -1011,7 +1021,7 @@ export class Parser {
 
             const colors: ParserTypes.RangeOf<ParserTypes.Color>[] = [];
 
-            for (; this.has(tokens.GeneralColors) && Validator.anyUndefined({ token, endToken, colors }); this.next) {
+            for (; this.has(tokens.GeneralColors) && endToken === undefined; this.next) {
                 const color = this.parseGeneralColor();
                 if (color) {
                     colors.push(color);
@@ -1021,21 +1031,21 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({ token, endToken, colors });
+            // let validator = new Validator({ token, endToken, colors });
 
-            if (validator.complete) {
-                const value: ParserTypes.Colors = colors.reduce((prev, curr) => {
-                    return { [curr.value.name.value]: curr, ...prev };
-                }, {});
-                return {
-                    token,
-                    value,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from parseGeneralColors:', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseGeneralColors');
-            }
+            // if (validator.complete) {
+            const value: ParserTypes.Colors = colors.reduce((prev, curr) => {
+                return { [curr.value.name.value]: curr, ...prev };
+            }, {});
+            return {
+                token,
+                value,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from parseGeneralColors:', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseGeneralColors');
+            // }
         }
         return undefined;
     }
@@ -1053,22 +1063,7 @@ export class Parser {
             let name: string = undefined;
             let nameToken: ParserTypes.ParsedToken = undefined;
 
-            for (
-                ;
-                this.has(tokens.GeneralColor) &&
-                Validator.anyUndefined({
-                    token,
-                    rgba,
-                    rgbaToken,
-                    zindexDirection,
-                    zindexOffset,
-                    zindexToken,
-                    name,
-                    nameToken,
-                    endToken,
-                });
-                this.next
-            ) {
+            for (; this.has(tokens.GeneralColor) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -1094,45 +1089,45 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({
-                token,
-                rgba,
-                rgbaToken,
-                zindexDirection,
-                zindexOffset,
-                zindexToken,
-                name,
-                nameToken,
-                endToken,
-            });
+            // let validator = new Validator({
+            //     token,
+            //     rgba,
+            //     rgbaToken,
+            //     zindexDirection,
+            //     zindexOffset,
+            //     zindexToken,
+            //     name,
+            //     nameToken,
+            //     endToken,
+            // });
 
-            if (validator.complete) {
-                const value: ParserTypes.Color = {
-                    zindex: {
-                        token: zindexToken,
-                        value: {
-                            direction: zindexDirection,
-                            offset: zindexOffset,
-                        },
+            // if (validator.complete) {
+            const value: ParserTypes.Color = {
+                zindex: {
+                    token: zindexToken,
+                    value: {
+                        direction: zindexDirection,
+                        offset: zindexOffset,
                     },
-                    name: {
-                        token: nameToken,
-                        value: name,
-                    },
-                    rgba: {
-                        value: rgba,
-                        token: rgbaToken,
-                    },
-                };
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseGeneralColor', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseGeneralColor');
-            }
+                },
+                name: {
+                    token: nameToken,
+                    value: name,
+                },
+                rgba: {
+                    value: rgba,
+                    token: rgbaToken,
+                },
+            };
+            return {
+                value,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseGeneralColor', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseGeneralColor');
+            // }
         }
         return undefined;
     }
@@ -1158,8 +1153,8 @@ export class Parser {
                     break;
                 }
             }
-            const validator = new Validator({ token, matrix, endToken });
-            if (validator.complete) {
+            // const validator = new Validator({ token, endToken });
+            if (matrix.length > 0) {
                 return {
                     value: {
                         matrix,
@@ -1168,7 +1163,7 @@ export class Parser {
                     endToken,
                 };
             } else {
-                console.error('ERROR', 'blank value returned from: parseGeneralData', validator.undefinedVarNames);
+                console.error('ERROR', 'blank value returned from: parseGeneralData - matrix.length === 0');
 
                 throw new Error('blank value returned from: parseGeneralData');
             }
@@ -1196,18 +1191,18 @@ export class Parser {
                 }
                 endToken = this.current;
             }
-            const validator = new Validator({ token, pixels, endToken });
-            if (validator.complete) {
-                return {
-                    value: pixels,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parsePixel', validator.undefinedVarNames);
+            // const validator = new Validator({ token, endToken });
+            // if (validator.complete && pixels.length > 0) {
+            return {
+                value: pixels,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parsePixel', validator.undefinedVarNames);
 
-                throw new Error('blank value returned from: parsePixel');
-            }
+            //     throw new Error('blank value returned from: parsePixel');
+            // }
         }
         return undefined;
     }
@@ -1257,34 +1252,34 @@ export class Parser {
                 }
             }
 
-            const validator = new Validator({
-                token,
-                labelToken,
-                type,
-                typeToken,
-                endToken,
-                label,
-            });
-            if (validator.complete) {
-                return {
-                    value: {
-                        label: {
-                            value: label,
-                            token: labelToken,
-                        },
-                        type: {
-                            value: type,
-                            token: typeToken,
-                        },
+            // const validator = new Validator({
+            //     // token,
+            //     // labelToken,
+            //     // type,
+            //     // typeToken,
+            //     // endToken,
+            //     label,
+            // });
+            // if (validator.complete) {
+            return {
+                value: {
+                    label: {
+                        value: label,
+                        token: labelToken,
                     },
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parsePixel', validator.undefinedVarNames);
+                    type: {
+                        value: type,
+                        token: typeToken,
+                    },
+                },
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parsePixel', validator.undefinedVarNames);
 
-                throw new Error('blank value returned from: parsePixel');
-            }
+            //     throw new Error('blank value returned from: parsePixel');
+            // }
         }
         return undefined;
     }
@@ -1305,21 +1300,7 @@ export class Parser {
             let feature: string = undefined;
             let featureToken: ParserTypes.ParsedToken = undefined;
 
-            for (
-                ;
-                this.has(tokens.GeneralReceiver) &&
-                Validator.anyUndefined({
-                    token,
-                    endToken,
-                    aOffset,
-                    bOffset,
-                    feature,
-                    featureToken,
-                    aToken,
-                    bToken,
-                });
-                this.next
-            ) {
+            for (; this.has(tokens.GeneralReceiver) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -1352,54 +1333,54 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({
-                token,
-                aOffset,
-                bOffset,
-                aToken,
-                bToken,
-                feature,
-                featureToken,
-                endToken,
-            });
+            // let validator = new Validator({
+            //     token,
+            //     aOffset,
+            //     bOffset,
+            //     aToken,
+            //     bToken,
+            //     feature,
+            //     featureToken,
+            //     endToken,
+            // });
 
-            if (validator.complete) {
-                const value: ParserTypes.Receiver = {
-                    a: {
-                        token: aToken,
-                        value: {
-                            direction: aDirection,
-                            offset: aOffset,
-                        },
+            // if (validator.complete) {
+            const value: ParserTypes.Receiver = {
+                a: {
+                    token: aToken,
+                    value: {
+                        direction: aDirection,
+                        offset: aOffset,
                     },
-                    b: {
-                        token: bToken,
-                        value: {
-                            direction: bDirection,
-                            offset: bOffset,
-                        },
+                },
+                b: {
+                    token: bToken,
+                    value: {
+                        direction: bDirection,
+                        offset: bOffset,
                     },
-                    feature: {
-                        token: featureToken,
-                        value: feature,
-                    },
-                    type,
-                };
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseGeneralReceiver', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseGeneralReceiver');
-            }
+                },
+                feature: {
+                    token: featureToken,
+                    value: feature,
+                },
+                type,
+            };
+            return {
+                value,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseGeneralReceiver', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseGeneralReceiver');
+            // }
         }
         return undefined;
     }
 
     parseItem() {
-        timer.start('parseItem()');
+        // timer.start('parseItem()');
         if (this.has(tokens.Item)) {
             const token = this.current;
             let endToken = undefined;
@@ -1410,20 +1391,7 @@ export class Parser {
             let colors = undefined;
             let versions = undefined;
 
-            for (
-                ;
-                this.has(tokens.Item) &&
-                this.hasNext &&
-                Validator.anyUndefined({
-                    token,
-                    endToken,
-                    feature,
-                    featureToken,
-                    colors,
-                    versions,
-                });
-                this.next
-            ) {
+            for (; this.has(tokens.Item) && this.hasNext && endToken === undefined; this.next) {
                 if (this.has(tokens.ItemOpenFeature)) {
                     feature = this.currentValue;
                     featureToken = this.current;
@@ -1435,12 +1403,12 @@ export class Parser {
                 if (colors_) {
                     colors = colors_;
                 }
-                timer.start('this.parseItemVersions()');
+                // timer.start('this.parseItemVersions()');
 
                 const versions_ = this.parseItemVersions();
                 if (versions_) {
                     versions = versions_;
-                    timer.stop('this.parseItemVersions()');
+                    // timer.stop('this.parseItemVersions()');
                 }
 
                 if (this.has(tokens.ItemClose)) {
@@ -1448,36 +1416,36 @@ export class Parser {
                 }
             }
             // this.results.items.push({ value, token, endToken });
-            const validator = new Validator({
+            // const validator = new Validator({
+            //     token,
+            //     endToken,
+            //     feature,
+            //     featureToken,
+            //     colors,
+            //     versions,
+            //     isDefault,
+            // });
+            // if (validator.complete) {
+            this.results.items.push({
+                value: {
+                    isDefault,
+                    colors,
+                    versions,
+                    feature: {
+                        value: feature,
+                        token: featureToken,
+                    },
+                    fileName: this.fileName,
+                },
                 token,
                 endToken,
-                feature,
-                featureToken,
-                colors,
-                versions,
-                isDefault,
             });
-            if (validator.complete) {
-                this.results.items.push({
-                    value: {
-                        isDefault,
-                        colors,
-                        versions,
-                        feature: {
-                            value: feature,
-                            token: featureToken,
-                        },
-                        fileName: this.fileName,
-                    },
-                    token,
-                    endToken,
-                });
-            } else {
-                console.error('ERROR', 'blank value returned from: parseItem', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseItem');
-            }
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseItem', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseItem');
+            // }
         }
-        timer.stop('parseItem()');
+        // timer.stop('parseItem()');
 
         return undefined;
     }
@@ -1488,33 +1456,39 @@ export class Parser {
             let endToken = undefined;
 
             const versions: ParserTypes.RangeOf<ParserTypes.Version>[] = [];
-            timer.start('parseItemVersions() loop');
-            for (; this.has(tokens.ItemVersions) && Validator.anyUndefined({ token, endToken, versions }); this.next) {
+            // timer.start('parseItemVersions() loop');
+            for (; this.has(tokens.ItemVersions) && endToken === undefined; this.next) {
+                // timer.start('this.parseItemVersion()');
+
                 const version = this.parseItemVersion();
                 if (version) {
+                    // timer.stop('this.parseItemVersion()');
+
                     versions.push(version);
                 }
                 if (this.has(tokens.ItemVersionsClose)) {
                     endToken = this.current;
                 }
             }
-            timer.stop('parseItemVersions() loop');
 
-            let validator = new Validator({ token, endToken, versions });
+            // timer.stop('parseItemVersions() loop');
 
-            if (validator.complete) {
-                const value: ParserTypes.Colors = versions.reduce((prev, curr) => {
-                    return { [curr.value.name.value]: curr, ...prev };
-                }, {});
-                return {
-                    token,
-                    value,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from parseGeneralColors:', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseGeneralColors');
-            }
+            // let validator = new Validator({ token, endToken, versions });
+
+            // if (validator.complete) {
+            const value: ParserTypes.Colors = versions.reduce((prev, curr) => {
+                return { [curr.value.name.value]: curr, ...prev };
+            }, {});
+
+            return {
+                token,
+                value,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from parseGeneralColors:', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseGeneralColors');
+            // }
         }
         return undefined;
     }
@@ -1534,27 +1508,30 @@ export class Parser {
 
             for (
                 ;
-                this.has(tokens.ItemVersion) &&
-                Validator.anyUndefined({
-                    token,
-                    endToken,
-                    radii,
-                    expanders,
-                    data,
-                    anchor,
-                    name,
-                    nameToken,
-                });
+                this.has(tokens.ItemVersion);
+                // this.has(tokens.ItemVersion) &&
+                // Validator.anyUndefined({
+                //     token,
+                //     endToken,
+                //     radii,
+                //     expanders,
+                //     data,
+                //     anchor,
+                //     name,
+                //     nameToken,
+                // });
                 this.next
             ) {
                 if (this.has(tokens.ItemVersionName)) {
                     name = this.currentValue;
                     nameToken = this.current;
                 }
+
                 const radii_ = this.parseItemVersionRadii();
                 if (radii_) {
                     radii = radii_;
                 }
+
                 // Logger.out(this.current.token.scopes);
                 const expanders_ = this.parseItemVersionExpanders();
                 if (expanders_) {
@@ -1566,10 +1543,10 @@ export class Parser {
                     anchor = anchor_;
                 }
 
-                timer.start('this.parseGeneralData()');
+                // timer.start('this.parseGeneralData()');
                 const generalData = this.parseGeneralData();
                 if (generalData) {
-                    timer.stop('this.parseGeneralData()');
+                    // timer.stop('this.parseGeneralData()');
 
                     data = generalData;
                 }
@@ -1580,39 +1557,40 @@ export class Parser {
                 }
                 if (this.has(tokens.ItemVersionClose)) {
                     endToken = this.current;
+                    // break;
                 }
             }
 
             this.back();
 
-            const validator = new Validator({
+            // const validator = new Validator({
+            //     token,
+            //     endToken,
+            //     radii,
+            //     expanders,
+            //     data,
+            //     anchor,
+            //     name,
+            //     nameToken,
+            // });
+            // if (validator.complete) {
+            return {
+                value: {
+                    radii,
+                    expanders,
+                    data,
+                    anchor,
+                    receivers: receivers,
+                    name: { value: name, token: nameToken },
+                },
                 token,
                 endToken,
-                radii,
-                expanders,
-                data,
-                anchor,
-                name,
-                nameToken,
-            });
-            if (validator.complete) {
-                return {
-                    value: {
-                        radii,
-                        expanders,
-                        data,
-                        anchor,
-                        receivers: receivers,
-                        name: { value: name, token: nameToken },
-                    },
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseItemVersion', validator.undefinedVarNames);
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseItemVersion', validator.undefinedVarNames);
 
-                throw new Error('blank value returned from: parseItemVersion');
-            }
+            //     throw new Error('blank value returned from: parseItemVersion');
+            // }
         }
     }
 
@@ -1630,23 +1608,7 @@ export class Parser {
             let d: number = undefined;
             let dToken: ParserTypes.ParsedToken = undefined;
 
-            for (
-                ;
-                this.has(tokens.ItemVersionRadii) &&
-                Validator.anyUndefined({
-                    token,
-                    r,
-                    rToken,
-                    l,
-                    lToken,
-                    d,
-                    dToken,
-                    u,
-                    uToken,
-                    endToken,
-                });
-                this.next
-            ) {
+            for (; this.has(tokens.ItemVersionRadii) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -1671,47 +1633,47 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({
-                token,
-                r,
-                rToken,
-                l,
-                lToken,
-                d,
-                dToken,
-                u,
-                uToken,
-                endToken,
-            });
+            // let validator = new Validator({
+            //     token,
+            //     r,
+            //     rToken,
+            //     l,
+            //     lToken,
+            //     d,
+            //     dToken,
+            //     u,
+            //     uToken,
+            //     endToken,
+            // });
 
-            if (validator.complete) {
-                const value: ParserTypes.RLUD<number> = {
-                    r: {
-                        value: r,
-                        token: rToken,
-                    },
-                    l: {
-                        value: l,
-                        token: lToken,
-                    },
-                    u: {
-                        value: u,
-                        token: uToken,
-                    },
-                    d: {
-                        value: d,
-                        token: dToken,
-                    },
-                };
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseItemVersionRadii', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseItemVersionRadii');
-            }
+            // if (validator.complete) {
+            const value: ParserTypes.RLUD<number> = {
+                r: {
+                    value: r,
+                    token: rToken,
+                },
+                l: {
+                    value: l,
+                    token: lToken,
+                },
+                u: {
+                    value: u,
+                    token: uToken,
+                },
+                d: {
+                    value: d,
+                    token: dToken,
+                },
+            };
+            return {
+                value,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseItemVersionRadii', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseItemVersionRadii');
+            // }
         }
         return undefined;
     }
@@ -1732,19 +1694,19 @@ export class Parser {
 
             for (
                 ;
-                this.has(tokens.ItemVersionExpanders) &&
-                Validator.anyUndefined({
-                    token,
-                    r,
-                    rToken,
-                    l,
-                    lToken,
-                    d,
-                    dToken,
-                    u,
-                    uToken,
-                    endToken,
-                });
+                this.has(tokens.ItemVersionExpanders) && endToken === undefined;
+                // Validator.anyUndefined({
+                //     token,
+                //     r,
+                //     rToken,
+                //     l,
+                //     lToken,
+                //     d,
+                //     dToken,
+                //     u,
+                //     uToken,
+                //     endToken,
+                // });
                 this.next
             ) {
                 if (this.currentValue === '') {
@@ -1771,47 +1733,47 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({
-                token,
-                r,
-                rToken,
-                l,
-                lToken,
-                d,
-                dToken,
-                u,
-                uToken,
-                endToken,
-            });
+            // let validator = new Validator({
+            //     token,
+            //     r,
+            //     rToken,
+            //     l,
+            //     lToken,
+            //     d,
+            //     dToken,
+            //     u,
+            //     uToken,
+            //     endToken,
+            // });
 
-            if (validator.complete) {
-                const value: ParserTypes.RLUD<number> = {
-                    r: {
-                        value: r,
-                        token: rToken,
-                    },
-                    l: {
-                        value: l,
-                        token: lToken,
-                    },
-                    u: {
-                        value: u,
-                        token: uToken,
-                    },
-                    d: {
-                        value: d,
-                        token: dToken,
-                    },
-                };
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseItemVersionExpanders', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseItemVersionExpanders');
-            }
+            // if (validator.complete) {
+            const value: ParserTypes.RLUD<number> = {
+                r: {
+                    value: r,
+                    token: rToken,
+                },
+                l: {
+                    value: l,
+                    token: lToken,
+                },
+                u: {
+                    value: u,
+                    token: uToken,
+                },
+                d: {
+                    value: d,
+                    token: dToken,
+                },
+            };
+            return {
+                value,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseItemVersionExpanders', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseItemVersionExpanders');
+            // }
         }
         return undefined;
     }
@@ -1825,7 +1787,7 @@ export class Parser {
             let y: number = undefined;
             let yToken: ParserTypes.ParsedToken = undefined;
 
-            for (; this.has(tokens.ItemVersionAnchor) && Validator.anyUndefined({ token, x, xToken, y, yToken, endToken }); this.next) {
+            for (; this.has(tokens.ItemVersionAnchor) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
                     continue;
                 }
@@ -1842,28 +1804,28 @@ export class Parser {
                 }
             }
 
-            let validator = new Validator({ token, x, xToken, y, yToken, endToken });
+            // let validator = new Validator({ token, x, xToken, y, yToken, endToken });
 
-            if (validator.complete) {
-                const value: ParserTypes.Coordinate = {
-                    x: {
-                        value: x,
-                        token: xToken,
-                    },
-                    y: {
-                        value: y,
-                        token: yToken,
-                    },
-                };
-                return {
-                    value,
-                    token,
-                    endToken,
-                };
-            } else {
-                console.error('ERROR', 'blank value returned from: parseItemVersionAnchor', validator.undefinedVarNames);
-                throw new Error('blank value returned from: parseItemVersionAnchor');
-            }
+            // if (validator.complete) {
+            const value: ParserTypes.Coordinate = {
+                x: {
+                    value: x,
+                    token: xToken,
+                },
+                y: {
+                    value: y,
+                    token: yToken,
+                },
+            };
+            return {
+                value,
+                token,
+                endToken,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseItemVersionAnchor', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseItemVersionAnchor');
+            // }
         }
         return undefined;
     }
