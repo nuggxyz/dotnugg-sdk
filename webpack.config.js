@@ -9,7 +9,9 @@ const webpack = require('webpack');
 /**@type {import('webpack').Configuration}*/
 const config = {
     target: 'async-node',
-
+// optimization: {
+//     minimize: true,
+// },
     entry: './src/index.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),

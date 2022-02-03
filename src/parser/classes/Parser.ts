@@ -8,6 +8,7 @@ import invariant from 'tiny-invariant';
 import * as TransformTypes from '../../builder/types/TransformTypes';
 import tokens from '../constants/tokens';
 import * as ParserTypes from '../types/ParserTypes';
+import { timer } from '../../dotnugg';
 
 import { Validator } from './Validator';
 import { Config } from './Config';
@@ -444,7 +445,7 @@ export class Parser {
     private init() {
         try {
             const tokens: ParserTypes.ParsedToken[] = [];
-
+            timer.start('token loop craziness');
             for (let i = 0; i < this.lineCount; i++) {
                 let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
 
@@ -483,10 +484,13 @@ export class Parser {
                     });
                 });
             }
+            timer.stop('token loop craziness');
 
             this.tokens = tokens;
+            timer.start('this.parse()');
 
             this.parse();
+            timer.stop('this.parse()');
 
             return this;
         } catch (err) {
@@ -1139,7 +1143,7 @@ export class Parser {
             let token = undefined;
             let endToken = undefined;
 
-            for (; this.has(tokens.GeneralData) && Validator.anyUndefined({ token, matrix, endToken }); this.next) {
+            for (; true; this.next) {
                 if (!token) {
                     this.back();
                     token = this.current;
@@ -1151,6 +1155,7 @@ export class Parser {
                 }
                 if (this.has(tokens.GeneralDataClose)) {
                     endToken = this.current;
+                    break;
                 }
             }
             const validator = new Validator({ token, matrix, endToken });
@@ -1219,15 +1224,15 @@ export class Parser {
 
             for (
                 ;
-                this.has(tokens.GeneralDataRowPixel) &&
-                Validator.anyUndefined({
-                    token,
-                    labelToken,
-                    type,
-                    typeToken,
-                    label,
-                    endToken,
-                });
+                label === undefined;
+                // Validator.anyUndefined({
+                //     token,
+                //     labelToken,
+                //     type,
+                //     typeToken,
+                //     label,
+                //     endToken,
+                // });
                 this.next
             ) {
                 if (this.currentValue !== '') {
@@ -1394,6 +1399,7 @@ export class Parser {
     }
 
     parseItem() {
+        timer.start('parseItem()');
         if (this.has(tokens.Item)) {
             const token = this.current;
             let endToken = undefined;
@@ -1429,10 +1435,14 @@ export class Parser {
                 if (colors_) {
                     colors = colors_;
                 }
+                timer.start('this.parseItemVersions()');
+
                 const versions_ = this.parseItemVersions();
                 if (versions_) {
                     versions = versions_;
+                    timer.stop('this.parseItemVersions()');
                 }
+
                 if (this.has(tokens.ItemClose)) {
                     endToken = this.current;
                 }
@@ -1467,6 +1477,8 @@ export class Parser {
                 throw new Error('blank value returned from: parseItem');
             }
         }
+        timer.stop('parseItem()');
+
         return undefined;
     }
 
@@ -1476,7 +1488,7 @@ export class Parser {
             let endToken = undefined;
 
             const versions: ParserTypes.RangeOf<ParserTypes.Version>[] = [];
-
+            timer.start('parseItemVersions() loop');
             for (; this.has(tokens.ItemVersions) && Validator.anyUndefined({ token, endToken, versions }); this.next) {
                 const version = this.parseItemVersion();
                 if (version) {
@@ -1486,6 +1498,7 @@ export class Parser {
                     endToken = this.current;
                 }
             }
+            timer.stop('parseItemVersions() loop');
 
             let validator = new Validator({ token, endToken, versions });
 
@@ -1552,8 +1565,12 @@ export class Parser {
                 if (anchor_) {
                     anchor = anchor_;
                 }
+
+                timer.start('this.parseGeneralData()');
                 const generalData = this.parseGeneralData();
                 if (generalData) {
+                    timer.stop('this.parseGeneralData()');
+
                     data = generalData;
                 }
 
