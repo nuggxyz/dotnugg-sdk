@@ -1,5 +1,5 @@
 {
-    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+    "eslint.validate": ["javascript", "typescript"],
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
     },
@@ -12,45 +12,15 @@
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "[javascriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
+
     "[json]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[solidity]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "[python]": {
-        "editor.defaultFormatter": null
-    },
-    "[go]": {
-        "editor.defaultFormatter": "golang.go"
-    },
-    "gopls": {
-        "formatting.gofumpt": true
-    },
-    "editor.bracketPairColorization.enabled": true,
-    // "go.testOnSave": true,
-    // "go.coverOnSave": true,
-    "go.lintTool": "golangci-lint",
-    "python.formatting.autopep8Args": ["--max-line-length", "120", "--experimental"],
-    "python.formatting.provider": "autopep8",
-    "solidity-va.deco.arguments": false,
-    "mochaExplorer.files": "test/**/*.{j,t}s",
-    "svg.preview.background": "transparent",
-    "[svg]": {
-        "editor.defaultFormatter": "jock.svg"
-    },
-
-    "[dotenv]": {
-        "editor.defaultFormatter": "foxundermoon.shell-format"
-    },
-    "solidity.compileUsingRemoteVersion": "v0.8.4+commit.c7e474f2"
+    "editor.bracketPairColorization.enabled": true
 }

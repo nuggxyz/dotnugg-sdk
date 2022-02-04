@@ -23,7 +23,7 @@ export class Builder {
     unbrokenArray: BigNumber[][] = [];
 
     bulkupload: Promise<BytesLike>;
-
+    precompressed: BytesLike[];
     encoded: BytesLike;
     compressed: BytesLike;
 
@@ -74,21 +74,18 @@ export class Builder {
             return res;
         });
 
-        this.compressed = new AbiCoder().encode(
-            [ethers.utils.ParamType.fromString('bytes[]')],
-            [
-                [
-                    Builder.squish(this.unbrokenArray[0]),
-                    Builder.squish(this.unbrokenArray[1]),
-                    Builder.squish(this.unbrokenArray[2]),
-                    Builder.squish(this.unbrokenArray[3]),
-                    Builder.squish(this.unbrokenArray[4]),
-                    Builder.squish(this.unbrokenArray[5]),
-                    Builder.squish(this.unbrokenArray[6]),
-                    Builder.squish(this.unbrokenArray[7]),
-                ],
-            ],
-        );
+        this.precompressed = [
+            Builder.squish(this.unbrokenArray[0]),
+            Builder.squish(this.unbrokenArray[1]),
+            Builder.squish(this.unbrokenArray[2]),
+            Builder.squish(this.unbrokenArray[3]),
+            Builder.squish(this.unbrokenArray[4]),
+            Builder.squish(this.unbrokenArray[5]),
+            Builder.squish(this.unbrokenArray[6]),
+            Builder.squish(this.unbrokenArray[7]),
+        ];
+
+        this.compressed = new AbiCoder().encode([ethers.utils.ParamType.fromString('bytes[]')], [this.precompressed]);
 
         this.encoded = new AbiCoder().encode(
             [ethers.utils.ParamType.fromString('uint256[][][]')],

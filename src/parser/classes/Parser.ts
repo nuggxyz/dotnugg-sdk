@@ -978,7 +978,11 @@ export class Parser {
             let direction: ParserTypes.Operator = undefined;
             let offset: number = undefined;
 
-            for (; this.has(tokens.CollectionFeatureLongZIndex) && endToken === undefined; this.next) {
+            for (
+                ;
+                this.has(tokens.CollectionFeatureLongZIndex) && (endToken === undefined || offset === undefined || direction == undefined);
+                this.next
+            ) {
                 if (this.currentValue === '') {
                     continue;
                 }

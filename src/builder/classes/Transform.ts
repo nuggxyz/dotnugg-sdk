@@ -40,8 +40,8 @@ export class Transform {
             .reverse()
             .map((args, i) => {
                 this.featureMap[args[0]] = i;
-                this.defaultLayerMap[args[0]] = new ItemTransform(this).transformLevel(args[1].zindex as TransformTypes.Level) - 4;
                 // console.log(args[0], this.defaultLayerMap[args[0]].toString());
+                this.defaultLayerMap[args[0]] = new ItemTransform(this).transformLevel(args[1].zindex as TransformTypes.Level) - 4;
                 return args;
             })
             .map(([k, v], i) => {
@@ -168,10 +168,10 @@ export class ItemTransform {
     transformVersion(input: TransformTypes.Version): EncoderTypes.Version {
         return {
             anchor: this.transformer.transformCoordinate(input.anchor),
-            expanders: this.transformer.transformRlud(input.expanders),
+            expanders: input.expanders ? this.transformer.transformRlud(input.expanders) : { r: 0, l: 0, u: 0, d: 0, exists: false },
             groups: this.transformMatrix(input.data),
             len: { x: input.data.matrix[0].length, y: input.data.matrix.length },
-            radii: this.transformer.transformRlud(input.radii),
+            radii: input.radii ? this.transformer.transformRlud(input.radii) : { r: 0, l: 0, u: 0, d: 0, exists: false },
             receivers: [
                 ...this.transformer.transformReceivers(input.receivers),
                 ...this.transformer.calculatedReceiversByFeature[this.feature!],
