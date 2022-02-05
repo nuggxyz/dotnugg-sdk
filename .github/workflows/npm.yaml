@@ -15,7 +15,6 @@ jobs:
                   # Defaults to the user or organization that owns the workflow file
                   scope: '@nuggxyz'
             - run: yarn
-            - run: yarn typechain
             - run: yarn package
             - run: yarn publish --access public
               env:

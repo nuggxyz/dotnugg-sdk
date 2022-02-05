@@ -1,6 +1,6 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
-    "version": "0.1.13",
+    "version": "0.1.14",
     "description": "sdk for working with dotnugg files written in typescript",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
@@ -20,9 +20,9 @@
         "encode": "tsc && node ./build/scripts/encode.js",
         "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'",
         "test": "mocha -r ts-node/esm  src/_tests/**/*.spec.ts",
-        "webpack": "webpack --mode development",
-        "webpack-dev": "webpack --mode development --watch",
-        "package": "webpack --optimization-minimize --mode production --devtool hidden-source-map"
+        "webpack-dev": "webpack --mode development",
+        "webpack-watch": "webpack --mode development --watch",
+        "package": "yarn typechain && yarn webpack --optimization-minimize --mode production"
     },
     "dependencies": {
         "@ethersproject/abi": "^5.0.0",
