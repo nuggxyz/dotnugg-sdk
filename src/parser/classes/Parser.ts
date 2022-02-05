@@ -104,8 +104,6 @@ export class Parser {
         return strs.reduce((prev, curr) => {
             // console.log(str);
             if (prev || this.linescopes[line].indexOf(curr) > -1) {
-                console.log('ayo:checkScopesOnLine');
-
                 return true;
             }
         }, false);
@@ -115,7 +113,6 @@ export class Parser {
         let str = this.lineAt(line);
         return strs.reduce((prev, curr) => {
             if (prev || str.includes(curr)) {
-                console.log('ayo: checkTextOnLine');
                 return true;
             }
         }, false);
