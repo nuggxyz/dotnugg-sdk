@@ -5,11 +5,14 @@ import { DotnuggV1Storage, DotnuggV1Storage__factory } from '../../typechain';
 import * as TransformTypes from '../types/TransformTypes';
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
+import { dotnugg } from '../..';
 
 import { Transform } from './Transform';
 import { Encoder } from './Encoder';
 
 export class Builder {
+    public static transform = Transform;
+
     output: EncoderTypes.EncoderOutput[] = [];
 
     stats: EncoderTypes.Stats = { features: {} };
@@ -33,6 +36,10 @@ export class Builder {
 
     public static fromString(json: string) {
         return new Builder(Transform.fromString(json));
+    }
+
+    public static fromParser(parser: dotnugg.parser) {
+        return new Builder(Transform.fromParser(parser));
     }
 
     protected constructor(transform: Transform) {

@@ -102,7 +102,20 @@ export class Parser {
 
     public checkScopesOnLine(line: number, strs: string[]) {
         return strs.reduce((prev, curr) => {
+            // console.log(str);
             if (prev || this.linescopes[line].indexOf(curr) > -1) {
+                console.log('ayo:checkScopesOnLine');
+
+                return true;
+            }
+        }, false);
+    }
+
+    public checkTextOnLine(line: number, strs: string[]): boolean {
+        let str = this.lineAt(line);
+        return strs.reduce((prev, curr) => {
+            if (prev || str.includes(curr)) {
+                console.log('ayo: checkTextOnLine');
                 return true;
             }
         }, false);
@@ -115,7 +128,7 @@ export class Parser {
         this.fileName = fileName;
     }
 
-    private lineAt(num: number) {
+    public lineAt(num: number) {
         return this.document[num];
     }
 

@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant';
 import * as TransformTypes from '../types/TransformTypes';
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
+import { dotnugg } from '../..';
 
 export class Transform {
     input: TransformTypes.Document;
@@ -30,9 +31,9 @@ export class Transform {
         return new Transform(JSON.parse(json));
     }
 
-    // public static fromParser(parser: dotnugg.parser) {
-    //     return new Transform(JSON.parse(parser.json));
-    // }
+    public static fromParser(parser: dotnugg.parser) {
+        return new Transform(JSON.parse(parser.json));
+    }
 
     transformCollection(input: TransformTypes.Collection): EncoderTypes.Collection {
         invariant(input !== undefined, 'UND');
