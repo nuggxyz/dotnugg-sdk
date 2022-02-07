@@ -455,7 +455,7 @@ export class Parser {
     private init() {
         try {
             const tokens: ParserTypes.ParsedToken[] = [];
-            timer.start('token loop craziness');
+            // timer.start('token loop craziness');
             for (let i = 0; i < this.lineCount; i++) {
                 let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
 
@@ -494,13 +494,13 @@ export class Parser {
                     });
                 });
             }
-            timer.stop('token loop craziness');
+            // timer.stop('token loop craziness');
 
             this.tokens = tokens;
-            timer.start('this.parse()');
+            // timer.start('this.parse()');
 
             this.parse();
-            timer.stop('this.parse()');
+            // timer.stop('this.parse()');
 
             return this;
         } catch (err) {
@@ -511,7 +511,7 @@ export class Parser {
     private initSingle() {
         try {
             const tokens: ParserTypes.ParsedToken[] = [];
-            timer.start('token loop craziness');
+            // timer.start('token loop craziness');
             for (let i = 0; i < this.lineCount; i++) {
                 let p = Config.grammer.tokenizeLine(this.lineAt(i), vsctm.INITIAL);
 
@@ -550,13 +550,13 @@ export class Parser {
                     });
                 });
             }
-            timer.stop('token loop craziness');
+            // timer.stop('token loop craziness');
 
             this.tokens = tokens;
-            timer.start('this.parse()');
+            // timer.start('this.parse()');
 
             this.parseSingleItem();
-            timer.stop('this.parse()');
+            // timer.stop('this.parse()');
 
             return this;
         } catch (err) {
