@@ -6,7 +6,7 @@ import { dotnugg } from '..';
 const main = async (repo: string, solFileDir: string) => {
     await dotnugg.compiler.init();
 
-    const res = dotnugg.compiler.compileDirectoryWithCache(repo);
+    const res = dotnugg.compiler.compileDirectoryCheckCache(repo);
 
     const data = await res.bulkupload;
 

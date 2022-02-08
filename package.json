@@ -1,6 +1,6 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
-    "version": "0.1.17",
+    "version": "0.1.18",
     "description": "sdk for working with dotnugg files written in typescript",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
@@ -28,7 +28,7 @@
         "@ethersproject/abi": "^5.0.0",
         "@ethersproject/bytes": "^5.0.0",
         "@ethersproject/providers": "^5.0.0",
-        "@nuggxyz/dotnugg-grammar": "^0.1.8",
+        "@nuggxyz/dotnugg-grammar": "^0.1.9",
         "ethers": "^5.5.4",
         "minimist": "^1.2.5",
         "node-fetch": "^3.2.0",

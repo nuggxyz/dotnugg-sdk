@@ -24,7 +24,7 @@ export class Compiler extends Builder {
         return me;
     };
 
-    public static compileDirectoryWithCache = (inputdir: string) => {
+    public static compileDirectoryCheckCache = (inputdir: string) => {
         invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
         console.log('compiling directory checking cache: ', inputdir);
