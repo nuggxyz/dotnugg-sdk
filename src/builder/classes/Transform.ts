@@ -139,6 +139,10 @@ export class ItemTransform {
         const id = fileName.split('.')[1] === 'collection' ? 0 : +fileName.split('.')[1];
 
         invariant(!Number.isNaN(id), 'TRANSITEM:SPLTFN:1 - ' + fileName.split('.')[1] + ' - ' + id);
+
+        if (input.versions === undefined) {
+            console.log(input);
+        }
         // console.log(fileName);
         return {
             id,
@@ -151,8 +155,9 @@ export class ItemTransform {
     }
 
     transformLevel(input: TransformTypes.Level): BuilderTypes.uint8 {
-        invariant(input.direction == '-' || input.direction == '+', 'TRANSLEV:DIR');
+        invariant(input.direction === '-' || input.direction === '+', 'TRANSLEV:DIR');
         let val = input.direction == '+' ? input.offset : input.offset * -1;
+
         if (val == 100) {
             invariant(this.feature, 'TRANS:LEV:0');
             val = this.transformer.defaultLayerMap[this.feature];
@@ -167,6 +172,9 @@ export class ItemTransform {
     }
 
     transformVersion(input: TransformTypes.Version): EncoderTypes.Version {
+        if (input.data === undefined) {
+            console.log(input);
+        }
         return {
             anchor: this.transformer.transformCoordinate(input.anchor),
             expanders: input.expanders ? this.transformer.transformRlud(input.expanders) : { r: 0, l: 0, u: 0, d: 0, exists: false },
