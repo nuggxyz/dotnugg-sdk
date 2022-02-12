@@ -21,7 +21,12 @@ export class Transform {
 
         this.output = {
             collection: this.input.collection ? this.transformCollection(this.input.collection) : undefined,
-            items: this.input.items.map((x) => new ItemTransform(this).transformItem(x)),
+            items: this.input.items.reduce((accumulator, x) => {
+                if (x.feature !== 'INVALID') {
+                    accumulator.push(new ItemTransform(this).transformItem(x));
+                }
+                return accumulator;
+            }, []),
         };
     }
     public static fromObject(obj: TransformTypes.Document) {
