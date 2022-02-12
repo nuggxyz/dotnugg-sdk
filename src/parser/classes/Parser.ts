@@ -8,9 +8,8 @@ import invariant from 'tiny-invariant';
 import * as TransformTypes from '../../builder/types/TransformTypes';
 import tokens from '../constants/tokens';
 import * as ParserTypes from '../types/ParserTypes';
-import { timer } from '../../dotnugg';
+import { dotnugg } from '../..';
 
-import { Validator } from './Validator';
 import { Config } from './Config';
 
 export class Parser {
@@ -162,7 +161,7 @@ export class Parser {
             if (prevParser === undefined) {
                 prevParser = Parser.parseEmpty();
                 try {
-                    let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
+                    let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
                     cache = rawdata == '' ? {} : JSON.parse(rawdata);
                 } catch (errs) {
                     cache = {};
@@ -206,8 +205,8 @@ export class Parser {
         }
 
         if (saveCache) {
-            console.log('updating cache at: ', path.join(dir, '/dotnugg-cache.json'));
-            fs.writeFileSync(path.join(dir, '/dotnugg-cache.json'), JSON.stringify(cache));
+            console.log('updating cache at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
+            fs.writeFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), JSON.stringify(cache));
         }
         // if ()
         return prevParser;
@@ -224,7 +223,7 @@ export class Parser {
             if (prevParser === undefined) {
                 prevParser = Parser.parseEmpty();
                 try {
-                    let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
+                    let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
                     cache = rawdata == '' ? {} : JSON.parse(rawdata);
                 } catch (errs) {
                     cache = {};
@@ -268,8 +267,8 @@ export class Parser {
         }
 
         if (saveCache) {
-            console.log('updating cache at: ', path.join(dir, '/dotnugg-cache.json'));
-            fs.writeFileSync(path.join(dir, '/dotnugg-cache.json'), JSON.stringify(cache));
+            console.log('updating cache at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
+            fs.writeFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), JSON.stringify(cache));
         }
         // if ()
         return prevParser;
@@ -307,12 +306,12 @@ export class Parser {
         let cache: { [_: string]: { items: TransformTypes.Item[]; mtimeMs: number } } = {};
 
         try {
-            let rawdata = fs.readFileSync(path.join(dir, 'dotnugg-cache.json'), 'utf8');
+            let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
             cache = JSON.parse(rawdata);
 
             if (cache[`${undefined}`]) cache = {};
         } catch (err) {
-            console.log('error loading cache: ', err);
+            console.log('no cache file found at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
         }
         let collectionComp = false;
         let parsedamt = 0;
@@ -374,8 +373,8 @@ export class Parser {
         console.log(`parsed ${parsedamt} .item.nugg files ${collectionComp && ' and 1 .collection.nugg file'}`);
 
         if (cacheUpdated) {
-            console.log('updating cache at: ', path.join(dir, 'dotnugg-cache.json'));
-            fs.writeFileSync(path.join(dir, 'dotnugg-cache.json'), JSON.stringify(cache));
+            console.log('updating cache at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
+            fs.writeFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), JSON.stringify(cache));
         } else {
             console.log('No need to update dotnugg cache');
         }
@@ -396,7 +395,7 @@ export class Parser {
     //         if (prevParser === undefined) {
     //             prevParser = Parser.parseEmpty();
     //             try {
-    //                 let rawdata = fs.readFileSync(path.join(dir, '/dotnugg-cache.json'), 'utf8');
+    //                 let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
     //                 cache = rawdata == '' ? {} : JSON.parse(rawdata);
     //             } catch (errs) {
     //                 cache = {};

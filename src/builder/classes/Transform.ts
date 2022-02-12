@@ -92,32 +92,9 @@ export class Transform {
     transformMatrixPixel(input: TransformTypes.MatrixPixel[]): BuilderTypes.uint8[] {
         return input.map((x) => +x.label);
     }
-    rgba2hex(orig: string): TransformTypes.Rgba {
-        const res = orig.split('(')[1].split(')')[0].split(',');
 
-        // var a,
-        //     rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
-        //     alpha = ((rgb && rgb[4]) || '').trim(),
-        //     hex = rgb
-        //         ? (+rgb[1] | (1 << 8)).toString(16).slice(1) +
-        //           (+rgb[2] | (1 << 8)).toString(16).slice(1) +
-        //           (+rgb[3] | (1 << 8)).toString(16).slice(1)
-        //         : orig;
-
-        // if (alpha !== '') {
-        //     a = alpha;
-        // } else {
-        //     a = 1;
-        // }
-        // // // multiply before convert to HEX
-        // // // a = ((a * 255) | (1 << 8)).toString(16).slice(1);
-        // // // hex = hex + a;
-        return {
-            r: +res[0],
-            g: +res[1],
-            b: +res[2],
-            a: +res[3] > 1 && +res[3] !== 0 ? +res[3] : Math.floor(255 * +res[3]),
-        };
+    transformColorString(orig: string): TransformTypes.Rgba {
+        return dotnugg.utils.parseColor(orig)[2];
     }
 }
 
@@ -139,7 +116,7 @@ export class ItemTransform {
         const fileName = input.fileName.split('/')[input.fileName.split('/').length - 1];
         const folderName = input.fileName.split('/')[input.fileName.split('/').length - 2];
 
-        invariant(fileName.split('.').length > 1, 'TRANSITEM:SPLTFN:0 - ' + fileName.split('.').length);
+        dotnugg.utils.invariantFatal(fileName.split('.').length > 1, ['TRANSITEM:SPLTFN:0 - ', fileName.split('.').length]);
 
         const id = fileName.split('.')[1] === 'collection' ? 0 : +fileName.split('.')[1];
 
@@ -205,7 +182,7 @@ export class ItemTransform {
 
     transformPixel(input: TransformTypes.Pixel): EncoderTypes.Pixel {
         return {
-            rgba: this.transformer.rgba2hex(input.rgba),
+            rgba: this.transformer.transformColorString(input.rgba),
             zindex: this.transformLevel(input.zindex),
         };
     }

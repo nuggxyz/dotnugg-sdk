@@ -7,3 +7,5 @@ src/_generated
 archive
 yarn-error.log
 dist
+*.cache.*
+*.tmp.*

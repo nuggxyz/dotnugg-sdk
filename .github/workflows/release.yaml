@@ -25,9 +25,3 @@ jobs:
               with:
                   repo_token: '${{ secrets.GITHUB_TOKEN }}'
                   prerelease: true
-                  files: |
-                      LICENSE
-                      src/*
-                      dist/*
-                      package.json
-                      yarn.lock
