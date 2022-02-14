@@ -125,7 +125,6 @@ export class ItemTransform {
         if (input.versions === undefined) {
             console.log(input);
         }
-        // console.log(fileName);
         return {
             id,
             fileName,
@@ -133,6 +132,7 @@ export class ItemTransform {
             pixels: this.transformPixels(input.colors),
             feature: this.transformer.featureMap[input.feature],
             versions: this.transformVersions(input.versions),
+            mtimeMs: input.mtimeMs,
         };
     }
 

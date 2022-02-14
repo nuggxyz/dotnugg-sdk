@@ -48,6 +48,7 @@ export type Item = {
     feature: string;
     colors: BuilderTypes.Dictionary<Pixel>;
     versions: BuilderTypes.Dictionary<Version>;
+    mtimeMs?: number;
 };
 
 export type Level = {

@@ -34,13 +34,6 @@ export const parseColor = (
 
     if (!fatal && err) return [true, dat, undefined];
 
-    console.log({
-        r: res.values[0],
-        g: res.values[1],
-        b: res.values[2],
-        a: res.alpha,
-    });
-
     return [
         false,
         '',

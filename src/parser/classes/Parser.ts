@@ -340,7 +340,7 @@ export class Parser {
                         ...tmp2.items
                             .filter((x) => x.feature !== 'SKIP')
                             .map((x) => {
-                                return { ...x, id: fileKeys[i].split('.')[1] };
+                                return { ...x, id: fileKeys[i].split('.')[1], mtimeMs: files[fileKeys[i]].mtimeMs };
                             }),
                     );
 
@@ -350,7 +350,7 @@ export class Parser {
                             items: tmp2.items
                                 .filter((x) => x.feature !== 'SKIP')
                                 .map((x) => {
-                                    return { ...x, id: fileKeys[i].split('.')[1] };
+                                    return { ...x, id: fileKeys[i].split('.')[1], mtimeMs: files[fileKeys[i]].mtimeMs };
                                 }),
                         };
                         cacheUpdated = true;

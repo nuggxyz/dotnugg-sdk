@@ -25,6 +25,7 @@ export type Item = {
     versions: Version[];
     pixels: Pixel[];
     feature: BuilderTypes.uint8;
+    mtimeMs?: number;
 };
 // export type Version struct {
 // 	Groups    []*Group
@@ -54,6 +55,7 @@ export type EncoderOutput = {
     bits: Byter[];
     hex: import('ethers').BigNumber[];
     hexMocked: import('ethers').BigNumber[];
+    mtimeMs?: number;
 };
 
 export type OutputByItem = BuilderTypes.Dictionary<BuilderTypes.Dictionary<EncoderOutput>>;

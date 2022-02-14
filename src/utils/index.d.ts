@@ -1,5 +1,5 @@
 declare module 'color-parse' {
-    export default function parse(input: string): {
+    export default function (input: string): {
         space: 'rgb' | string;
         values: number[];
         alpha: number;

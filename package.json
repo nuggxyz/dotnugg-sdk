@@ -1,6 +1,6 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
-    "version": "0.1.19",
+    "version": "0.1.20",
     "description": "sdk for working with dotnugg files written in typescript",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
@@ -15,9 +15,9 @@
     "scripts": {
         "build:clean": "rm -rf build && yarn build",
         "build": "yarn install && yarn typechain && tsc",
-        "start": "tsc && node ./build/index.js --input ../nuggft-art --output ./out --filename txs",
-        "generate-uploader": "tsc && node ./build/scripts/unsafeStoreFilesBulkData.js",
-        "encode": "tsc && node ./build/scripts/encode.js",
+        "start": "ts-node /src/index.ts --input ../nuggft-art --output ./out --filename txs",
+        "generate-uploader": "tsc && node ./dist/scripts/unsafeStoreFilesBulkData.js",
+        "encode": "ts-node ./src/scripts/encode.ts",
         "typechain": "typechain --target ethers-v5 --out-dir src/typechain/ './src/abis/*'",
         "test": "mocha -r ts-node/esm  src/_tests/**/*.spec.ts",
         "webpack-dev": "webpack --mode development",

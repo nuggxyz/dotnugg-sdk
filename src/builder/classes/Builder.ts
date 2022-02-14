@@ -49,7 +49,6 @@ export class Builder {
             this.outputByItemArray[i] = [];
             this.outputByItem[i] = {};
             this.unbrokenArray[i] = [];
-
             this.ouputByFeatureHex[i] = [];
             this.ouputByFeaturePlain[i] = [];
         }
@@ -154,7 +153,24 @@ export class Builder {
             nam: 'length',
         });
 
+        // 602060023D35810280820182800180858481600f0101903983513D85528091510380869006860381838239013DF3 /
+
+        // 0x60376020601b80380380913D390380918082039020815114023DF36020600260043581026004808483603801903982513D845280918051903D905203808590066040036001868304013D5281838239013DF3
+
+        // 0x603A6020601b80380380913D390380918082039020815114023DF36020600260043581026004808483603b01903982513D8452809180519086801B90520380859006606003600186830401865281838239013DF3
         let ptr = BigNumber.from(1);
+
+        let RUNTIME =
+            '6020_6002_6004_35_81_02_60_04_80_84_83_603a_01_90_39_82_51_3D_84_52_80_91_80_51_90_86_80_1B_90_52_03_80____85_90_06_6060_03__6001_86_83_04_01_86_52__81_83_82_39_01_3D_F3'.replaceAll(
+                '_',
+                '',
+            );
+
+        let res: BytesLike = RUNTIME;
+
+        ptr = ptr.add(res.length / 2);
+
+        // console.log(res, ptr);
 
         let beginres: BytesLike = ethers.utils.hexConcat(input.map((x) => x._hex));
 
@@ -165,19 +181,83 @@ export class Builder {
             ptr = ptr.add(len);
         }
 
+        working.push({ dat: ptr._hex, bit: 16, nam: 'fpos' });
+
         for (var i = 0; i < input.length; i++) {}
 
-        let res: BytesLike = '';
         res += ethers.utils.hexZeroPad(ethers.utils.hexValue(working[0].dat), 1).replace('0x', '');
 
-        for (var i = 1; i < working.length; i++) {
-            res += ethers.utils.hexZeroPad(ethers.utils.hexValue(working[i].dat), 2).replace('0x', '');
+        working.shift();
+
+        for (var i = 0; i < working.length; i++) {
+            res += ethers.utils.hexZeroPad(ethers.utils.hexValue(+working[i].dat + working.length * 2), 2).replace('0x', '');
         }
 
         res += beginres.replace('0x', '');
 
-        res = '0x60125981380380925939F3646F746E75676700' + res + keccak256('0x' + res).replace('0x', '');
+        res =
+            '0x60_39_60_20_60_1b_80_38_03_80_91_3D_39_03_80_91_80_82_03_90_20_81_51_14_02_3D_F3'.replaceAll('_', '') +
+            res +
+            keccak256('0x' + res.substring(RUNTIME.length)).replace('0x', '');
 
         return res;
     }
 }
+
+// public static squish(input: BigNumber[]): BytesLike {
+//     let working: EncoderTypes.Byter[] = [];
+//     working.push({
+//         dat: input.length,
+//         bit: 8,
+//         nam: 'length',
+//     });
+
+//     // 602060023D35810280820182800180858481600f0101903983513D85528091510380869006860381838239013DF3 /
+
+//     let ptr = BigNumber.from(1);
+
+//     let res: BytesLike =
+//         '6020_6002_3D_35_81_02_80_82_01_82_80_01_80_85_84_602d_01_90_39_83_51_3D_85_52_80_91_51_03_80____86_90_06_86_03_81_83_82_39_01_3D_F3'.replaceAll(
+//             '_',
+//             '',
+//         );
+
+//     ptr = ptr.add(res.length / 2);
+
+//     console.log(res, ptr);
+
+//     let beginres: BytesLike = ethers.utils.hexConcat(input.map((x) => x._hex));
+
+//     for (var i = 0; i < input.length; i++) {
+//         const len = ethers.utils.hexDataLength(input[i]._hex);
+//         working.push({ dat: ptr._hex, bit: 16, nam: 'pos' });
+
+//         ptr = ptr.add(len);
+//     }
+
+//     working.push({ dat: ptr._hex, bit: 16, nam: 'fpos' });
+
+//     for (var i = 0; i < input.length; i++) {}
+
+//     res += ethers.utils.hexZeroPad(ethers.utils.hexValue(working[0].dat), 1).replace('0x', '');
+
+//     working.shift();
+
+//     for (var i = 0; i < working.length; i++) {
+//         res += ethers.utils.hexZeroPad(ethers.utils.hexValue(+working[i].dat + working.length * 2), 2).replace('0x', '');
+//     }
+
+//     res += beginres.replace('0x', '');
+
+//     res =
+//         '0x3D_60_20_80_80_80_38_03_80_91_85_39_03_80_82_20_83_51_14_02_90_F3_00_04_20_00_00_69_00_00_00_00'.replaceAll('_', '') +
+//         keccak256('0x' + res).replace('0x', '') +
+//         res;
+
+//     return res;
+// }
+
+// bytes32 internal constant DOTNUGG_HEADER_HASH = 0x9952cbfc17ef0998324fa64b8f7d3c36ab326c8ac22c07a9074c75357a326edd;
+
+// 0x60_2c_60_20_60_1b_80_38_03_80_91_3d_39_03_80_91_80_82_03_90_20_81_51_14_02_3d_f3_602060023d358102808201828001808584602d01903983513d85528091510380869006860381838239013df3
+//0x602c6020601b80380380913d390380918082039020815114023df3602060023d358102808201828001808584602d01903983513d85528091510380869006860381838239013df3
