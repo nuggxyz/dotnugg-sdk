@@ -15,6 +15,8 @@ import { Config } from './Config';
 export class Parser {
     public tokens: ParserTypes.ParsedToken[] = [];
     public fileName: string;
+    public fileUri: string;
+
     private index: number = 0;
     private document: string[];
     public linescopes: { [_: number]: string[] } = {};
@@ -117,11 +119,12 @@ export class Parser {
         }, false);
     }
 
-    private constructor(fileData: string, fileName: string) {
+    private constructor(fileData: string, fileName: string, fileUri: string) {
         invariant(Parser._inited, 'ERROR: Parser not initialized');
 
         this.document = fileData.split('\n');
         this.fileName = fileName;
+        this.fileUri = fileUri;
     }
 
     public lineAt(num: number) {
@@ -137,18 +140,30 @@ export class Parser {
     }
 
     public static parseEmpty() {
-        return new Parser('', '');
+        return new Parser('', '', '');
     }
 
     public static parseData(fileData: string) {
-        return new Parser(fileData, 'parseData').initSingle();
+        return new Parser(fileData, 'none', 'none').initSingle();
     }
     public static parsePath(filePath: string) {
         invariant(this._inited, 'ERROR: Parser not initialized');
 
         const file = fs.readFileSync(filePath, 'utf-8');
-        return new Parser(file, filePath).init();
+        return new Parser(file, filePath, filePath).init();
     }
+
+    // public static merge(old: Parser, recent: Parser, item: ParserTypes.RangeOf<ParserTypes.Item>) {
+    //     // always replace connection if it exists
+    //     if (old.results.collection && !recent.results.collection) {
+    //         recent.results.collection = old.results.collection;
+    //     }
+
+    //     for (let i = 0; i < recent.results.items.length; i++) {
+    //         recent.results.items[i].
+    //     }
+    //     //
+    // }
 
     public static parseDirectoryFromObject(
         dir: string,
@@ -621,7 +636,8 @@ export class Parser {
             // });
             // if (validator.complete) {
             this.results.collection = {
-                value: { features, width: { value: width, token: widthToken } },
+                value: { features, width: { value: width, token: widthToken }, fileUri: this.fileUri },
+
                 token,
                 endToken,
             };
@@ -1449,6 +1465,7 @@ export class Parser {
                         token: featureToken,
                     },
                     fileName: this.fileName,
+                    fileUri: this.fileUri,
                 },
                 token,
                 endToken,

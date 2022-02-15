@@ -9,7 +9,20 @@ import { dotnugg } from '../..';
 export class Renderer {
     private _instance: IDotnuggV1Resolver;
 
-    constructor(addr: string, prov: ethers.providers.InfuraProvider) {
+    public promisedResults: { [_: string]: { mtimeMs: number; data: Promise<string> } };
+
+    public results: { [_: string]: { mtimeMs: number; data: string } };
+
+    public async wait() {
+        await Promise.all(
+            Object.values(this.promisedResults).map(async (x) => {
+                await x.data;
+            }),
+        );
+
+        this.results = this.promisedResults as any;
+    }
+    private constructor(addr: string, prov: ethers.providers.InfuraProvider) {
         this._instance = new ethers.Contract(addr, IDotnuggV1Resolver__factory.abi, prov) as IDotnuggV1Resolver;
     }
 
@@ -17,14 +30,17 @@ export class Renderer {
         return await this._instance['combo(uint256[],bool)'](data, base64);
     }
 
-    public async renderCheckCache(
+    public static renderCheckCache(
+        addr: string,
+        prov: ethers.providers.InfuraProvider,
         dir: string,
         files: { data: ethers.BigNumber[]; path: string; mtimeMs: number }[],
-    ): Promise<{ [_: string]: { mtimeMs: number; data: string } }> {
+    ) {
+        let me = new Renderer(addr, prov);
         // let files = Cacher.getFilesInDir(dir);
         let cacheUpdated = false;
 
-        let cache: { [_: string]: { mtimeMs: number; data: string } } = {};
+        let cache: { [_: string]: { mtimeMs: number; data: Promise<string> } } = {};
 
         let cachedamt = 0;
         let renderedamt = 0;
@@ -48,7 +64,7 @@ export class Renderer {
                 }
             }
 
-            cache[path] = { mtimeMs, data: await this.renderOnChain(data, true) };
+            cache[path] = { mtimeMs, data: me.renderOnChain(data, true) };
 
             renderedamt++;
             cacheUpdated = true;
@@ -63,6 +79,6 @@ export class Renderer {
             console.log('No need to update dotnugg render cache');
         }
 
-        return cache;
+        return me;
     }
 }

@@ -1,5 +1,5 @@
 @collection := {
-    features := {
+  features := {
         BASE := {
             lay := +0
             exp := { feature: EYES, pointer: +2, yoffset: -1 }
@@ -18,3 +18,5 @@
         HOLD  := { layer: +6 }
     }
 }
+
+

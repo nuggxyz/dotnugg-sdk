@@ -7,12 +7,7 @@ import { Builder } from '../../builder';
 export class Compiler extends Builder {
     processed: boolean = false;
 
-    public render: {
-        [_: string]: {
-            mtimeMs: number;
-            data: string;
-        };
-    };
+    public renderer: dotnugg.renderer;
 
     public static async init() {
         await dotnugg.parser.init();
@@ -46,7 +41,7 @@ export class Compiler extends Builder {
         return me;
     };
 
-    public static compileDirectoryCheckCacheAndRender = async (
+    public static compileDirectoryCheckCacheAndRender = (
         contractAddr: string,
         provider: ethers.providers.InfuraProvider,
         inputdir: string,
@@ -59,7 +54,9 @@ export class Compiler extends Builder {
 
         let me = dotnugg.builder.fromObject(doc) as Compiler;
 
-        me.render = await new dotnugg.renderer(contractAddr, provider).renderCheckCache(
+        me.renderer = dotnugg.renderer.renderCheckCache(
+            contractAddr,
+            provider,
             inputdir,
             me.output.map((x) => {
                 return { mtimeMs: x.mtimeMs, data: x.hex, path: x.fileName };

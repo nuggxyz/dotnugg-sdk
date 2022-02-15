@@ -19,6 +19,7 @@ export type RangeOf<T> = {
 export type Collection = {
     features: RangeOf<CollectionFeatures>;
     width: RangeOf<number>;
+    fileUri: string;
 };
 
 export type CollectionFeatures = Dictionary<RangeOf<CollectionFeature>>;
@@ -44,6 +45,7 @@ export type Item = {
     colors: RangeOf<Colors>;
     versions: RangeOf<Versions>;
     fileName: string;
+    fileUri: string;
 };
 export type Versions = Dictionary<RangeOf<Version>>;
 export type Version = {
@@ -116,6 +118,10 @@ export type ParsedToken = {
 
 export type Dictionary<T> = {
     [_: string]: T;
+};
+
+export type NumberDictionary<T> = {
+    [_: number]: T;
 };
 
 export type Operator = '+' | '-';
