@@ -1,6 +1,8 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import * as inv from 'tiny-invariant';
 import colorParse from 'color-parse';
-
 export const randIntBetween = (max: number) => {
     inv.default(max <= 1000000, 'RANDBETWEEN:TOBIG');
     return Math.floor(Math.random() * 1000000) % max;
@@ -64,3 +66,12 @@ export const invariantNonFatal = (check: boolean, data: (number | string)[]): [b
 export const invariantFatal = (check: boolean, data: (number | string)[]) => {
     invariant(check, true, data);
 };
+
+export function ensureDirectoryExistence(filePath) {
+    var dirname = path.dirname(filePath);
+    if (fs.existsSync(dirname)) {
+        return true;
+    }
+    ensureDirectoryExistence(dirname);
+    fs.mkdirSync(dirname);
+}

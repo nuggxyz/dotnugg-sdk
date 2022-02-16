@@ -93,7 +93,7 @@ export class Transform {
     }
 
     transformMatrixPixel(input: TransformTypes.MatrixPixel[]): BuilderTypes.uint8[] {
-        return input.map((x) => +x.label);
+        return input.map((x) => +x.l);
     }
 
     transformColorString(orig: string): TransformTypes.Rgba {
@@ -206,16 +206,15 @@ export class ItemTransform {
     transformMatrix(input: TransformTypes.Matrix): EncoderTypes.Group[] {
         let res: EncoderTypes.Group[] = [];
         let currlen = 0;
-        let lastkey = this.newColors[input.matrix[0][0].label];
-
+        let lastkey = this.newColors[input.matrix[0][0].l];
         input.matrix.forEach((row) => {
             row.forEach((pixel) => {
-                if (currlen == 0 || (this.newColors[pixel.label] == lastkey && currlen < 19)) {
+                if (currlen == 0 || (this.newColors[pixel.l] == lastkey && currlen < 19)) {
                     currlen++;
                 } else {
                     res.push({ colorkey: lastkey, len: currlen });
                     currlen = 1;
-                    lastkey = this.newColors[pixel.label];
+                    lastkey = this.newColors[pixel.l];
                 }
             });
         });

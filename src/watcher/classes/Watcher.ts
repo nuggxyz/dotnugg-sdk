@@ -4,6 +4,7 @@ import { InfuraProvider } from '@ethersproject/providers';
 
 import { dotnugg } from '../..';
 import * as TransformTypes from '../../builder/types/TransformTypes';
+import { AppName } from '../../types';
 
 export class Watcher {
     public parsedDocument: TransformTypes.Document;
@@ -15,13 +16,14 @@ export class Watcher {
     private listener: fs.FSWatcher;
 
     private constructor(
+        appname: AppName,
         directory: string,
         contractAddr?: string,
         provider?: InfuraProvider,
         onFileChangeCallback?: (fileUri: string) => void,
         onMemoryUpdateCallback?: (fileUri: string) => void,
     ) {
-        dotnugg.parser.init();
+        dotnugg.parser.init(appname);
 
         this.listener = fs.watch(directory, {}, (event: 'rename' | 'change', filename) => {
             console.log(filename, event);
@@ -51,25 +53,27 @@ export class Watcher {
     }
 
     public static watch(
+        appname: AppName,
         directory: string,
         contractAddr: string,
         provider: InfuraProvider,
         onFileChangeCallback: (fileUri: string) => void,
         onMemoryUpdateCallback: (fileUri: string) => void,
     ) {
-        return new Watcher(directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback);
+        return new Watcher(appname, directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback);
     }
 
-    public static watchSimple(directory: string) {
-        return new Watcher(directory);
+    public static watchSimple(appname: AppName, directory: string) {
+        return new Watcher(appname, directory);
     }
 
     public static watchNoRender(
+        appname: AppName,
         directory: string,
         onFileChangeCallback?: (fileUri: string) => void,
         onMemoryUpdateCallback?: (fileUri: string) => void,
     ) {
-        return new Watcher(directory, undefined, undefined, onFileChangeCallback, onMemoryUpdateCallback);
+        return new Watcher(appname, directory, undefined, undefined, onFileChangeCallback, onMemoryUpdateCallback);
     }
 
     public close() {

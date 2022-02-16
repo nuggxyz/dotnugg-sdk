@@ -8,7 +8,7 @@ import { dotnugg } from '..';
 
 describe('main', () => {
     it('hello', async () => {
-        await dotnugg.parser.init();
+        await dotnugg.parser.init('other/test');
 
         const txt = fs.readFileSync(path.join(__dirname, './assets/sample.1.item.nugg'), 'utf8');
 
@@ -20,13 +20,13 @@ describe('main', () => {
     });
 
     it('compile test', async () => {
-        await dotnugg.compiler.init();
+        await dotnugg.parser.init('other/test');
 
         dotnugg.compiler.compileDirectoryCheckCache(path.join(__dirname, './assets'));
     });
 
     it('compile test', async () => {
-        await dotnugg.compiler.init();
+        await dotnugg.parser.init('other/test');
 
         const comp = dotnugg.compiler.compileDirectoryCheckCacheAndRender(
             '0xcbfE2DF1355628Ff7525ae69C31DC708A1b03D40',

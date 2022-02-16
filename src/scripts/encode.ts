@@ -1,7 +1,7 @@
 import { dotnugg } from '..';
 
 const main = async (repo: string) => {
-    await dotnugg.parser.init();
+    await dotnugg.parser.init('other/encode-script');
 
     const enc = dotnugg.compiler.compileDirectoryCheckCache(repo);
 

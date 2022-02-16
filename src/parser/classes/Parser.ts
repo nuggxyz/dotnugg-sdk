@@ -9,6 +9,7 @@ import * as TransformTypes from '../../builder/types/TransformTypes';
 import tokens from '../constants/tokens';
 import * as ParserTypes from '../types/ParserTypes';
 import { dotnugg } from '../..';
+import { AppName } from '../../types';
 
 import { Config } from './Config';
 
@@ -27,9 +28,9 @@ export class Parser {
         return this._inited;
     }
 
-    static async init() {
+    static async init(appname: AppName) {
         if (!this._inited) {
-            await Config.init();
+            await Config.init(appname);
 
             this._inited = true;
         }
@@ -164,7 +165,7 @@ export class Parser {
             if (prevParser === undefined) {
                 prevParser = Parser.parseEmpty();
                 try {
-                    let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
+                    let rawdata = fs.readFileSync(path.join(dir, 'parser'), 'utf8');
                     cache = rawdata == '' ? {} : JSON.parse(rawdata);
                 } catch (errs) {
                     cache = {};
@@ -208,8 +209,8 @@ export class Parser {
         }
 
         if (saveCache) {
-            console.log('updating cache at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
-            fs.writeFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), JSON.stringify(cache));
+            console.log('updating cache at: ', path.join(dir, 'parser'));
+            fs.writeFileSync(path.join(dir, 'parser'), JSON.stringify(cache));
         }
         // if ()
         return prevParser;
@@ -226,7 +227,7 @@ export class Parser {
             if (prevParser === undefined) {
                 prevParser = Parser.parseEmpty();
                 try {
-                    let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
+                    let rawdata = fs.readFileSync(path.join(dir, 'parser'), 'utf8');
                     cache = rawdata == '' ? {} : JSON.parse(rawdata);
                 } catch (errs) {
                     cache = {};
@@ -270,8 +271,8 @@ export class Parser {
         }
 
         if (saveCache) {
-            console.log('updating cache at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
-            fs.writeFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), JSON.stringify(cache));
+            console.log('updating cache at: ', path.join(dir, 'parser'));
+            fs.writeFileSync(path.join(dir, 'parser'), JSON.stringify(cache));
         }
         // if ()
         return prevParser;
@@ -292,7 +293,7 @@ export class Parser {
                 // console.log('checking...', file);
 
                 if (stat.isFile() && file.endsWith('.nugg')) {
-                    res[`${file}`] = { mtimeMs: stat.mtimeMs, path: fromPath };
+                    res[`${fromPath}`] = { mtimeMs: stat.mtimeMs, path: fromPath };
                 } else if (stat.isDirectory() && !file.startsWith('.')) {
                     res = { ...res, ...Parser.getFilesInDir(fromPath) };
                 }
@@ -301,20 +302,25 @@ export class Parser {
 
         return res;
     }
+    public static cachePathOfDir(dir: string) {
+        invariant(this._inited, 'PARSER:NOT:INIT');
+        return Config.cachePath(dir, 'parser');
+    }
 
     public static parseDirectoryCheckCache(dir: string): TransformTypes.Document {
+        let cachepath = Config.cachePath(dir, 'parser');
         let files = this.getFilesInDir(dir);
 
         let cacheUpdated = false;
         let cache: { [_: string]: { items: TransformTypes.Item[]; mtimeMs: number } } = {};
 
         try {
-            let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
+            let rawdata = fs.readFileSync(cachepath, 'utf8');
             cache = JSON.parse(rawdata);
 
             if (cache[`${undefined}`]) cache = {};
         } catch (err) {
-            console.log('no cache file found at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
+            console.log('no cache file found at: ', cachepath);
         }
         let collectionComp = false;
         let parsedamt = 0;
@@ -328,9 +334,13 @@ export class Parser {
         console.log(`processing...`);
 
         for (var i = 0; i < fileKeys.length; i++) {
-            if (!fileKeys[i].includes('collection') && cache[fileKeys[i]] && files[fileKeys[i]].mtimeMs === cache[fileKeys[i]].mtimeMs) {
+            if (
+                !files[fileKeys[i]].path.includes('collection') &&
+                cache[files[fileKeys[i]].path] &&
+                files[files[fileKeys[i]].path].mtimeMs === cache[files[fileKeys[i]].path].mtimeMs
+            ) {
                 // console.log('loading from cache...', fileKeys[i]);
-                parserResults.items.push(...cache[fileKeys[i]].items.filter((x) => x.feature !== 'SKIP'));
+                parserResults.items.push(...cache[files[fileKeys[i]].path].items.filter((x) => x.feature !== 'SKIP'));
                 loadedamt++;
             } else {
                 try {
@@ -347,8 +357,8 @@ export class Parser {
                             }),
                     );
 
-                    if (!fileKeys[i].includes('collection')) {
-                        cache[`${fileKeys[i]}`] = {
+                    if (!files[fileKeys[i]].path.includes('collection')) {
+                        cache[`${files[fileKeys[i]].path}`] = {
                             mtimeMs: files[fileKeys[i]].mtimeMs,
                             items: tmp2.items
                                 .filter((x) => x.feature !== 'SKIP')
@@ -376,8 +386,9 @@ export class Parser {
         console.log(`parsed ${parsedamt} .item.nugg files ${collectionComp && ' and 1 .collection.nugg file'}`);
 
         if (cacheUpdated) {
-            console.log('updating cache at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME));
-            fs.writeFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), JSON.stringify(cache));
+            console.log('updating cache at: ', cachepath);
+            dotnugg.utils.ensureDirectoryExistence(cachepath);
+            fs.writeFileSync(cachepath, JSON.stringify(cache), { flag: 'a+' });
         } else {
             console.log('No need to update dotnugg cache');
         }
@@ -398,7 +409,7 @@ export class Parser {
     //         if (prevParser === undefined) {
     //             prevParser = Parser.parseEmpty();
     //             try {
-    //                 let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_CACHE_FILENAME), 'utf8');
+    //                 let rawdata = fs.readFileSync(path.join(dir, 'parser'), 'utf8');
     //                 cache = rawdata == '' ? {} : JSON.parse(rawdata);
     //             } catch (errs) {
     //                 cache = {};
@@ -853,7 +864,7 @@ export class Parser {
                     zindex = zindex_;
                 }
 
-                const receiver_ = this.parseGeneralReceiver('calculated');
+                const receiver_ = this.parseGeneralReceiver(ParserTypes.ReceiverType.CALCULATED);
                 if (receiver_) {
                     receivers.push(receiver_);
                 }
@@ -1249,19 +1260,19 @@ export class Parser {
             ) {
                 if (this.currentValue !== '') {
                     if (this.has(tokens.GeneralDataRowPixelTransparent)) {
-                        type = 'transparent';
+                        type = ParserTypes.PixelType.TRANSPARENT;
                         typeToken = this.current;
                         labelToken = this.current;
                         label = this.currentValue;
                     }
                     if (this.has(tokens.GeneralDataRowPixelFilter)) {
-                        type = 'filter';
+                        type = ParserTypes.PixelType.COLOR;
                         typeToken = this.current;
                         labelToken = this.current;
                         label = this.currentValue;
                     }
                     if (this.has(tokens.GeneralDataRowPixelColor)) {
-                        type = 'color';
+                        type = ParserTypes.PixelType.COLOR;
                         typeToken = this.current;
                         labelToken = this.current;
                         label = this.currentValue;
@@ -1280,11 +1291,11 @@ export class Parser {
             // if (validator.complete) {
             return {
                 value: {
-                    label: {
+                    l: {
                         value: label,
                         token: labelToken,
                     },
-                    type: {
+                    t: {
                         value: type,
                         token: typeToken,
                     },
@@ -1301,7 +1312,7 @@ export class Parser {
         return undefined;
     }
 
-    parseGeneralReceiver(type: 'calculated' | 'static') {
+    parseGeneralReceiver(type: ParserTypes.ReceiverType) {
         if (this.has(tokens.GeneralReceiver)) {
             const token = this.current;
             let endToken = undefined;
@@ -1591,7 +1602,7 @@ export class Parser {
                     data = generalData;
                 }
 
-                const receiver_ = this.parseGeneralReceiver('static');
+                const receiver_ = this.parseGeneralReceiver(ParserTypes.ReceiverType.STATIC);
                 if (receiver_) {
                     receivers.push(receiver_);
                 }

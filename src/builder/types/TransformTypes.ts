@@ -1,3 +1,5 @@
+import { PixelType } from '../../parser/types/ParserTypes';
+
 import * as BuilderTypes from './BuilderTypes';
 
 export type Collection = {
@@ -64,8 +66,8 @@ export type LevelNullable = {
 } | null;
 
 export type MatrixPixel = {
-    label: string;
-    type: string;
+    l: string;
+    t: PixelType;
 };
 
 export type Receiver = {

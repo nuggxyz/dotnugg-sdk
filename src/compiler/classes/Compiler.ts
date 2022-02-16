@@ -9,10 +9,6 @@ export class Compiler extends Builder {
 
     public renderer: dotnugg.renderer;
 
-    public static async init() {
-        await dotnugg.parser.init();
-    }
-
     public static compileDirectory = (inputdir: string): Compiler => {
         invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
@@ -59,7 +55,7 @@ export class Compiler extends Builder {
             provider,
             inputdir,
             me.output.map((x) => {
-                return { mtimeMs: x.mtimeMs, data: x.hex, path: x.fileName };
+                return { mtimeMs: x.mtimeMs, data: x.hex, path: x.fileUri };
             }),
         );
 

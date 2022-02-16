@@ -7,6 +7,8 @@ import * as oniguruma from 'vscode-oniguruma';
 import * as vsctm from 'vscode-textmate';
 import dotnuggGrammer from '@nuggxyz/dotnugg-grammar/dotnugg.tmLanguage.json';
 
+import { AppName, CacheType } from '../../types';
+
 // Create a registry that can create a grammar from a scope name.
 const registry = () =>
     new vsctm.Registry({
@@ -41,13 +43,18 @@ export class Config {
     /**
      * Utility to read a file as a promise
      */
+    static _appname: AppName;
 
     static _grammer: vsctm.IGrammar;
     static _registry: vsctm.Registry;
 
-    static async init() {
-        Config._registry = registry();
+    static cachePath(dir: string, cacheName: CacheType) {
+        return path.resolve(dir, '.dotnugg-cache', this._appname, cacheName + '.txt');
+    }
 
+    static async init(name: AppName) {
+        Config._registry = registry();
+        Config._appname = name;
         const tmp = await Config._registry.loadGrammar('source.dotnugg');
         if (tmp !== null) Config._grammer = tmp;
     }

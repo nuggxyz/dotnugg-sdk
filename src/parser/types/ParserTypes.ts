@@ -63,11 +63,16 @@ export type Coordinate = {
     y: RangeOf<number>;
 };
 
+export enum ReceiverType {
+    CALCULATED,
+    STATIC,
+}
+
 export type Receiver = {
     a: RangeOf<Offset>;
     b: RangeOf<Offset>;
     feature: RangeOf<string>;
-    type: 'calculated' | 'static';
+    type: ReceiverType; // calculated, static
 };
 
 export type RLUD<T> = {
@@ -103,11 +108,14 @@ export type Data = {
 
 export type DataRow = RangeOf<Pixel>[];
 
-export type PixelType = 'transparent' | 'filter' | 'color';
+export enum PixelType {
+    TRANSPARENT,
+    COLOR,
+}
 
 export type Pixel = {
-    label: RangeOf<string>;
-    type: RangeOf<PixelType>;
+    l: RangeOf<string>;
+    t: RangeOf<PixelType>;
 };
 
 export type ParsedToken = {

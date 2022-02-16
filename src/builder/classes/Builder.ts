@@ -115,12 +115,9 @@ export class Builder {
 
                 this.adjustedCumlWeightsArray[i].push(res);
             }
-            this.adjustedCumlWeightsArray[i][this.adjustedCumlWeightsArray[i].length - 1].cuml = MAX;
+            if (this.cumlWeightsArray[i].length > 0)
+                this.adjustedCumlWeightsArray[i][this.adjustedCumlWeightsArray[i].length - 1].cuml = MAX;
         }
-        console.log(this.cumlWeightsArray);
-        console.log(this.normalizedCumlWeightsArray);
-
-        console.log(this.adjustedCumlWeightsArray);
     }
 
     protected constructor(transform: Transform) {
@@ -254,7 +251,6 @@ export class Builder {
 
         for (var i = 0; i < input.length; i++) {
             // weighting.push({ dat: weights[i].cuml, bit: 16, nam: 'weight' });
-            console.log(weights[i]);
             ptr = ptr.add(2);
             res += ethers.utils.hexZeroPad(ethers.utils.hexValue(+weights[i].cuml), 2).replace('0x', '');
         }
@@ -281,7 +277,7 @@ export class Builder {
 
         // keccak256('0x' + res.substring(RUNTIME.length)).replace('0x', '');
 
-        console.log(res);
+        // console.log(res);
         return res;
     }
 }

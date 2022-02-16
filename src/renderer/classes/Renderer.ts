@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 
 import { IDotnuggV1Resolver, IDotnuggV1Resolver__factory } from '../../typechain';
 import { dotnugg } from '../..';
+import { Config } from '../../parser/classes/Config';
 
 export class Renderer {
     private _instance: IDotnuggV1Resolver;
@@ -38,6 +39,8 @@ export class Renderer {
         dir: string,
         files: { data: ethers.BigNumber[]; path: string; mtimeMs: number }[],
     ) {
+        let cachepath = Config.cachePath(dir, 'renderer');
+        dotnugg.utils.ensureDirectoryExistence(cachepath);
         let me = new Renderer(addr, prov);
         // let files = Cacher.getFilesInDir(dir);
         let cacheUpdated = false;
@@ -48,12 +51,12 @@ export class Renderer {
         let renderedamt = 0;
 
         try {
-            let rawdata = fs.readFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_RENDERER_CACHE_FILENAME), 'utf8');
+            let rawdata = fs.readFileSync(cachepath, 'utf8');
             cache = JSON.parse(rawdata);
 
             if (cache[`${undefined}`]) cache = {};
         } catch (err) {
-            console.log('no cache file found at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_RENDERER_CACHE_FILENAME));
+            console.log('no cache file found at: ', cachepath);
         }
 
         for (var i = 0; i < files.length; i++) {
@@ -75,8 +78,9 @@ export class Renderer {
         console.log(`rendered ${renderedamt} files and loaded ${cachedamt} rendered files from cache`);
 
         if (cacheUpdated) {
-            console.log('updating render cache at: ', path.join(dir, dotnugg.constants.paths.DEFAULT_RENDERER_CACHE_FILENAME));
-            fs.writeFileSync(path.join(dir, dotnugg.constants.paths.DEFAULT_RENDERER_CACHE_FILENAME), JSON.stringify(cache));
+            console.log('updating render cache at: ', cachepath);
+            dotnugg;
+            fs.writeFileSync(cachepath, JSON.stringify(cache));
         } else {
             console.log('No need to update dotnugg render cache');
         }
