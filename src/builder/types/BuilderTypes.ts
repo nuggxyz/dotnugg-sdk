@@ -33,3 +33,4 @@ export type OutputByItem = Dictionary<Dictionary<Output>>;
 
 export type Cache = Dictionary<{ hash: string; input: TransformTypes.Item; output: EncoderTypes.Output }>;
 export type PreCache = Dictionary<{ hash: string; input: TransformTypes.Item }>;
+export type PostCache = Dictionary<{ hash: string; input: TransformTypes.Item; output?: EncoderTypes.Output }>;

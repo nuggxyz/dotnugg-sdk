@@ -19,9 +19,9 @@ export class Builder {
 
     output: BuilderTypes.Output[] = [];
 
-    private outputByFileUriIndex: BuilderTypes.NumberDictionary<BuilderTypes.NumberDictionary<string>> = {};
+    public outputByFileUriIndex: BuilderTypes.NumberDictionary<BuilderTypes.NumberDictionary<string>> = {};
 
-    private outputByItemIndex: BuilderTypes.NumberDictionary<BuilderTypes.NumberDictionary<number>> = {};
+    public outputByItemIndex: BuilderTypes.NumberDictionary<BuilderTypes.NumberDictionary<number>> = {};
 
     unbrokenArray: BigNumber[][] = [];
 
@@ -123,36 +123,43 @@ export class Builder {
         }
     }
 
-    // public static transformWithCache(dir: string, input: TransformTypes.Document) {
-    //     const cachepath = Config.cachePath(dir, 'transformer');
+    public static transformWithCache(dir: string, input: TransformTypes.Document) {
+        const cachepath = Config.cachePath(dir, 'transformer');
 
-    //     let needsProcessing: TransformTypes.Document = { collection: input.collection, items: [] };
-    //     let cache: BuilderTypes.Cache;
+        let needsProcessing: TransformTypes.Document = { collection: input.collection, items: [] };
+        let processed: EncoderTypes.Output[] = [];
+        let postCache: BuilderTypes.PostCache = {};
+        let cache: BuilderTypes.Cache = {};
 
-    //     const precache: BuilderTypes.PreCache = input.items.reduce((prev, curr) => {
-    //         return { ...prev, [curr.fileName]: { hash: keccak256([...Buffer.from(JSON.stringify(curr))]), input: curr } };
-    //     }, {});
+        const precache: BuilderTypes.PreCache = input.items.reduce((prev, curr) => {
+            return { ...prev, [curr.fileName]: { hash: keccak256([...Buffer.from(JSON.stringify(curr))]), input: curr } };
+        }, {});
 
-    //     try {
-    //         let rawdata = fs.readFileSync(cachepath, 'utf8');
-    //         cache = JSON.parse(rawdata);
+        try {
+            let rawdata = fs.readFileSync(cachepath, 'utf8');
+            cache = JSON.parse(rawdata);
 
-    //         if (cache[`${undefined}`]) cache = {};
-    //     } catch (err) {
-    //         console.log('no cache file found at: ', cachepath);
-    //     }
+            if (cache[`${undefined}`]) cache = {};
+        } catch (err) {
+            console.log('no cache file found at: ', cachepath);
+        }
 
-    //     const keys = Object.keys(precache);
+        const keys = Object.keys(precache);
 
-    //     for (var i = 0; i < keys.length; i++) {
-    //         if (cache[keys[i]] && cache[keys[i]].hash === precache[keys[i]].hash) {
-    //         }
-    //     }
+        for (var i = 0; i < keys.length; i++) {
+            if (cache[keys[i]] && cache[keys[i]].hash === precache[keys[i]].hash) {
+                processed.push(cache[keys[i]].output);
+                postCache[keys[i]] = cache[keys[i]];
+            } else {
+                needsProcessing.items.push(precache[keys[i]].input);
+                postCache[keys[i]] = precache[keys[i]];
+            }
+        }
 
-    //     // cache.reduce((prev, curr) => {
-    //     //     const hash = keccak256(curr.)
-    //     // }, { ok: [], old: [] });
-    // }
+        // cache.reduce((prev, curr) => {
+        //     const hash = keccak256(curr.)
+        // }, { ok: [], old: [] });
+    }
 
     protected constructor(trans: TransformTypes.Document) {
         const input = Transform.fromObject(trans).output;
