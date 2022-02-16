@@ -31,12 +31,12 @@ describe('main', () => {
         const comp = dotnugg.compiler.compileDirectoryCheckCacheAndRender(
             '0xcbfE2DF1355628Ff7525ae69C31DC708A1b03D40',
             new ethers.providers.InfuraProvider('goerli', 'a1625b39cf0047febd415f9b37d8c931'),
-            path.join(__dirname, './assets'),
+            path.join(__dirname, '../../../nuggft-art'),
         );
 
         await comp.renderer.wait();
 
-        console.log(comp.renderer.results);
+        // console.log(comp.renderer.results);
     });
 
     it('injector test', async () => {

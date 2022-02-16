@@ -12,18 +12,31 @@ export class Renderer {
 
     // now
     public promisedResults: { [_: string]: { mtimeMs: number; data: Promise<string> } };
-
+    public cacheUpdated = false;
+    private cachepath: string;
     // before
     public results: { [_: string]: { mtimeMs: number; data: string } };
 
     public async wait() {
-        await Promise.all(
-            Object.values(this.promisedResults).map(async (x) => {
-                await x.data;
-            }),
-        );
+        this.results = (
+            await Promise.all(
+                Object.entries(this.promisedResults).map(async (x) => {
+                    const data = await x[1].data;
+                    return { data, name: x[0], mtimeMs: x[1].mtimeMs };
+                }),
+            )
+        ).reduce((prev, curr) => {
+            return { ...prev, [curr.name]: { data: curr.data, mtimeMs: curr.mtimeMs } };
+        }, {});
 
-        this.results = this.promisedResults as any;
+        if (this.cacheUpdated) {
+            console.log('updating render cache at: ', this.cachepath);
+            dotnugg.utils.ensureDirectoryExistence(this.cachepath);
+
+            fs.writeFileSync(this.cachepath, JSON.stringify(this.results));
+        } else {
+            console.log('No need to update dotnugg render cache');
+        }
     }
     private constructor(addr: string, prov: ethers.providers.InfuraProvider) {
         this._instance = new ethers.Contract(addr, IDotnuggV1Resolver__factory.abi, prov) as IDotnuggV1Resolver;
@@ -39,11 +52,9 @@ export class Renderer {
         dir: string,
         files: { data: ethers.BigNumber[]; path: string; mtimeMs: number }[],
     ) {
-        let cachepath = Config.cachePath(dir, 'renderer');
-        dotnugg.utils.ensureDirectoryExistence(cachepath);
         let me = new Renderer(addr, prov);
-        // let files = Cacher.getFilesInDir(dir);
-        let cacheUpdated = false;
+        me.cachepath = Config.cachePath(dir, 'renderer');
+        // me.cachepath = Cacher.getFilesInDir(dir);
 
         let cache: { [_: string]: { mtimeMs: number; data: Promise<string> } } = {};
 
@@ -51,17 +62,16 @@ export class Renderer {
         let renderedamt = 0;
 
         try {
-            let rawdata = fs.readFileSync(cachepath, 'utf8');
+            let rawdata = fs.readFileSync(me.cachepath, 'utf8');
             cache = JSON.parse(rawdata);
 
             if (cache[`${undefined}`]) cache = {};
         } catch (err) {
-            console.log('no cache file found at: ', cachepath);
+            console.log('no cache file found at: ', me.cachepath);
         }
 
         for (var i = 0; i < files.length; i++) {
             const { path, data, mtimeMs } = files[i];
-
             if (cache[path]) {
                 if (mtimeMs && mtimeMs === cache[path].mtimeMs) {
                     cachedamt++;
@@ -72,18 +82,12 @@ export class Renderer {
             cache[path] = { mtimeMs, data: me.renderOnChain(data, true) };
 
             renderedamt++;
-            cacheUpdated = true;
+            me.cacheUpdated = true;
         }
 
-        console.log(`rendered ${renderedamt} files and loaded ${cachedamt} rendered files from cache`);
+        console.log(`rendered ${renderedamt} files and must "wait()" to save ${cachedamt} rendered files to cache`);
 
-        if (cacheUpdated) {
-            console.log('updating render cache at: ', cachepath);
-            dotnugg;
-            fs.writeFileSync(cachepath, JSON.stringify(cache));
-        } else {
-            console.log('No need to update dotnugg render cache');
-        }
+        me.promisedResults = cache;
 
         return me;
     }

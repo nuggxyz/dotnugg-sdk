@@ -1,9 +1,13 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import invariant from 'tiny-invariant';
 
 import * as TransformTypes from '../types/TransformTypes';
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
 import { dotnugg } from '../..';
+import { Config } from '../../parser/classes/Config';
 
 export class Transform {
     input: TransformTypes.Document;
@@ -18,28 +22,31 @@ export class Transform {
 
     seenIds: { [_: number]: { [_: number]: boolean } } = { 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {} };
 
-    private constructor(input: TransformTypes.Document) {
+    cachepath: string;
+
+    private constructor(input: TransformTypes.Document, prev: EncoderTypes.Item[]) {
         this.input = input;
 
         this.output = {
             collection: this.input.collection ? this.transformCollection(this.input.collection) : undefined,
-            items: this.input.items.reduce((accumulator, x) => {
-                if (x.feature !== 'INVALID') {
+            items: this.input.items.reduce((accumulator: EncoderTypes.Item[], x) => {
+                if (x.feature !== 'CHANGE_ME' && x.feature !== 'INVALID') {
                     accumulator.push(new ItemTransform(this).transformItem(x));
                 }
                 return accumulator;
-            }, []),
+            }, prev),
         };
     }
+
     public static fromObject(obj: TransformTypes.Document) {
-        return new Transform(obj);
+        return new Transform(obj, []);
     }
     public static fromString(json: string) {
-        return new Transform(JSON.parse(json));
+        return new Transform(JSON.parse(json), []);
     }
 
     public static fromParser(parser: dotnugg.parser) {
-        return new Transform(JSON.parse(parser.json));
+        return new Transform(JSON.parse(parser.json), []);
     }
 
     transformCollection(input: TransformTypes.Collection): EncoderTypes.Collection {

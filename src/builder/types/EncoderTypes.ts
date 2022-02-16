@@ -12,6 +12,14 @@ export type EncodedDocument = {
     items: BuilderTypes.Dictionary<Bytes>;
 };
 
+export type Output = {
+    feature: number;
+    bits: Byter[];
+    fileName: string;
+    id: number;
+    mtimeMs?: number;
+};
+
 // export type Item struct {
 // 	Versions []*Version
 // 	Pixels   []*Pixel

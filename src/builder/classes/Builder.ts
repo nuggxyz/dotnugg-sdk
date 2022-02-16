@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+
 import { BigNumber, BytesLike, ethers } from 'ethers';
 import { AbiCoder, keccak256 } from 'ethers/lib/utils';
 import invariant from 'tiny-invariant';
@@ -7,6 +9,7 @@ import * as TransformTypes from '../types/TransformTypes';
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
 import { dotnugg } from '../..';
+import { Config } from '../../parser/classes/Config';
 
 import { Transform } from './Transform';
 import { Encoder } from './Encoder';
@@ -64,15 +67,15 @@ export class Builder {
     lastSeenId: { [_: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
 
     public static fromObject(obj: TransformTypes.Document) {
-        return new Builder(Transform.fromObject(obj));
+        return new Builder(obj);
     }
 
     public static fromString(json: string) {
-        return new Builder(Transform.fromString(json));
+        return new Builder(JSON.parse(json));
     }
 
     public static fromParser(parser: dotnugg.parser) {
-        return new Builder(Transform.fromParser(parser));
+        return new Builder(JSON.parse(parser.json));
     }
 
     public static adjustWeight(input: number) {
@@ -120,8 +123,39 @@ export class Builder {
         }
     }
 
-    protected constructor(transform: Transform) {
-        const input = transform.output;
+    // public static transformWithCache(dir: string, input: TransformTypes.Document) {
+    //     const cachepath = Config.cachePath(dir, 'transformer');
+
+    //     let needsProcessing: TransformTypes.Document = { collection: input.collection, items: [] };
+    //     let cache: BuilderTypes.Cache;
+
+    //     const precache: BuilderTypes.PreCache = input.items.reduce((prev, curr) => {
+    //         return { ...prev, [curr.fileName]: { hash: keccak256([...Buffer.from(JSON.stringify(curr))]), input: curr } };
+    //     }, {});
+
+    //     try {
+    //         let rawdata = fs.readFileSync(cachepath, 'utf8');
+    //         cache = JSON.parse(rawdata);
+
+    //         if (cache[`${undefined}`]) cache = {};
+    //     } catch (err) {
+    //         console.log('no cache file found at: ', cachepath);
+    //     }
+
+    //     const keys = Object.keys(precache);
+
+    //     for (var i = 0; i < keys.length; i++) {
+    //         if (cache[keys[i]] && cache[keys[i]].hash === precache[keys[i]].hash) {
+    //         }
+    //     }
+
+    //     // cache.reduce((prev, curr) => {
+    //     //     const hash = keccak256(curr.)
+    //     // }, { ok: [], old: [] });
+    // }
+
+    protected constructor(trans: TransformTypes.Document) {
+        const input = Transform.fromObject(trans).output;
 
         for (var i = 0; i < 8; i++) {
             this.outputByItemIndex[i] = {};
@@ -130,45 +164,47 @@ export class Builder {
         }
 
         const res1: BuilderTypes.Output[] = input.items
-            .sort((a, b) => a.feature - b.feature || a.id - b.id)
             .map((x: EncoderTypes.Item, index) => {
-                const item = Encoder.encodeItem(x);
+                return { output: Encoder.encodeItem(x), input: x };
+            })
+            .sort((a, b) => a.input.feature - b.input.feature || a.input.id - b.input.id)
 
-                this.cumlWeights[item.feature] += x.weight;
-                this.cumlWeightsArray[item.feature].push({
-                    id: item.id,
-                    cuml: this.cumlWeights[item.feature],
-                    indv: x.weight,
+            .map((item, index) => {
+                this.cumlWeights[item.output.feature] += item.input.weight;
+                this.cumlWeightsArray[item.output.feature].push({
+                    id: item.output.id,
+                    cuml: this.cumlWeights[item.output.feature],
+                    indv: item.input.weight,
                 });
 
                 invariant(
-                    this.lastSeenId[item.feature] + 1 === item.id,
-                    `BUILDER:ID-INCREMENT-BY-1: duplicate or missing item found for ${x.fileName}:  ${
-                        this.lastSeenId[item.feature]
-                    } + 1 !== ${item.id}`,
+                    this.lastSeenId[item.output.feature] + 1 === item.output.id,
+                    `BUILDER:ID-INCREMENT-BY-1: duplicate or missing item found for ${item.input.fileName}:  ${
+                        this.lastSeenId[item.output.feature]
+                    } + 1 !== ${item.output.id}`,
                 );
 
-                this.lastSeenId[item.feature]++;
+                this.lastSeenId[item.output.feature]++;
 
-                const bet = Encoder.strarr(item.bits);
+                const bet = Encoder.strarr(item.output.bits);
 
                 const bu = Builder.breakup(bet);
 
                 let res: BuilderTypes.Output = {
-                    ...item,
+                    ...item.output,
                     hex: bu,
-                    fileName: x.fileName,
-                    fileUri: x.fileUri,
+                    fileName: item.input.fileName,
+                    fileUri: item.input.fileUri,
                     percentWeight: 0,
-                    feature: x.feature,
-                    wanings: x.warnings,
+                    feature: item.input.feature,
+                    wanings: item.input.warnings,
                 };
 
                 delete (res as any).bits;
 
-                this.unbrokenArray[x.feature].push(bet);
-                this.outputByItemIndex[x.feature][x.id] = index;
-                this.outputByFileUriIndex[x.fileUri] = index;
+                this.unbrokenArray[item.input.feature].push(bet);
+                this.outputByItemIndex[item.input.feature][item.input.id] = index;
+                this.outputByFileUriIndex[item.input.fileUri] = index;
 
                 return res;
             });

@@ -16,7 +16,8 @@ export type NumberDictionary<T> = {
 };
 
 export type Weight = { id: number; cuml: number; indv: number };
-
+import * as TransformTypes from '../types/TransformTypes';
+import * as EncoderTypes from '../types/EncoderTypes';
 export type Output = {
     id: number;
     fileName: string;
@@ -29,3 +30,6 @@ export type Output = {
 };
 
 export type OutputByItem = Dictionary<Dictionary<Output>>;
+
+export type Cache = Dictionary<{ hash: string; input: TransformTypes.Item; output: EncoderTypes.Output }>;
+export type PreCache = Dictionary<{ hash: string; input: TransformTypes.Item }>;

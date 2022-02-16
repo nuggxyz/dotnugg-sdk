@@ -1,3 +1,5 @@
+import { BytesLike } from 'ethers';
+
 import { PixelType } from '../../parser/types/ParserTypes';
 
 import * as BuilderTypes from './BuilderTypes';
