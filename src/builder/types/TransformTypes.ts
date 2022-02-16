@@ -1,6 +1,6 @@
 import { BytesLike } from 'ethers';
 
-import { PixelType } from '../../parser/types/ParserTypes';
+import { PixelType, ReceiverType } from '../../parser/types/ParserTypes';
 
 import * as BuilderTypes from './BuilderTypes';
 
@@ -48,6 +48,7 @@ export type Direction = '+' | '-';
 
 export type Item = {
     fileName: string;
+    fileUri: string;
     isDefault: boolean;
     feature: string;
     colors: BuilderTypes.Dictionary<Pixel>;
@@ -55,6 +56,7 @@ export type Item = {
     weight: number;
     order: number;
     mtimeMs?: number;
+    warings: string[];
 };
 
 export type Level = {
@@ -73,7 +75,7 @@ export type MatrixPixel = {
 };
 
 export type Receiver = {
-    type: string;
+    type: ReceiverType;
     feature: string;
     a: { offset: BuilderTypes.uint8; direction: Direction };
     b: { offset: BuilderTypes.uint8; direction: Direction };

@@ -8,6 +8,7 @@ import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
 import { dotnugg } from '../..';
 import { Config } from '../../parser/classes/Config';
+import { ReceiverType } from '../../parser/types/ParserTypes';
 
 export class Transform {
     input: TransformTypes.Document;
@@ -86,9 +87,9 @@ export class Transform {
     transformReceiver(input: TransformTypes.Receiver): EncoderTypes.Receiver {
         return {
             xorZindex: input.a.offset, // zindex or x
-            yorYoffset: input.b.offset + (input.type === 'calculated' && input.b.direction === '-' ? 32 : 0), // yoffset or y
+            yorYoffset: input.b.offset + (input.type === ReceiverType.CALCULATED && input.b.direction === '-' ? 32 : 0), // yoffset or y
             feature: this.featureMap[input.feature],
-            calculated: input.type === 'calculated',
+            calculated: input.type === ReceiverType.CALCULATED,
         };
     }
     transformReceivers(input: TransformTypes.Receiver[]): EncoderTypes.Receiver[] {
