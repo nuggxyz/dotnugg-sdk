@@ -48,6 +48,8 @@ export type Item = {
     feature: string;
     colors: BuilderTypes.Dictionary<Pixel>;
     versions: BuilderTypes.Dictionary<Version>;
+    weight: number;
+    order: number;
     mtimeMs?: number;
 };
 

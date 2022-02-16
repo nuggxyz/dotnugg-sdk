@@ -1,4 +1,4 @@
-@item(HEAD, 1, .09) := {
+@item(HEAD, 2, .0055) := {
     colors := {
         a := { zindex: +D, rgba: "#000000AA" }
         b := { zindex: +D, rgba: "rgba(244,240,204,255)" }

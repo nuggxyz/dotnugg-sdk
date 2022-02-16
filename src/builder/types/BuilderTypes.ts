@@ -14,3 +14,18 @@ export type Dictionary<T> = {
 export type NumberDictionary<T> = {
     [_: number]: T;
 };
+
+export type Weight = { id: number; cuml: number; indv: number };
+
+export type Output = {
+    id: number;
+    fileName: string;
+    fileUri: string;
+    feature: number;
+    hex: import('ethers').BigNumber[];
+    mtimeMs?: number;
+    percentWeight: number;
+    wanings: string[];
+};
+
+export type OutputByItem = Dictionary<Dictionary<Output>>;

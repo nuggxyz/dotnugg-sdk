@@ -16,6 +16,8 @@ export class Transform {
     sortedFeatureStrings: string[] = [];
     sortedFeatureUints: BuilderTypes.uint8[] = [];
 
+    seenIds: { [_: number]: { [_: number]: boolean } } = { 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {} };
+
     private constructor(input: TransformTypes.Document) {
         this.input = input;
 
@@ -48,6 +50,7 @@ export class Transform {
                 this.featureMap[args[0]] = i;
                 // console.log(args[0], this.defaultLayerMap[args[0]].toString());
                 this.defaultLayerMap[args[0]] = new ItemTransform(this).transformLevel(args[1].zindex as TransformTypes.Level) - 4;
+
                 return args;
             })
             .map(([k, v], i) => {
@@ -118,9 +121,18 @@ export class ItemTransform {
 
         dotnugg.utils.invariantFatal(fileName.split('.').length > 1, ['TRANSITEM:SPLTFN:0 - ', fileName.split('.').length]);
 
-        const id = fileName.split('.')[1] === 'collection' ? 0 : +fileName.split('.')[1];
+        const id = input.order;
 
-        invariant(!Number.isNaN(id), 'TRANSITEM:SPLTFN:1 - ' + fileName.split('.')[1] + ' - ' + id);
+        // invariant(this.transformer.lastSeenId[this.feature] + 1 == id, "")
+
+        invariant(
+            !this.transformer.seenIds[this.transformer.featureMap[input.feature]][id],
+            `duplicate Id - ${id} - found for ${this.feature}`,
+        );
+
+        this.transformer.seenIds[this.transformer.featureMap[input.feature]][id] = true;
+
+        invariant(!Number.isNaN(id), 'TRANSITEM:SPLTFN:1 - ' + fileName);
 
         if (input.versions === undefined) {
             console.log(input);
@@ -133,6 +145,10 @@ export class ItemTransform {
             feature: this.transformer.featureMap[input.feature],
             versions: this.transformVersions(input.versions),
             mtimeMs: input.mtimeMs,
+            order: input.order,
+            weight: input.weight,
+            fileUri: input.fileName,
+            warnings: [],
         };
     }
 

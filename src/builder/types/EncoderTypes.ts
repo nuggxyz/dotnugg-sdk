@@ -22,10 +22,14 @@ export type Item = {
     id: number;
     fileName: string;
     folderName: string;
+    fileUri: string;
     versions: Version[];
     pixels: Pixel[];
     feature: BuilderTypes.uint8;
     mtimeMs?: number;
+    order: number;
+    weight: number;
+    warnings: string[];
 };
 // export type Version struct {
 // 	Groups    []*Group
@@ -35,31 +39,6 @@ export type Item = {
 // 	Radii     *Rlud
 // 	Receivers []*Receiver
 // }
-
-export type Byter = {
-    dat: string | number;
-    bit: number;
-    nam?: string;
-};
-
-export type Result = {
-    feature: number;
-    bits: Byter[];
-    hex: import('ethers').BigNumber[];
-};
-
-export type EncoderOutput = {
-    id: number;
-    fileName: string;
-    feature: number;
-    bits: Byter[];
-    hex: import('ethers').BigNumber[];
-    hexMocked: import('ethers').BigNumber[];
-    mtimeMs?: number;
-};
-
-export type OutputByItem = BuilderTypes.Dictionary<BuilderTypes.Dictionary<EncoderOutput>>;
-export type OutputByItemArray = BuilderTypes.Dictionary<Array<EncoderOutput>>;
 
 export type Version = {
     groups: Group[];
@@ -112,6 +91,17 @@ export type Receiver = {
 // 	U      BuilderTypes.uint8
 // 	D      BuilderTypes.uint8
 // }
+export type Byter = {
+    dat: string | number;
+    bit: number;
+    nam?: string;
+};
+
+export type Result = {
+    feature: number;
+    bits: Byter[];
+    hex: import('ethers').BigNumber[];
+};
 
 export type Rlud = {
     exists: boolean;

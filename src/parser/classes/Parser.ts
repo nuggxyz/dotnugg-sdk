@@ -286,7 +286,7 @@ export class Parser {
             // Loop them all with the new for...of
             for (const file of files) {
                 // Get the full paths
-                const fromPath = path.join(dir, file);
+                const fromPath = path.resolve(path.join(dir, file));
                 // Stat the file to see if we have a file or dir
                 const stat = fs.statSync(fromPath);
                 // console.log('checking...', file);
