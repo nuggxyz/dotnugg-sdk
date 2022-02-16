@@ -153,18 +153,6 @@ export class Parser {
         return new Parser(file, filePath, filePath).init();
     }
 
-    // public static merge(old: Parser, recent: Parser, item: ParserTypes.RangeOf<ParserTypes.Item>) {
-    //     // always replace connection if it exists
-    //     if (old.results.collection && !recent.results.collection) {
-    //         recent.results.collection = old.results.collection;
-    //     }
-
-    //     for (let i = 0; i < recent.results.items.length; i++) {
-    //         recent.results.items[i].
-    //     }
-    //     //
-    // }
-
     public static parseDirectoryFromObject(
         dir: string,
         prevParser?: Parser,
@@ -1414,9 +1402,15 @@ export class Parser {
             const token = this.current;
             let endToken = undefined;
             let feature: string = undefined;
+            let weight: number = undefined;
+            let order: number = undefined;
+
             let isDefault: boolean = undefined;
 
             let featureToken: ParserTypes.ParsedToken = undefined;
+            let weightToken: ParserTypes.ParsedToken = undefined;
+            let orderToken: ParserTypes.ParsedToken = undefined;
+
             let colors = undefined;
             let versions = undefined;
 
@@ -1424,6 +1418,14 @@ export class Parser {
                 if (this.has(tokens.ItemOpenFeature)) {
                     feature = this.currentValue;
                     featureToken = this.current;
+                }
+                if (this.has(tokens.ItemOpenOrder)) {
+                    order = +this.currentValue;
+                    orderToken = this.current;
+                }
+                if (this.has(tokens.ItemOpenWeight)) {
+                    weight = +this.currentValue;
+                    weightToken = this.current;
                 }
                 if (this.has(tokens.ItemOpenDefaultOrItem)) {
                     isDefault = this.currentValue === 'default';
@@ -1460,6 +1462,14 @@ export class Parser {
                     isDefault,
                     colors,
                     versions,
+                    weight: {
+                        value: weight,
+                        token: weightToken,
+                    },
+                    order: {
+                        value: order,
+                        token: orderToken,
+                    },
                     feature: {
                         value: feature,
                         token: featureToken,

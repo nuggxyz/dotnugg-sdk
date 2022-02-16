@@ -9,8 +9,10 @@ import { dotnugg } from '../..';
 export class Renderer {
     private _instance: IDotnuggV1Resolver;
 
+    // now
     public promisedResults: { [_: string]: { mtimeMs: number; data: Promise<string> } };
 
+    // before
     public results: { [_: string]: { mtimeMs: number; data: string } };
 
     public async wait() {

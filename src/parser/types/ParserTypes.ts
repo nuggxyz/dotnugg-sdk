@@ -42,6 +42,8 @@ export type Colors = Dictionary<RangeOf<Color>>;
 export type Item = {
     isDefault: boolean;
     feature: RangeOf<string>;
+    weight: RangeOf<number>;
+    order: RangeOf<number>;
     colors: RangeOf<Colors>;
     versions: RangeOf<Versions>;
     fileName: string;

@@ -30,6 +30,8 @@ const dotnugg = 'dotnugg';
 const defaultOrItem = '.defaultOrItem';
 const receiver = '.receiver';
 const width = '.width';
+const order = '.order';
+const weight = '.weight';
 
 const l = '.l';
 const r = '.r';
@@ -47,6 +49,9 @@ const Collection = dotnugg + collection;
 const ItemContent = Item + content;
 const ItemOpen = Item + open;
 const ItemOpenFeature = ItemOpen + feature;
+const ItemOpenOrder = ItemOpen + order;
+const ItemOpenWeight = ItemOpen + weight;
+
 const ItemOpenDefaultOrItem = ItemOpen + defaultOrItem;
 
 const ItemClose = Item + close;
@@ -290,4 +295,6 @@ export default {
     CollectionFeatureLongExpandableAtDetailsClose,
     CollectionFeatureLongName,
     CollectionOpenWidth,
+    ItemOpenOrder,
+    ItemOpenWeight,
 };
