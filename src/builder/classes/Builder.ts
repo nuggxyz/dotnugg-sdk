@@ -25,8 +25,8 @@ export class Builder {
 
     unbrokenArray: BigNumber[][] = [];
 
-    compileTimeBytecode: BytesLike[];
-    compileTimeBytecodeEncoded: BytesLike;
+    // compileTimeBytecode: BytesLike[];
+    // compileTimeBytecodeEncoded: BytesLike;
 
     cumlWeights: { [_: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
     cumlWeightsArray: { [_: number]: Array<BuilderTypes.Weight> } = {
@@ -123,43 +123,54 @@ export class Builder {
         }
     }
 
-    public static transformWithCache(dir: string, input: TransformTypes.Document) {
-        const cachepath = Config.cachePath(dir, 'transformer');
+    // public static transformWithCache(dir: string, input: TransformTypes.Document) {
+    //     const cachepath = Config.cachePath(dir, 'transformer');
 
-        let needsProcessing: TransformTypes.Document = { collection: input.collection, items: [] };
-        let processed: EncoderTypes.Output[] = [];
-        let postCache: BuilderTypes.PostCache = {};
-        let cache: BuilderTypes.Cache = {};
+    //     let needsProcessing: TransformTypes.Document = { collection: input.collection, items: [] };
+    //     let processed: BuilderTypes.CacheArray = [];
+    //     let postCache: BuilderTypes.PostCache = {};
+    //     let cache: BuilderTypes.Cache = {};
+    //     const precache: BuilderTypes.PreCache = input.items.reduce((prev, curr) => {
+    //         return { ...prev, [curr.fileName]: { hash: keccak256([...Buffer.from(JSON.stringify(curr))]), input: curr } };
+    //     }, {});
 
-        const precache: BuilderTypes.PreCache = input.items.reduce((prev, curr) => {
-            return { ...prev, [curr.fileName]: { hash: keccak256([...Buffer.from(JSON.stringify(curr))]), input: curr } };
-        }, {});
+    //     try {
+    //         let rawdata = fs.readFileSync(cachepath, 'utf8');
+    //         cache = JSON.parse(rawdata);
 
-        try {
-            let rawdata = fs.readFileSync(cachepath, 'utf8');
-            cache = JSON.parse(rawdata);
+    //         if (cache[`${undefined}`]) cache = {};
+    //     } catch (err) {
+    //         console.log('no cache file found at: ', cachepath);
+    //     }
 
-            if (cache[`${undefined}`]) cache = {};
-        } catch (err) {
-            console.log('no cache file found at: ', cachepath);
-        }
+    //     const keys = Object.keys(precache);
 
-        const keys = Object.keys(precache);
+    //     for (var i = 0; i < keys.length; i++) {
+    //         if (cache[keys[i]] && cache[keys[i]].hash === precache[keys[i]].hash) {
+    //             processed.push(cache[keys[i]]);
+    //             postCache[keys[i]] = cache[keys[i]];
+    //             console.log('ayyyyyeeeee');
+    //         } else {
+    //             needsProcessing.items.push(precache[keys[i]].input);
+    //             postCache[keys[i]] = precache[keys[i]];
+    //         }
+    //     }
+    //     let cacheUpdate = false;
+    //     console.log('amt: ', needsProcessing.items.length);
+    //     let me = new Builder(needsProcessing, processed, (input) => {
+    //         cacheUpdate = true;
+    //         postCache[input.fileUri].output = input;
+    //     });
 
-        for (var i = 0; i < keys.length; i++) {
-            if (cache[keys[i]] && cache[keys[i]].hash === precache[keys[i]].hash) {
-                processed.push(cache[keys[i]].output);
-                postCache[keys[i]] = cache[keys[i]];
-            } else {
-                needsProcessing.items.push(precache[keys[i]].input);
-                postCache[keys[i]] = precache[keys[i]];
-            }
-        }
+    //     if (cacheUpdate) {
+    //         console.log('updating render cache at: ', cachepath);
+    //         dotnugg.utils.ensureDirectoryExistence(cachepath);
 
-        // cache.reduce((prev, curr) => {
-        //     const hash = keccak256(curr.)
-        // }, { ok: [], old: [] });
-    }
+    //         fs.writeFileSync(cachepath, JSON.stringify(postCache));
+    //     }
+
+    //     return me;
+    // }
 
     protected constructor(trans: TransformTypes.Document) {
         const input = Transform.fromObject(trans).output;
@@ -170,12 +181,15 @@ export class Builder {
             this.unbrokenArray[i] = [];
         }
 
-        const res1: BuilderTypes.Output[] = input.items
-            .map((x: EncoderTypes.Item, index) => {
-                return { output: Encoder.encodeItem(x), input: x };
-            })
-            .sort((a, b) => a.input.feature - b.input.feature || a.input.id - b.input.id)
+        const res0: { input: EncoderTypes.Item; output: EncoderTypes.Output }[] = [
+            ...input.items.map((x: EncoderTypes.Item, index) => {
+                const res = { output: Encoder.encodeItem(x), input: x };
+                return res;
+            }),
+        ];
 
+        const res1: BuilderTypes.Output[] = res0
+            .sort((a, b) => a.output.feature - b.output.feature || a.output.id - b.output.id)
             .map((item, index) => {
                 this.cumlWeights[item.output.feature] += item.input.weight;
                 this.cumlWeightsArray[item.output.feature].push({
@@ -193,47 +207,88 @@ export class Builder {
 
                 this.lastSeenId[item.output.feature]++;
 
-                const bet = Encoder.strarr(item.output.bits);
-
-                const bu = Builder.breakup(bet);
-
                 let res: BuilderTypes.Output = {
                     ...item.output,
-                    hex: bu,
                     fileName: item.input.fileName,
                     fileUri: item.input.fileUri,
                     percentWeight: 0,
-                    feature: item.input.feature,
-                    wanings: item.input.warnings,
+                    feature: item.output.feature,
+                    wanings: item.output.warnings,
                 };
 
-                delete (res as any).bits;
+                // delete (res as any).bits;
 
-                this.unbrokenArray[item.input.feature].push(bet);
-                this.outputByItemIndex[item.input.feature][item.input.id] = index;
-                this.outputByFileUriIndex[item.input.fileUri] = index;
+                // this.unbrokenArray[item.output.feature].push(bet);
+                this.outputByItemIndex[item.output.feature][item.output.id] = index;
+                this.outputByFileUriIndex[item.output.fileUri] = index;
 
                 return res;
             });
 
         this.adjustWeights();
 
-        this.compileTimeBytecode = [
-            Builder.squish(this.unbrokenArray[0], this.adjustedCumlWeightsArray[0]),
-            Builder.squish(this.unbrokenArray[1], this.adjustedCumlWeightsArray[1]),
-            Builder.squish(this.unbrokenArray[2], this.adjustedCumlWeightsArray[2]),
-            Builder.squish(this.unbrokenArray[3], this.adjustedCumlWeightsArray[3]),
-            Builder.squish(this.unbrokenArray[4], this.adjustedCumlWeightsArray[4]),
-            Builder.squish(this.unbrokenArray[5], this.adjustedCumlWeightsArray[5]),
-            Builder.squish(this.unbrokenArray[6], this.adjustedCumlWeightsArray[6]),
-            Builder.squish(this.unbrokenArray[7], this.adjustedCumlWeightsArray[7]),
-        ];
-
-        this.compileTimeBytecodeEncoded = new AbiCoder().encode([ethers.utils.ParamType.fromString('bytes[]')], [this.compileTimeBytecode]);
-
         this.output = res1.map((x) => {
             return { ...x, percentWeight: this.adjustedCumlWeightsArray[x.feature][x.id - 1].indv / 0xffff };
         });
+    }
+
+    public hexFromBits(input: BuilderTypes.Output['bits']) {
+        return Encoder.strarr(input);
+    }
+
+    public hexArrayFromBits(input: BuilderTypes.Output['bits']) {
+        return Builder.breakup(this.hexFromBits(input));
+    }
+
+    public hexFromId(feature: number, pos: number) {
+        return Encoder.strarr(this.output[this.outputByItemIndex[feature][pos]].bits);
+    }
+
+    public hexArrayFromId(feature: number, pos: number) {
+        return Builder.breakup(this.hexFromId(feature, pos));
+    }
+
+    public hex(input: BuilderTypes.Output) {
+        return Encoder.strarr(input.bits);
+    }
+
+    public hexArray(input: BuilderTypes.Output) {
+        return Builder.breakup(this.hex(input));
+    }
+
+    private _compileTimeBytecodeEncoded: BytesLike;
+
+    public get compileTimeBytecodeEncoded() {
+        if (!this._compileTimeBytecodeEncoded) {
+            this._compileTimeBytecodeEncoded = new AbiCoder().encode(
+                [ethers.utils.ParamType.fromString('bytes[]')],
+                [this.compileTimeBytecode],
+            );
+        }
+        return this._compileTimeBytecodeEncoded;
+    }
+
+    private _compileTimeBytecode: BytesLike[];
+
+    public get compileTimeBytecode() {
+        if (!this._compileTimeBytecode) {
+            Object.keys(this.outputByItemIndex).forEach((x) => {
+                Object.keys(this.outputByItemIndex[x]).forEach((y) => {
+                    if (y !== '0') this.unbrokenArray[+x].push(this.hexFromId(+x, +y));
+                });
+            });
+            this._compileTimeBytecode = [
+                Builder.squish(this.unbrokenArray[0], this.adjustedCumlWeightsArray[0]),
+                Builder.squish(this.unbrokenArray[1], this.adjustedCumlWeightsArray[1]),
+                Builder.squish(this.unbrokenArray[2], this.adjustedCumlWeightsArray[2]),
+                Builder.squish(this.unbrokenArray[3], this.adjustedCumlWeightsArray[3]),
+                Builder.squish(this.unbrokenArray[4], this.adjustedCumlWeightsArray[4]),
+                Builder.squish(this.unbrokenArray[5], this.adjustedCumlWeightsArray[5]),
+                Builder.squish(this.unbrokenArray[6], this.adjustedCumlWeightsArray[6]),
+                Builder.squish(this.unbrokenArray[7], this.adjustedCumlWeightsArray[7]),
+            ];
+        }
+        return this._compileTimeBytecode;
     }
 
     public outputByItem(feature: number, pos: number): BuilderTypes.Output {

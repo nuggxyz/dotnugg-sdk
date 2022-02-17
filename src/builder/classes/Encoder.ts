@@ -196,13 +196,7 @@ export class Encoder {
     //         .flat();
     // }
 
-    public static encodeItem(input: EncoderTypes.Item): {
-        feature: number;
-        bits: EncoderTypes.Byter[];
-        fileName: string;
-        id: number;
-        mtimeMs?: number;
-    } {
+    public static encodeItem(input: EncoderTypes.Item): EncoderTypes.Output {
         let res: EncoderTypes.Byter[] = [this.fileHeader]; // uint56
 
         res.push(this.encodeFeature(input.feature));
@@ -227,7 +221,15 @@ export class Encoder {
             res.push(...this.encodeVersion(x));
         });
 
-        return { bits: res, feature: input.feature, fileName: input.fileName, id: input.id, mtimeMs: input.mtimeMs };
+        return {
+            bits: res,
+            feature: input.feature,
+            fileName: input.fileName,
+            id: input.id,
+            mtimeMs: input.mtimeMs,
+            fileUri: input.fileUri,
+            ...input,
+        };
     }
 
     public static encodeFeature(input: number): EncoderTypes.Byter {

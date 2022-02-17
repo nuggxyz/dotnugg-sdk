@@ -36,14 +36,7 @@ export class Watcher {
                     this.builder = dotnugg.builder.fromObject(this.parsedDocument);
 
                     if (contractAddr && provider) {
-                        this.renderer = dotnugg.renderer.renderCheckCache(
-                            contractAddr,
-                            provider,
-                            directory,
-                            this.builder.output.map((x) => {
-                                return { mtimeMs: x.mtimeMs, data: x.hex, path: x.fileName };
-                            }),
-                        );
+                        this.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, directory, this.builder);
                     }
 
                     onMemoryUpdateCallback && onMemoryUpdateCallback(filename);

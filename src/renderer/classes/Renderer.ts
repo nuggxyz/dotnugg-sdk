@@ -6,6 +6,7 @@ import { ethers } from 'ethers';
 import { IDotnuggV1Resolver, IDotnuggV1Resolver__factory } from '../../typechain';
 import { dotnugg } from '../..';
 import { Config } from '../../parser/classes/Config';
+import { Output } from '../../builder/types/BuilderTypes';
 
 export class Renderer {
     private _instance: IDotnuggV1Resolver;
@@ -46,12 +47,7 @@ export class Renderer {
         return await this._instance['combo(uint256[],bool)'](data, base64);
     }
 
-    public static renderCheckCache(
-        addr: string,
-        prov: ethers.providers.InfuraProvider,
-        dir: string,
-        files: { data: ethers.BigNumber[]; path: string; mtimeMs: number }[],
-    ) {
+    public static renderCheckCache(addr: string, prov: ethers.providers.InfuraProvider, dir: string, builder: dotnugg.builder) {
         let me = new Renderer(addr, prov);
         me.cachepath = Config.cachePath(dir, 'renderer');
         // me.cachepath = Cacher.getFilesInDir(dir);
@@ -70,16 +66,16 @@ export class Renderer {
             console.log('no cache file found at: ', me.cachepath);
         }
 
-        for (var i = 0; i < files.length; i++) {
-            const { path, data, mtimeMs } = files[i];
-            if (cache[path]) {
-                if (mtimeMs && mtimeMs === cache[path].mtimeMs) {
+        for (var i = 0; i < builder.output.length; i++) {
+            const { fileUri, mtimeMs } = builder.output[i];
+            if (cache[fileUri]) {
+                if (mtimeMs && mtimeMs === cache[fileUri].mtimeMs) {
                     cachedamt++;
                     continue;
                 }
             }
 
-            cache[path] = { mtimeMs, data: me.renderOnChain(data, true) };
+            cache[fileUri] = { mtimeMs, data: me.renderOnChain(builder.hexArray(builder.output[i]), true) };
 
             renderedamt++;
             me.cacheUpdated = true;

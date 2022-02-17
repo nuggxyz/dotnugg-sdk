@@ -50,14 +50,7 @@ export class Compiler extends Builder {
 
         let me = dotnugg.builder.fromObject(doc) as Compiler;
 
-        me.renderer = dotnugg.renderer.renderCheckCache(
-            contractAddr,
-            provider,
-            inputdir,
-            me.output.map((x) => {
-                return { mtimeMs: x.mtimeMs, data: x.hex, path: x.fileUri };
-            }),
-        );
+        me.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, inputdir, me);
 
         me.processed = true;
 

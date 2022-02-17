@@ -18,6 +18,10 @@ export type Output = {
     fileName: string;
     id: number;
     mtimeMs?: number;
+    fileUri: string;
+    order: number;
+    weight: number;
+    warnings: string[];
 };
 
 // export type Item struct {

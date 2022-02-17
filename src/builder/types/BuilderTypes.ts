@@ -23,13 +23,15 @@ export type Output = {
     fileName: string;
     fileUri: string;
     feature: number;
-    hex: import('ethers').BigNumber[];
+    bits: EncoderTypes.Byter[];
     mtimeMs?: number;
     percentWeight: number;
     wanings: string[];
 };
 
 export type OutputByItem = Dictionary<Dictionary<Output>>;
+
+export type CacheArray = { hash: string; input: TransformTypes.Item; output: EncoderTypes.Output }[];
 
 export type Cache = Dictionary<{ hash: string; input: TransformTypes.Item; output: EncoderTypes.Output }>;
 export type PreCache = Dictionary<{ hash: string; input: TransformTypes.Item }>;
