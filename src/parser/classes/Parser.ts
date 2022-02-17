@@ -29,11 +29,11 @@ export class Parser {
     }
 
     static async init(appname: AppName) {
-        if (!this._inited) {
-            await Config.init(appname);
+        // if (!this._inited) {
+        await Config.init(appname);
 
-            this._inited = true;
-        }
+        this._inited = true;
+        // }
     }
 
     private get next() {

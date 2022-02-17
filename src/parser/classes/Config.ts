@@ -6,6 +6,7 @@ import * as plist from 'plist';
 import * as oniguruma from 'vscode-oniguruma';
 import * as vsctm from 'vscode-textmate';
 import dotnuggGrammer from '@nuggxyz/dotnugg-grammar/dotnugg.tmLanguage.json';
+import invariant from 'tiny-invariant';
 
 import { AppName, CacheType } from '../../types';
 
@@ -50,6 +51,15 @@ export class Config {
 
     static cachePath(dir: string, cacheName: CacheType) {
         return path.resolve(dir, '.dotnugg-cache', this._appname, cacheName + '.txt');
+    }
+    static externalCachePath(dir: string, appName: AppName, cacheName: CacheType) {
+        invariant(
+            this._appname.startsWith(appName.split('/')[0]),
+            `INVALID:EXTERNAL:CACHE:REQUEST - you can only access cache from application "${this._appname.split('/')[0]}" and not "${
+                appName.split('/')[0]
+            }"`,
+        );
+        return path.resolve(dir, '.dotnugg-cache', appName, cacheName + '.txt');
     }
 
     static async init(name: AppName) {

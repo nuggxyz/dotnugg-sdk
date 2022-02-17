@@ -10,6 +10,7 @@ import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
 import { dotnugg } from '../..';
 import { Config } from '../../parser/classes/Config';
+import { AppName } from '../../types';
 
 import { Transform } from './Transform';
 import { Encoder } from './Encoder';
@@ -326,6 +327,29 @@ export class Builder {
         res = res.reverse();
 
         return res;
+    }
+
+    public static readFromExternalCache(dir: string, appName: AppName): Builder | undefined {
+        const cachepath = Config.externalCachePath(dir, appName, 'builder');
+
+        try {
+            let rawdata = fs.readFileSync(cachepath, 'utf8');
+
+            let cache = JSON.parse(rawdata) as Builder;
+            if (cache[`${undefined}`]) return undefined;
+            let me = new Builder();
+            me.output = cache.output;
+            me.lastSeenId = cache.lastSeenId;
+            me.weights = cache.weights;
+            me.outputByFileUriIndex = cache.outputByFileUriIndex;
+            me.outputByItemIndex = cache.outputByItemIndex;
+            me.unbrokenArray = cache.unbrokenArray;
+
+            return me;
+        } catch (err) {
+            console.log('no cache file found at: ', cachepath);
+        }
+        return undefined;
     }
 
     public static readFromCache(dir: string): Builder {

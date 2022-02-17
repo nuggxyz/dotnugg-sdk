@@ -35,17 +35,19 @@ describe('main', () => {
     });
 
     it('builder cache test', async () => {
-        await dotnugg.parser.init('other/test');
         const dir = path.join(__dirname, '../../../nuggft-art');
-        const comp = dotnugg.compiler.compileDirectoryCheckCache(dir);
 
+        await dotnugg.parser.init('other/test1');
+        const comp = dotnugg.compiler.compileDirectoryCheckCache(dir);
         comp.saveToCache(dir);
 
-        const cache = dotnugg.builder.readFromCache(dir);
+        await dotnugg.parser.init('other/test2');
+
+        const cache = dotnugg.builder.readFromExternalCache(dir, 'other/test1');
 
         // console.log(cache.compileTimeBytecode);
 
-        // console.log(comp.compileTimeBytecodeEncoded);
+        console.log(cache.compileTimeBytecodeEncoded);
     });
 
     it('injector test', async () => {
