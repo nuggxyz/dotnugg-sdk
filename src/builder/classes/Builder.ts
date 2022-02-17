@@ -16,6 +16,7 @@ import { Encoder } from './Encoder';
 
 export class Builder {
     public static transform = Transform;
+    public static encode = Encoder;
 
     output: BuilderTypes.Output[] = [];
 
@@ -25,57 +26,66 @@ export class Builder {
 
     unbrokenArray: BigNumber[][] = [];
 
+    weights: {
+        cumlative: { [_: number]: number };
+        cumlativeArray: { [_: number]: Array<BuilderTypes.Weight> };
+        normalizedCumlative: { [_: number]: number };
+        normalizedCumlativeArray: { [_: number]: Array<BuilderTypes.Weight> };
+        adjustedCumlative: { [_: number]: number };
+        adjustedCumlativeArray: { [_: number]: Array<BuilderTypes.Weight> };
+    } = {
+        cumlative: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 },
+        cumlativeArray: {
+            0: [],
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+        },
+
+        normalizedCumlative: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 },
+        normalizedCumlativeArray: {
+            0: [],
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+        },
+
+        adjustedCumlative: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 },
+        adjustedCumlativeArray: {
+            0: [],
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+        },
+    };
+
     // compileTimeBytecode: BytesLike[];
     // compileTimeBytecodeEncoded: BytesLike;
-
-    cumlWeights: { [_: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
-    cumlWeightsArray: { [_: number]: Array<BuilderTypes.Weight> } = {
-        0: [],
-        1: [],
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-        6: [],
-        7: [],
-    };
-
-    normalizedCumlWeights: { [_: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
-    normalizedCumlWeightsArray: { [_: number]: Array<BuilderTypes.Weight> } = {
-        0: [],
-        1: [],
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-        6: [],
-        7: [],
-    };
-
-    adjustedCumlWeights: { [_: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
-    adjustedCumlWeightsArray: { [_: number]: Array<BuilderTypes.Weight> } = {
-        0: [],
-        1: [],
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-        6: [],
-        7: [],
-    };
 
     lastSeenId: { [_: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
 
     public static fromObject(obj: TransformTypes.Document) {
-        return new Builder(obj);
+        return this.fromDoc(obj);
     }
 
     public static fromString(json: string) {
-        return new Builder(JSON.parse(json));
+        return this.fromDoc(JSON.parse(json));
     }
 
     public static fromParser(parser: dotnugg.parser) {
-        return new Builder(JSON.parse(parser.json));
+        return this.fromDoc(JSON.parse(parser.json));
     }
 
     public static adjustWeight(input: number) {
@@ -93,33 +103,33 @@ export class Builder {
         const MAX = 0xffff; // max uint12 0xfff
 
         for (var i = 0; i < 8; i++) {
-            for (var j = 0; j < this.cumlWeightsArray[i].length; j++) {
+            for (var j = 0; j < this.weights.cumlativeArray[i].length; j++) {
                 const myindex = j;
-                const indv = Builder.normaize(this.cumlWeightsArray[i][j].indv, this.cumlWeights[i], 0);
-                this.normalizedCumlWeights[i] += indv;
-                this.normalizedCumlWeightsArray[i].push({
+                const indv = Builder.normaize(this.weights.cumlativeArray[i][j].indv, this.weights.cumlative[i], 0);
+                this.weights.normalizedCumlative[i] += indv;
+                this.weights.normalizedCumlativeArray[i].push({
                     indv,
-                    cuml: this.normalizedCumlWeights[i],
-                    id: this.cumlWeightsArray[i][j].id,
+                    cuml: this.weights.normalizedCumlative[i],
+                    id: this.weights.cumlativeArray[i][j].id,
                 });
 
                 const res = {
-                    indv: Math.ceil(this.normalizedCumlWeightsArray[i][myindex].indv * MAX),
-                    cuml: Math.ceil(this.normalizedCumlWeightsArray[i][myindex].cuml * MAX),
-                    id: this.cumlWeightsArray[i][j].id,
+                    indv: Math.ceil(this.weights.normalizedCumlativeArray[i][myindex].indv * MAX),
+                    cuml: Math.ceil(this.weights.normalizedCumlativeArray[i][myindex].cuml * MAX),
+                    id: this.weights.cumlativeArray[i][j].id,
                 };
 
                 invariant(res.indv !== 0, 'individual weight cannot be 0');
 
                 invariant(
-                    res.cuml > (myindex === 0 ? 0 : this.adjustedCumlWeightsArray[i][myindex - 1].cuml),
+                    res.cuml > (myindex === 0 ? 0 : this.weights.adjustedCumlativeArray[i][myindex - 1].cuml),
                     'ajusted:normaized weight did not increase',
                 );
 
-                this.adjustedCumlWeightsArray[i].push(res);
+                this.weights.adjustedCumlativeArray[i].push(res);
             }
-            if (this.cumlWeightsArray[i].length > 0)
-                this.adjustedCumlWeightsArray[i][this.adjustedCumlWeightsArray[i].length - 1].cuml = MAX;
+            if (this.weights.cumlativeArray[i].length > 0)
+                this.weights.adjustedCumlativeArray[i][this.weights.adjustedCumlativeArray[i].length - 1].cuml = MAX;
         }
     }
 
@@ -172,13 +182,14 @@ export class Builder {
     //     return me;
     // }
 
-    protected constructor(trans: TransformTypes.Document) {
+    public static fromDoc(trans: TransformTypes.Document) {
+        let me = new Builder();
         const input = Transform.fromObject(trans).output;
 
         for (var i = 0; i < 8; i++) {
-            this.outputByItemIndex[i] = {};
-            this.outputByFileUriIndex[i] = {};
-            this.unbrokenArray[i] = [];
+            me.outputByItemIndex[i] = {};
+            me.outputByFileUriIndex[i] = {};
+            me.unbrokenArray[i] = [];
         }
 
         const res0: { input: EncoderTypes.Item; output: EncoderTypes.Output }[] = [
@@ -191,21 +202,21 @@ export class Builder {
         const res1: BuilderTypes.Output[] = res0
             .sort((a, b) => a.output.feature - b.output.feature || a.output.id - b.output.id)
             .map((item, index) => {
-                this.cumlWeights[item.output.feature] += item.input.weight;
-                this.cumlWeightsArray[item.output.feature].push({
+                me.weights.cumlative[item.output.feature] += item.input.weight;
+                me.weights.cumlativeArray[item.output.feature].push({
                     id: item.output.id,
-                    cuml: this.cumlWeights[item.output.feature],
+                    cuml: me.weights.cumlative[item.output.feature],
                     indv: item.input.weight,
                 });
 
                 invariant(
-                    this.lastSeenId[item.output.feature] + 1 === item.output.id,
+                    me.lastSeenId[item.output.feature] + 1 === item.output.id,
                     `BUILDER:ID-INCREMENT-BY-1: duplicate or missing item found for ${item.input.fileName}:  ${
-                        this.lastSeenId[item.output.feature]
+                        me.lastSeenId[item.output.feature]
                     } + 1 !== ${item.output.id}`,
                 );
 
-                this.lastSeenId[item.output.feature]++;
+                me.lastSeenId[item.output.feature]++;
 
                 let res: BuilderTypes.Output = {
                     ...item.output,
@@ -218,19 +229,23 @@ export class Builder {
 
                 // delete (res as any).bits;
 
-                // this.unbrokenArray[item.output.feature].push(bet);
-                this.outputByItemIndex[item.output.feature][item.output.id] = index;
-                this.outputByFileUriIndex[item.output.fileUri] = index;
+                // me.unbrokenArray[item.output.feature].push(bet);
+                me.outputByItemIndex[item.output.feature][item.output.id] = index;
+                me.outputByFileUriIndex[item.output.fileUri] = index;
 
                 return res;
             });
 
-        this.adjustWeights();
+        me.adjustWeights();
 
-        this.output = res1.map((x) => {
-            return { ...x, percentWeight: this.adjustedCumlWeightsArray[x.feature][x.id - 1].indv / 0xffff };
+        me.output = res1.map((x) => {
+            return { ...x, percentWeight: me.weights.adjustedCumlativeArray[x.feature][x.id - 1].indv / 0xffff };
         });
+
+        return me;
     }
+
+    protected constructor() {}
 
     public hexFromBits(input: BuilderTypes.Output['bits']) {
         return Encoder.strarr(input);
@@ -278,14 +293,14 @@ export class Builder {
                 });
             });
             this._compileTimeBytecode = [
-                Builder.squish(this.unbrokenArray[0], this.adjustedCumlWeightsArray[0]),
-                Builder.squish(this.unbrokenArray[1], this.adjustedCumlWeightsArray[1]),
-                Builder.squish(this.unbrokenArray[2], this.adjustedCumlWeightsArray[2]),
-                Builder.squish(this.unbrokenArray[3], this.adjustedCumlWeightsArray[3]),
-                Builder.squish(this.unbrokenArray[4], this.adjustedCumlWeightsArray[4]),
-                Builder.squish(this.unbrokenArray[5], this.adjustedCumlWeightsArray[5]),
-                Builder.squish(this.unbrokenArray[6], this.adjustedCumlWeightsArray[6]),
-                Builder.squish(this.unbrokenArray[7], this.adjustedCumlWeightsArray[7]),
+                Builder.squish(this.unbrokenArray[0], this.weights.adjustedCumlativeArray[0]),
+                Builder.squish(this.unbrokenArray[1], this.weights.adjustedCumlativeArray[1]),
+                Builder.squish(this.unbrokenArray[2], this.weights.adjustedCumlativeArray[2]),
+                Builder.squish(this.unbrokenArray[3], this.weights.adjustedCumlativeArray[3]),
+                Builder.squish(this.unbrokenArray[4], this.weights.adjustedCumlativeArray[4]),
+                Builder.squish(this.unbrokenArray[5], this.weights.adjustedCumlativeArray[5]),
+                Builder.squish(this.unbrokenArray[6], this.weights.adjustedCumlativeArray[6]),
+                Builder.squish(this.unbrokenArray[7], this.weights.adjustedCumlativeArray[7]),
             ];
         }
         return this._compileTimeBytecode;
@@ -311,6 +326,36 @@ export class Builder {
         res = res.reverse();
 
         return res;
+    }
+
+    public static readFromCache(dir: string): Builder {
+        const cachepath = Config.cachePath(dir, 'builder');
+
+        try {
+            let rawdata = fs.readFileSync(cachepath, 'utf8');
+
+            let cache = JSON.parse(rawdata) as Builder;
+            if (cache[`${undefined}`]) return undefined;
+            let me = new Builder();
+            me.output = cache.output;
+            me.lastSeenId = cache.lastSeenId;
+            me.weights = cache.weights;
+            me.outputByFileUriIndex = cache.outputByFileUriIndex;
+            me.outputByItemIndex = cache.outputByItemIndex;
+            me.unbrokenArray = cache.unbrokenArray;
+
+            return me;
+        } catch (err) {
+            console.log('no cache file found at: ', cachepath);
+        }
+        return undefined;
+    }
+
+    public saveToCache(dir: string) {
+        const cachepath = Config.cachePath(dir, 'builder');
+        console.log('updating builder cache at: ', cachepath);
+        dotnugg.utils.ensureDirectoryExistence(cachepath);
+        fs.writeFileSync(cachepath, JSON.stringify(this));
     }
 
     public static squish(input: BigNumber[], weights: BuilderTypes.Weight[]): BytesLike {

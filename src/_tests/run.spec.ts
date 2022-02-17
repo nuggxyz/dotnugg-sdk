@@ -34,6 +34,20 @@ describe('main', () => {
         // console.log(comp.compileTimeBytecodeEncoded);
     });
 
+    it('builder cache test', async () => {
+        await dotnugg.parser.init('other/test');
+        const dir = path.join(__dirname, '../../../nuggft-art');
+        const comp = dotnugg.compiler.compileDirectoryCheckCache(dir);
+
+        comp.saveToCache(dir);
+
+        const cache = dotnugg.builder.readFromCache(dir);
+
+        // console.log(cache.compileTimeBytecode);
+
+        // console.log(comp.compileTimeBytecodeEncoded);
+    });
+
     it('injector test', async () => {
         const parser = dotnugg.parser.parsePath(path.join(__dirname, './assets/sample.1.item.nugg'));
 
