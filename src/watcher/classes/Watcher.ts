@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 
 import { InfuraProvider } from '@ethersproject/providers';
+import chokidar from 'chokidar';
 
 import { dotnugg } from '../..';
 import * as TransformTypes from '../../builder/types/TransformTypes';
@@ -15,21 +16,24 @@ export class Watcher {
 
     private listener: fs.FSWatcher;
 
-    private constructor(
-        appname: AppName,
-        directory: string,
-        contractAddr?: string,
-        provider?: InfuraProvider,
-        onFileChangeCallback?: (fileUri: string) => void,
-        onMemoryUpdateCallback?: (fileUri: string) => void,
-    ) {
-        dotnugg.parser.init(appname);
-
-        this.listener = fs.watch(directory, {}, (event: 'rename' | 'change', filename) => {
-            console.log(filename, event);
+    private listenerCallback =
+        ({
+            directory,
+            contractAddr,
+            provider,
+            onFileChangeCallback,
+            onMemoryUpdateCallback,
+        }: {
+            directory: string;
+            contractAddr?: string;
+            provider?: InfuraProvider;
+            onFileChangeCallback?: (fileUri: string, me: Watcher) => void;
+            onMemoryUpdateCallback?: (fileUri: string, me: Watcher) => void;
+        }) =>
+        (filename: string) => {
             if (filename.endsWith('.nugg')) {
                 if (dotnugg.parser.inited) {
-                    onFileChangeCallback && onFileChangeCallback(filename);
+                    onFileChangeCallback && onFileChangeCallback(filename, this);
 
                     this.parsedDocument = dotnugg.parser.parseDirectoryCheckCache(directory);
 
@@ -39,10 +43,29 @@ export class Watcher {
                         this.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, directory, this.builder);
                     }
 
-                    onMemoryUpdateCallback && onMemoryUpdateCallback(filename);
+                    onMemoryUpdateCallback && onMemoryUpdateCallback(filename, this);
                 }
             }
+        };
+
+    private constructor(
+        appname: AppName,
+        directory: string,
+        contractAddr?: string,
+        provider?: InfuraProvider,
+        onFileChangeCallback?: (fileUri: string, me: Watcher) => void,
+        onMemoryUpdateCallback?: (fileUri: string, me: Watcher) => void,
+    ) {
+        dotnugg.parser.init(appname);
+
+        this.listener = chokidar.watch(directory, {
+            ignored: /((^|[\/\\])\..|(^|[\/\\])node_modules)/,
+            persistent: true,
         });
+
+        const callback = this.listenerCallback({ directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback });
+
+        this.listener.on('change', callback).on('add', callback).on('unlink', callback);
     }
 
     public static watch(

@@ -52,6 +52,10 @@ const config = {
                 type: 'javascript/auto',
                 loader: 'arraybuffer-loader',
             },
+            {
+                test: /\.node$/,
+                loader: 'node-loader',
+            },
         ],
     },
     node: {
