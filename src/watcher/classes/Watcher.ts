@@ -16,6 +16,8 @@ export class Watcher {
 
     private listener: fs.FSWatcher;
 
+    private timeout: NodeJS.Timeout;
+
     private listenerCallback =
         ({
             directory,
@@ -59,13 +61,17 @@ export class Watcher {
         dotnugg.parser.init(appname);
 
         this.listener = chokidar.watch(directory, {
-            ignored: /((^|[\/\\])\..|(^|[\/\\])node_modules)/,
+            ignored: /((^|[\/\\])\..+|(^|[\/\\])node_modules)/,
             persistent: true,
+            awaitWriteFinish: true,
         });
 
         const callback = this.listenerCallback({ directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback });
 
-        this.listener.on('change', callback).on('add', callback).on('unlink', callback);
+        this.listener.on('change', (filename: string) => {
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => callback(filename), 500);
+        });
     }
 
     public static watch(
