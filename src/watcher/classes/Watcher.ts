@@ -81,6 +81,14 @@ export class Watcher {
             awaitWriteFinish: true,
         });
 
+        this.parsedDocument = dotnugg.parser.parseDirectoryCheckCache(directory);
+
+        this.builder = dotnugg.builder.fromObject(this.parsedDocument);
+
+        if (contractAddr && provider) {
+            this.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, directory, this.builder);
+        }
+
         const callback = this.listenerCallback({
             directory,
             contractAddr,
