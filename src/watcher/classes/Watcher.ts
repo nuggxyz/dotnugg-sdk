@@ -2,6 +2,7 @@ import * as fs from 'fs';
 
 import { InfuraProvider } from '@ethersproject/providers';
 import chokidar from 'chokidar';
+import invariant from 'tiny-invariant';
 
 import { dotnugg } from '../..';
 import * as TransformTypes from '../../builder/types/TransformTypes';
@@ -72,7 +73,7 @@ export class Watcher {
         onMemoryUpdateCallback?: (fileUri: string, me: Watcher) => void,
         onErrorCallback?: (error: string) => void,
     ) {
-        dotnugg.parser.init(appname);
+        invariant(dotnugg.parser.inited, 'parser not inited');
 
         this.listener = chokidar.watch(directory, {
             ignored: /((^|[\/\\])\..+|(^|[\/\\])node_modules)/,

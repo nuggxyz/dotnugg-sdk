@@ -415,11 +415,12 @@ export class Builder {
         let beginres: BytesLike = ethers.utils.hexConcat(input.map((x) => x._hex));
 
         res += ethers.utils.hexZeroPad(ethers.utils.hexValue(input.length), 1).replace('0x', '');
+        ptr = ptr.add(1);
 
         for (var i = 0; i < input.length; i++) {
             // weighting.push({ dat: weights[i].cuml, bit: 16, nam: 'weight' });
-            ptr = ptr.add(2);
             res += ethers.utils.hexZeroPad(ethers.utils.hexValue(+weights[i].cuml), 2).replace('0x', '');
+            ptr = ptr.add(2);
         }
 
         for (var i = 0; i < input.length; i++) {
@@ -438,9 +439,9 @@ export class Builder {
         res += beginres.replace('0x', '');
 
         res =
-            '0x60_00_60_20_60_1b_80_38_03_80_91_3D_39_03_80_91_80_82_03_90_20_81_51_14_02_3D_F3_00'.replaceAll('_', '') +
+            '0x60_20_80_60_18_80_38_03_80_91_3D_39_03_80_3D_82_90_20_81_51_14_02_3D_F3_00'.replaceAll('_', '') +
             res +
-            keccak256('0x' + res).replace('0x', '');
+            keccak256('0x' + '00' + res).replace('0x', '');
 
         // keccak256('0x' + res.substring(RUNTIME.length)).replace('0x', '');
 
