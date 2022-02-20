@@ -16,7 +16,7 @@ export class Watcher {
 
     private listener: fs.FSWatcher;
 
-    private timeout: NodeJS.Timeout;
+    private static timeout: NodeJS.Timeout;
 
     private listenerCallback =
         ({
@@ -69,8 +69,8 @@ export class Watcher {
         const callback = this.listenerCallback({ directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback });
 
         this.listener.on('change', (filename: string) => {
-            clearTimeout(this.timeout);
-            this.timeout = setTimeout(() => callback(filename), 500);
+            clearTimeout(Watcher.timeout);
+            Watcher.timeout = setTimeout(() => callback(filename), 1000);
         });
     }
 
