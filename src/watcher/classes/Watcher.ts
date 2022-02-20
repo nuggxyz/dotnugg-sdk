@@ -2,6 +2,7 @@ import * as fs from 'fs';
 
 import { InfuraProvider } from '@ethersproject/providers';
 import chokidar from 'chokidar';
+import invariant from 'tiny-invariant';
 
 import { dotnugg } from '../..';
 import * as TransformTypes from '../../builder/types/TransformTypes';
@@ -58,13 +59,21 @@ export class Watcher {
         onFileChangeCallback?: (fileUri: string, me: Watcher) => void,
         onMemoryUpdateCallback?: (fileUri: string, me: Watcher) => void,
     ) {
-        dotnugg.parser.init(appname);
+        invariant(dotnugg.parser.inited, 'parser not inited');
 
         this.listener = chokidar.watch(directory, {
             ignored: /((^|[\/\\])\..+|(^|[\/\\])node_modules)/,
             persistent: true,
             awaitWriteFinish: true,
         });
+
+        this.parsedDocument = dotnugg.parser.parseDirectoryCheckCache(directory);
+
+        this.builder = dotnugg.builder.fromObject(this.parsedDocument);
+
+        if (contractAddr && provider) {
+            this.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, directory, this.builder);
+        }
 
         const callback = this.listenerCallback({ directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback });
 
