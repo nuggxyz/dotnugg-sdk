@@ -51,7 +51,7 @@ export class Transform {
     }
 
     transformCollection(input: TransformTypes.Collection): EncoderTypes.Collection {
-        invariant(input !== undefined, 'UND');
+        dotnugg.utils.invariantVerbose(input !== undefined, 'Collection is undefined');
         Object.entries(input.features)
             .reverse()
             .map((args, i) => {
@@ -133,14 +133,14 @@ export class ItemTransform {
 
         // invariant(this.transformer.lastSeenId[this.feature] + 1 == id, "")
 
-        invariant(
+        dotnugg.utils.invariantVerbose(
             !this.transformer.seenIds[this.transformer.featureMap[input.feature]][id],
-            `duplicate Id - ${id} - found for ${this.feature}`,
+            `duplicate id - ${id} - found for ${this.feature}`,
         );
 
         this.transformer.seenIds[this.transformer.featureMap[input.feature]][id] = true;
 
-        invariant(!Number.isNaN(id), 'TRANSITEM:SPLTFN:1 - ' + fileName);
+        dotnugg.utils.invariantVerbose(!Number.isNaN(id), `the id - ${id} - is not a valid number`);
 
         if (input.versions === undefined) {
             console.log(input);
@@ -161,18 +161,21 @@ export class ItemTransform {
     }
 
     transformLevel(input: TransformTypes.Level): BuilderTypes.uint8 {
-        invariant(input.direction === '-' || input.direction === '+', 'TRANSLEV:DIR');
+        dotnugg.utils.invariantVerbose(
+            input.direction === '-' || input.direction === '+',
+            'must have a direction (+ / -) for the color layer',
+        );
         let val = input.direction == '+' ? input.offset : input.offset * -1;
 
         if (val == 100) {
-            invariant(this.feature, 'TRANS:LEV:0');
+            dotnugg.utils.invariantVerbose(!!this.feature, 'this item does not have a feature');
             val = this.transformer.defaultLayerMap[this.feature];
         }
 
         // else {
         //     console.log({ val, hello: this.transformer.defaultLayerMap });
         // }
-        invariant(val >= -4 && val <= 11, 'TRANS:LEV:1 - ' + val);
+        dotnugg.utils.invariantVerbose(val >= -4 && val <= 11, `the layer - ${val} - exceeds the permitted limits`);
 
         return val + 4;
     }
