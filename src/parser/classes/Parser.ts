@@ -388,7 +388,7 @@ export class Parser {
         if (cacheUpdated) {
             console.log('updating cache at: ', cachepath);
             dotnugg.utils.ensureDirectoryExistence(cachepath);
-            fs.writeFileSync(cachepath, JSON.stringify(cache), { flag: 'a+' });
+            fs.writeFileSync(cachepath, JSON.stringify(cache));
         } else {
             console.log('No need to update dotnugg cache');
         }
