@@ -67,6 +67,12 @@ export const invariantFatal = (check: boolean, data: (number | string)[]) => {
     invariant(check, true, data);
 };
 
+export const invariantVerbose = (check: boolean, message: string) => {
+    if (!check) {
+        throw new Error(message);
+    }
+};
+
 export function ensureDirectoryExistence(filePath) {
     var dirname = path.dirname(filePath);
     if (fs.existsSync(dirname)) {

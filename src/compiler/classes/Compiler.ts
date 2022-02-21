@@ -10,7 +10,7 @@ export class Compiler extends Builder {
     public renderer: dotnugg.renderer;
 
     public static compileDirectory = (inputdir: string): Compiler => {
-        invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
+        dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
         console.log('compiling directory: ', inputdir);
 
@@ -24,7 +24,7 @@ export class Compiler extends Builder {
     };
 
     public static compileDirectoryCheckCache = (inputdir: string) => {
-        invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
+        dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
         console.log('compiling directory checking cache: ', inputdir);
 
@@ -42,7 +42,7 @@ export class Compiler extends Builder {
         provider: ethers.providers.InfuraProvider,
         inputdir: string,
     ) => {
-        invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
+        dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
         console.log('compiling directory checking cache and render: ', inputdir);
 
@@ -58,7 +58,7 @@ export class Compiler extends Builder {
     };
 
     public static compileFile = (inputpath: string) => {
-        invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
+        dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
         let parser = dotnugg.parser.parsePath(inputpath);
 
@@ -70,7 +70,7 @@ export class Compiler extends Builder {
     };
 
     public static compileData = (data: string) => {
-        invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
+        dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
         let parser = dotnugg.parser.parseData(data);
 
@@ -82,7 +82,7 @@ export class Compiler extends Builder {
     };
 
     public static parseData = (data: string) => {
-        invariant(dotnugg.parser.inited, 'PARSER:NOT:INIT');
+        dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 
         return dotnugg.parser.parseData(data);
     };

@@ -121,7 +121,7 @@ export class Parser {
     }
 
     private constructor(fileData: string, fileName: string, fileUri: string) {
-        invariant(Parser._inited, 'ERROR: Parser not initialized');
+        dotnugg.utils.invariantVerbose(Parser._inited, 'ERROR: Parser not initialized');
 
         this.document = fileData.split('\n');
         this.fileName = fileName;
@@ -303,7 +303,7 @@ export class Parser {
         return res;
     }
     public static cachePathOfDir(dir: string) {
-        invariant(this._inited, 'PARSER:NOT:INIT');
+        dotnugg.utils.invariantVerbose(this._inited, 'PARSER:NOT:INIT');
         return Config.cachePath(dir, 'parser');
     }
 
@@ -320,6 +320,7 @@ export class Parser {
 
             if (cache[`${undefined}`]) cache = {};
         } catch (err) {
+            console.log(err);
             console.log('no cache file found at: ', cachepath);
         }
         let collectionComp = false;

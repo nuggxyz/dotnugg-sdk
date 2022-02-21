@@ -90,8 +90,8 @@ export class Builder {
     }
 
     public static adjustWeight(input: number) {
-        invariant(input > 0, 'Item found with weight of 0');
-        invariant(input <= 1, 'Item found with weight > 1');
+        dotnugg.utils.invariantVerbose(input > 0, 'Item found with weight of 0');
+        dotnugg.utils.invariantVerbose(input <= 1, 'Item found with weight > 1');
     }
 
     public static normaize(val: number, max: number, min: number) {
@@ -120,9 +120,9 @@ export class Builder {
                     id: this.weights.cumlativeArray[i][j].id,
                 };
 
-                invariant(res.indv !== 0, 'individual weight cannot be 0');
+                dotnugg.utils.invariantVerbose(res.indv !== 0, 'individual weight cannot be 0');
 
-                invariant(
+                dotnugg.utils.invariantVerbose(
                     res.cuml > (myindex === 0 ? 0 : this.weights.adjustedCumlativeArray[i][myindex - 1].cuml),
                     'ajusted:normaized weight did not increase',
                 );
@@ -210,7 +210,7 @@ export class Builder {
                     indv: item.input.weight,
                 });
 
-                invariant(
+                dotnugg.utils.invariantVerbose(
                     me.lastSeenId[item.output.feature] + 1 === item.output.id,
                     `BUILDER:ID-INCREMENT-BY-1: duplicate or missing item found for ${item.input.fileName}:  ${
                         me.lastSeenId[item.output.feature]

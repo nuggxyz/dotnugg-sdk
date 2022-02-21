@@ -26,27 +26,40 @@ export class Watcher {
             provider,
             onFileChangeCallback,
             onMemoryUpdateCallback,
+            onErrorCallback,
         }: {
             directory: string;
             contractAddr?: string;
             provider?: InfuraProvider;
             onFileChangeCallback?: (fileUri: string, me: Watcher) => void;
             onMemoryUpdateCallback?: (fileUri: string, me: Watcher) => void;
+            onErrorCallback?: (error: string) => void;
         }) =>
         (filename: string) => {
             if (filename.endsWith('.nugg')) {
                 if (dotnugg.parser.inited) {
-                    onFileChangeCallback && onFileChangeCallback(filename, this);
+                    try {
+                        onFileChangeCallback && onFileChangeCallback(filename, this);
+                        let start = Date.now();
 
-                    this.parsedDocument = dotnugg.parser.parseDirectoryCheckCache(directory);
+                        this.parsedDocument = dotnugg.parser.parseDirectoryCheckCache(directory); //dotnugg.parser.parseFileCheckCache(directory, filename); //
+                        console.log('PARSER TIME =', Date.now() - start);
+                        start = Date.now();
+                        this.builder = dotnugg.builder.fromObject(this.parsedDocument);
+                        console.log('BUILDER TIME =', Date.now() - start);
 
-                    this.builder = dotnugg.builder.fromObject(this.parsedDocument);
+                        if (contractAddr && provider) {
+                            this.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, directory, this.builder);
+                        }
 
-                    if (contractAddr && provider) {
-                        this.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, directory, this.builder);
+                        onMemoryUpdateCallback && onMemoryUpdateCallback(filename, this);
+                    } catch (e) {
+                        if (onErrorCallback) {
+                            onErrorCallback(e);
+                        } else {
+                            throw new Error(e);
+                        }
                     }
-
-                    onMemoryUpdateCallback && onMemoryUpdateCallback(filename, this);
                 }
             }
         };
@@ -58,6 +71,7 @@ export class Watcher {
         provider?: InfuraProvider,
         onFileChangeCallback?: (fileUri: string, me: Watcher) => void,
         onMemoryUpdateCallback?: (fileUri: string, me: Watcher) => void,
+        onErrorCallback?: (error: string) => void,
     ) {
         invariant(dotnugg.parser.inited, 'parser not inited');
 
@@ -75,7 +89,14 @@ export class Watcher {
             this.renderer = dotnugg.renderer.renderCheckCache(contractAddr, provider, directory, this.builder);
         }
 
-        const callback = this.listenerCallback({ directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback });
+        const callback = this.listenerCallback({
+            directory,
+            contractAddr,
+            provider,
+            onFileChangeCallback,
+            onMemoryUpdateCallback,
+            onErrorCallback,
+        });
 
         this.listener.on('change', (filename: string) => {
             clearTimeout(Watcher.timeout);
