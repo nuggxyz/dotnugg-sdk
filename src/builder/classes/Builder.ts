@@ -382,74 +382,61 @@ export class Builder {
         fs.writeFileSync(cachepath, JSON.stringify(this));
     }
 
+    public static numberToBytes(input: number, bytelen: 1 | 2): string {
+        return ethers.utils.hexZeroPad(ethers.utils.hexValue(input), bytelen).replace('0x', '');
+    }
+    public static numberToBytesNoPrexfix(input: number, bytelen: 1 | 2): string {
+        return this.numberToBytes(input, bytelen).replace('0x', '');
+    }
+
     public static squish(input: BigNumber[], weights: BuilderTypes.Weight[]): BytesLike {
         invariant(input.length == weights.length, 'SQUISH:0x01: weights and input length do not match');
-        let working: EncoderTypes.Byter[] = [];
-        let weighting: EncoderTypes.Byter[] = [];
 
-        // working.push({
-        //     dat: input.length,
-        //     bit: 8,
-        //     nam: 'length',
-        // });
+        let w: string[] = [];
+        let indexes: string[] = [];
+        let data: string[] = [];
 
-        // 602060023D35810280820182800180858481600f0101903983513D85528091510380869006860381838239013DF3 /
+        let indexOffset = 1 + 1 + (input.length + 1) * 2 + input.length * 2;
 
-        // 0x60376020601b80380380913D390380918082039020815114023DF36020600260043581026004808483603801903982513D845280918051903D905203808590066040036001868304013D5281838239013DF3
+        input.forEach((x, i) => {
+            w.push(this.numberToBytesNoPrexfix(weights[i].cuml, 2));
+            indexes.push(this.numberToBytesNoPrexfix(indexOffset + data.reduce((prev, curr) => curr.length / 2 + prev, 0), 2));
+            data.push(x._hex.replace('0x', ''));
+        });
 
-        // 0x603A6020601b80380380913D390380918082039020815114023DF36020600260043581026004808483603b01903982513D8452809180519086801B90520380859006606003600186830401865281838239013DF3
-        let ptr = BigNumber.from(1);
+        const lencheck = indexOffset + data.reduce((prev, curr) => curr.length / 2 + prev, 0);
 
-        // let RUNTIME =
-        //     '6020_6002_6004_35_81_02_60_04_80_84_83_603a_01_90_39_82_51_3D_84_52_80_91_80_51_90_86_80_1B_90_52_03_80____85_90_06_6060_03__6001_86_83_04_01_86_52__81_83_82_39_01_3D_F3'.replaceAll(
-        //         '_',
-        //         '',
-        //     );
+        indexes.push(this.numberToBytesNoPrexfix(lencheck, 2));
 
-        let res: BytesLike = '';
+        const runtime = '00' + this.numberToBytesNoPrexfix(input.length, 1) + [...w, ...indexes, ...data].join('');
 
-        ptr = ptr.add(res.length / 2);
+        const HEADER = '0x60_20_80_60_18_80_38_03_80_91_3D_39_03_80_3D_82_90_20_81_51_14_02_3D_F3'.replaceAll('_', '');
 
-        // console.log(res, ptr);
-
-        let beginres: BytesLike = ethers.utils.hexConcat(input.map((x) => x._hex));
-
-        res += ethers.utils.hexZeroPad(ethers.utils.hexValue(input.length), 1).replace('0x', '');
-        ptr = ptr.add(1);
-
-        for (var i = 0; i < input.length; i++) {
-            // weighting.push({ dat: weights[i].cuml, bit: 16, nam: 'weight' });
-            res += ethers.utils.hexZeroPad(ethers.utils.hexValue(+weights[i].cuml), 2).replace('0x', '');
-            ptr = ptr.add(2);
-        }
-
-        for (var i = 0; i < input.length; i++) {
-            const len = ethers.utils.hexDataLength(input[i]._hex);
-            working.push({ dat: ptr._hex, bit: 16, nam: 'pos' });
-
-            ptr = ptr.add(len);
-        }
-
-        working.push({ dat: ptr._hex, bit: 16, nam: 'fpos' });
-
-        for (var i = 0; i < working.length; i++) {
-            res += ethers.utils.hexZeroPad(ethers.utils.hexValue(+working[i].dat + working.length * 2), 2).replace('0x', '');
-        }
-
-        res += beginres.replace('0x', '');
-
-        res =
-            '0x60_20_80_60_18_80_38_03_80_91_3D_39_03_80_3D_82_90_20_81_51_14_02_3D_F3_00'.replaceAll('_', '') +
-            res +
-            keccak256('0x' + '00' + res).replace('0x', '');
+        const deployment = HEADER + runtime + keccak256('0x' + runtime).replace('0x', '');
 
         // keccak256('0x' + res.substring(RUNTIME.length)).replace('0x', '');
+        const correctLen = lencheck + 32 + HEADER.length / 2;
 
-        // console.log(res);
-        return res;
+        // console.log({ runtime, deployment });
+        invariant(
+            correctLen == deployment.length / 2,
+            `correctLen ${correctLen} (${runtime.length} + ${HEADER.length} + 32)  != deploymentLength ${deployment.length}`,
+        );
+        // console.log(deployment);
+        return deployment;
     }
 }
 
+// 0002
+// 8000 ffff e9 = 221
+// 000c 00e9 0324 1e0392092105e094951052422003e422021431154861402e450c214455314624500372431430850c41535880291c8185503153151188240606163318801955f314320024816736001c616b31801c316f32470c5bcc720316f321316b361316f321314316331895855055d056006050c50c50d050d082406021150c51151050e000e030858c51256100e060835445540c41802e060d592814600f898598881f7203900bc7f08058316031e8005070c850b330a61324ccb5824792ea049dab4789517edc128561f224d67fd0492c9f889128aeb133587dc2401042069001
+
+// 06cf81ec0a722a98d006c0861a4a982b001b0218692c608c006c196420a188c006c1869296c82ca16a790c00ca16a990c00ca0eab90c00c10a24afb003042c82be43242a42c643242de43242de43242de43242de43242a64296c1a9e890a1b20b06a9692cc006c1aa3a4b3001b0728e81a8c006c9ca1a4a3203b06a3b40db1e05c6f8402c18b018f40028386428599853099e14b63128561f224d67fd04894575892593f1124ccb582281842069001
+// 0x602080601880380380913D3903803D829020815114023DF3
+
+// 00028000ffff000c00e901981e0392092105e094951052422003e422021431154861402e450c214455314624500372431430850c41535880291c8185503153151188240606163318801955f314320024816736001c616b31801c316f32470c5bcc720316f321316b361316f321314316331895855055d056006050c50c50d050d082406021150c51151050e000e030858c51256100e060835445540c41802e060d592814600f898598881f7203900bc7f08058316031e8005070c850b330a61324ccb5824792ea049dab4789517edc128561f224d67fd0492c9f889128aeb133587dc240104206900106cf81ec0a722a98d006c0861a4a982b001b0218692c608c006c196420a188c006c1869296c82ca16a790c00ca16a990c00ca0eab90c00c10a24afb003042c82be43242a42c643242de43242de43242de43242de43242a64296c1a9e890a1b20b06a9692cc006c1aa3a4b3001b0728e81a8c006c9ca1a4a3203b06a3b40db1e05c6f8402c18b018f40028386428599853099e14b63128561f224d67fd04894575892593f1124ccb582281842069001
+
+// 62f44e9dce0ce29480bb70679a86bc3592b8af9184f561bcb75f83ae48bab9cf
 // public static squish(input: BigNumber[]): BytesLike {
 //     let working: EncoderTypes.Byter[] = [];
 //     working.push({

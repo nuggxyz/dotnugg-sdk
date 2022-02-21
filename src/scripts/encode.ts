@@ -16,7 +16,7 @@ const main = async (repo: string) => {
     console.log('compressed: ', (enc.compileTimeBytecodeEncoded.toString().length / 1000).toFixed(3), 'KB');
     dotnugg.timer.stop('compress');
 
-    // console.log(enc.compressed);
+    console.log(enc.compileTimeBytecodeEncoded);
 
     // console.log(enc.outputByItem(4, 2));
 };
