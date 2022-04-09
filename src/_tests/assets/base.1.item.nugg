@@ -9,6 +9,12 @@
         g := { zindex: +D, rgba: "rgba(241,147,37,255)" }
         h := { zindex: +D, rgba: "rgba(235,138,18,255)" }
         i := { zindex: +D, rgba: "rgba(238,195,154,255)" }
+        j := { zindex: +D, rgba: "rgba(220,126,81,255)" }
+        k := { zindex: +D, rgba: "rgba(249,176,66,255)" }
+        l := { zindex: +D, rgba: "rgba(244,159,53,255)" }
+        m := { zindex: +D, rgba: "rgba(241,147,37,255)" }
+        n := { zindex: +D, rgba: "rgba(235,138,18,255)" }
+        o := { zindex: +D, rgba: "rgba(238,195,154,255)" }
     }
     versions := {
         0 := {

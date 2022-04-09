@@ -75,6 +75,8 @@ export class Renderer {
                 }
             }
 
+            // console.log(i, builder.outputByItemIndex);
+
             cache[fileUri] = { mtimeMs, data: me.renderOnChain(builder.hexArray(builder.output[i]), true) };
 
             renderedamt++;

@@ -295,10 +295,8 @@ export class Encoder {
     public static encodePixel(input: EncoderTypes.Pixel): EncoderTypes.Byter[] {
         let res: EncoderTypes.Byter[] = [];
 
-        // console.log({ input });
-
         const z = this.encodeLayer(input.zindex);
-        // console.log({ z });
+
         res.push(z);
 
         res.push(...this.encodeGraft(input.graftPalletIndex));
@@ -314,8 +312,8 @@ export class Encoder {
     public static encodeGraft(input: number | null): EncoderTypes.Byter[] {
         if (input === null) return [{ dat: 0x0, bit: 1, nam: 'is graft ?' }];
 
-        console.log(input);
-        invariant(!Number.isNaN(input), 'encodeGraft:NAN');
+        invariant(!Number.isNaN(input) && !!input, 'encodeGraft:NAN');
+
         invariant(input <= 16, 'encodeGraft: graftPalletIndex too big');
 
         return [

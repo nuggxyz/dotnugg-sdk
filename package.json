@@ -1,6 +1,6 @@
 {
     "name": "@nuggxyz/dotnugg-sdk",
-    "version": "0.1.36",
+    "version": "0.1.37",
     "description": "sdk for working with dotnugg files written in typescript",
     "license": "MIT",
     "repository": "https://github.com/nuggxyz/dotnugg-sdk.git",

@@ -6,6 +6,8 @@ import { expect } from 'chai';
 
 import { dotnugg } from '..';
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 describe('main', () => {
     it('hello', async () => {
         await dotnugg.parser.init('other/test');
@@ -19,21 +21,34 @@ describe('main', () => {
         // console.log(p.results.items[0].value.versions.value[0].value.data.value.matrix.length);
     });
 
-    it('compile test', async () => {
-        await dotnugg.parser.init('other/test');
+    it('compile test', async (done) => {
+        // @ts-ignore
+        // this.timeout(60000);
 
-        // const comp = dotnugg.compiler.compileDirectoryCheckCacheAndRender(
-        //     '0xcbfE2DF1355628Ff7525ae69C31DC708A1b03D40',
-        //     new ethers.providers.InfuraProvider('goerli', 'a1625b39cf0047febd415f9b37d8c931'),
-        //     path.join(__dirname, '../../../nuggft-art'),
-        // );
+        await dotnugg.parser.init('other/test4');
 
-        // await comp.renderer.wait();
+        const comp = dotnugg.compiler.compileDirectoryCheckCacheAndRender(
+            '0x2bbb4e1d019ab98eff32560d8cb25535b9d0b6c6',
+            new ethers.providers.InfuraProvider('rinkeby', 'a1625b39cf0047febd415f9b37d8c931'),
+            path.join(__dirname, '../../../nuggft-art'),
+        );
+
+        console.log(comp.renderer.results);
+
+        return await comp.renderer.wait().then(() => {
+            // done();
+        });
+
+        // .catch((err) => {
+        //     console.log('WHO', err);
+        // });
+
+        // done();
 
         // const comp = dotnugg.compiler.compileDirectoryCheckCache(path.join(__dirname, '../../../nuggft-art'));
 
         // console.log(comp.compileTimeBytecodeEncoded);
-    });
+    }).timeout(60000);
 
     it('builder cache test', async () => {
         const dir = path.join(__dirname, '../../../nuggft-art');

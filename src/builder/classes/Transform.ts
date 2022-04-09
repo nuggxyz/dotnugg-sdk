@@ -153,7 +153,14 @@ export class ItemTransform {
         if (input.versions === undefined) {
             console.log(input);
         }
-        console.log(input);
+        // console.log(input);
+
+        const pixels = this.transformPixels(input.colors);
+        const graftable = this.transformer.graftableFeature === this.transformer.featureMap[input.feature];
+
+        if (graftable) {
+            invariant(pixels.length === 15, 'graftable items must have a pallet of length 15.. found: ' + pixels.length);
+        }
 
         return {
             id,
@@ -222,7 +229,7 @@ export class ItemTransform {
         return {
             rgba: this.transformer.transformColorString(input.rgba),
             zindex: this.transformLevel(input.zindex),
-            graftPalletIndex: input.graft ? input.graftName.charCodeAt(0) - 96 : null,
+            graftPalletIndex: input.graft ? 16 - (input.graftName.charCodeAt(0) - 96) : null,
         };
     }
 
