@@ -22,6 +22,7 @@ export type Pixel = {
     zindex: Level;
     rgba: string;
     graft: boolean;
+    graftName: string;
 };
 
 export type Rgba = {

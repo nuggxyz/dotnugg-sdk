@@ -623,10 +623,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@nuggxyz/dotnugg-grammar@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.2.2.tgz#bf7319b451fdfe14a7a0b2217b7ad5337a1378c1"
-  integrity sha512-eyoOJ0V/Xd0CDZFLw6l8DIGF1OjqC88WYmkZryFfFR3hmT8hV1Jc1lLU1OpD8uWXlNSUf8QrVjNTWGPdSC3Cuw==
+"@nuggxyz/dotnugg-grammar@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@nuggxyz/dotnugg-grammar/-/dotnugg-grammar-0.2.4.tgz#7bad06a426c13a1ec306159c0c491bfbaabde6e6"
+  integrity sha512-6zf4olYNSeYUTfu7+cTavUQIY9Yn8n2hVgXrXI/Lnxgyxof4n2e4BGc9bvi8/hFz3Lee/3o2SGqEKYt+RPWpjA==
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.8"

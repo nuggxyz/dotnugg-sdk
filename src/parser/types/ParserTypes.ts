@@ -88,6 +88,7 @@ export type Color = {
     zindex: RangeOf<ZIndex>;
     rgba: RangeOf<RGBA>;
     graft: RangeOf<boolean>;
+    graftName: RangeOf<string>;
 };
 
 export type RGBA = `rgba(${_}${number}${_},${_}${number}${_},${_}${number}${_},${_}${number}${_})`;

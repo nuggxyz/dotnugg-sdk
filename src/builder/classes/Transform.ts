@@ -153,6 +153,8 @@ export class ItemTransform {
         if (input.versions === undefined) {
             console.log(input);
         }
+        console.log(input);
+
         return {
             id,
             fileName,
@@ -220,7 +222,7 @@ export class ItemTransform {
         return {
             rgba: this.transformer.transformColorString(input.rgba),
             zindex: this.transformLevel(input.zindex),
-            graftPalletIndex: input.graft ? input.name.charCodeAt(0) - 96 : null,
+            graftPalletIndex: input.graft ? input.graftName.charCodeAt(0) - 96 : null,
         };
     }
 

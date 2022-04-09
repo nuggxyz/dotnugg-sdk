@@ -38,13 +38,13 @@ describe('main', () => {
     it('builder cache test', async () => {
         const dir = path.join(__dirname, '../../../nuggft-art');
 
-        await dotnugg.parser.init('other/test1');
+        await dotnugg.parser.init('other/test3');
         const comp = dotnugg.compiler.compileDirectoryCheckCache(dir);
         comp.saveToCache(dir);
 
         await dotnugg.parser.init('other/test2');
 
-        const cache = dotnugg.builder.readFromExternalCache(dir, 'other/test1');
+        const cache = dotnugg.builder.readFromExternalCache(dir, 'other/test3');
 
         // console.log(cache.compileTimeBytecode);
 
@@ -67,7 +67,7 @@ describe('main', () => {
         const p = dotnugg.parser.parseData(txt);
 
         expect(p.results.items[0].value.colors.value['a'].value.graft.value).to.be.true;
-        expect(p.results.items[0].value.colors.value['b'].value.graft.value).to.be.false;
+        expect(p.results.items[0].value.colors.value['c'].value.graft.value).to.be.false;
     });
 
     it('graft encode', async () => {

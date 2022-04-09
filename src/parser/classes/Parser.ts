@@ -917,7 +917,7 @@ export class Parser {
             //     throw new Error('blank value returned from: parseCollectionFeatureLong');
             // }
             // }
-            return undefined;
+            // return undefined;
         }
     }
 
@@ -1120,6 +1120,8 @@ export class Parser {
             let nameToken: ParserTypes.ParsedToken = undefined;
             let graft: boolean = undefined;
             let graftToken: ParserTypes.ParsedToken = undefined;
+            let graftName: string = undefined;
+            let graftNameToken: ParserTypes.ParsedToken = undefined;
 
             for (; this.has(tokens.GeneralColor) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
@@ -1138,9 +1140,13 @@ export class Parser {
                     name = this.currentValue;
                     nameToken = this.current;
                 }
-                if (this.has(tokens.GeneralColorGraft)) {
+                if (!graft && this.has(tokens.GeneralColorGraft)) {
                     graft = true;
                     graftToken = this.current;
+                }
+                if (this.has(tokens.GeneralColorGraftRef)) {
+                    graftName = this.currentValue;
+                    graftNameToken = this.current;
                 }
                 if (this.has(tokens.GeneralColorDetailsRgba)) {
                     rgba = this.currentValue as ParserTypes.RGBA;
@@ -1193,6 +1199,15 @@ export class Parser {
                               token: graftToken,
                           },
                       }),
+                graftName: graftName
+                    ? {
+                          value: graftName,
+                          token: graftNameToken,
+                      }
+                    : {
+                          token: nameToken,
+                          value: name,
+                      },
             };
             return {
                 value,

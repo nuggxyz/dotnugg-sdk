@@ -33,6 +33,7 @@ const width = '.width';
 const order = '.order';
 const weight = '.weight';
 const graft = '.graft';
+const ref = '.ref';
 
 const l = '.l';
 const r = '.r';
@@ -121,6 +122,8 @@ const GeneralColor = General + color;
 const GeneralColorDetails = GeneralColor + details;
 const GeneralColorName = GeneralColor + name;
 const GeneralColorGraft = GeneralColor + graft;
+const GeneralColorGraftRef = GeneralColorGraft + ref;
+
 const GeneralColorDetailsZIndex = GeneralColorDetails + zindex;
 const GeneralColorDetailsZIndexOffset = GeneralColorDetailsZIndex + offset;
 const GeneralColorDetailsZIndexDirection = GeneralColorDetailsZIndex + direction;
@@ -306,4 +309,5 @@ export default {
     GeneralColorGraft,
     CollectionFeatureLongGraft,
     CollectionFeatureLongGraftName,
+    GeneralColorGraftRef,
 };

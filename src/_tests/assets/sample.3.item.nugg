@@ -1,6 +1,6 @@
 @item(HEAD, 3, .0055) := {
     colors := {
-        a graft := { zindex: +D, rgba: "#000000AA" }
+        a graft(c) := { zindex: +D, rgba: "#000000AA" }
         b := { zindex: +D, rgba: "rgba(244,240,204,255)" }
         c := { zindex: +D, rgba: "rgba(189,138,18,255)" }
         d := { zindex: +D, rgba: "rgba(135,98,12,255)" }
