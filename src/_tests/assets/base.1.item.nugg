@@ -1,0 +1,44 @@
+@item(BASE,1,.0021) := {
+    colors := {
+        a := { zindex: +D, rgba: "rgba(172,101,38,255)" }
+        b := { zindex: +D, rgba: "rgba(168,75,30,255)" }
+        c := { zindex: +D, rgba: "rgba(143,86,59,255)" }
+        d := { zindex: +D, rgba: "rgba(220,126,81,255)" }
+        e := { zindex: +D, rgba: "rgba(249,176,66,255)" }
+        f := { zindex: +D, rgba: "rgba(244,159,53,255)" }
+        g := { zindex: +D, rgba: "rgba(241,147,37,255)" }
+        h := { zindex: +D, rgba: "rgba(235,138,18,255)" }
+        i := { zindex: +D, rgba: "rgba(238,195,154,255)" }
+    }
+    versions := {
+        0 := {
+            anchor := { x: 10, y: 12 }
+            data := {
+                ......abbbbc.......
+                ....bbbdeeedbbb....
+                ...debfffeeeggdb...
+                ...dfgfeeffegghdb..
+                ..bbeefffegeeehgb..
+                ..beeeefeffegeffhb.
+                .abfeeeefeeeegegeb.
+                .beefeeeeeeeeefeeda
+                adgeeeeeeeeeeeegegb
+                bgeeeeeeeeeeeeeeegb
+                bggeeeeeeeeeeeeeegb
+                bgeeeeeeeeeeeeeeegb
+                cgeeeeeeeeeeeeeeegc
+                ageeeeeeeeeeeeeeegc
+                .dgeeeeeeeeeeeeeedc
+                .bggeeeeeeeeeeeeeba
+                .bgegeeeeeeeeeeeaa.
+                .bdgeeeeeeeeeeeedb.
+                .abdieegeegfeedbca.
+                ..bdggeefgehgegac..
+                ..eadegeeffehgea...
+                ...edheeffgehbha...
+                ....bhaefehhaab....
+                .....bbababbbb.....
+            }
+        }
+    }
+}

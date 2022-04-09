@@ -213,6 +213,8 @@ export class Encoder {
             res.push(...this.encodePixel(x));
         });
 
+        res.push(this.encodeGraftable(input.graftable));
+
         invariant(0 < input.versions.length && input.versions.length <= 4, 'ENCODE:ITM:1');
 
         res.push({ dat: input.versions.length - 1, bit: 2, nam: 'version len' }); // pallet length
@@ -240,6 +242,10 @@ export class Encoder {
     public static encodeFeatureId(input: number): EncoderTypes.Byter {
         invariant(0 <= input && input < 255, 'ENCODE:FEATID:0');
         return { dat: input + 1, bit: 8 };
+    }
+
+    public static encodeGraftable(bool: boolean): EncoderTypes.Byter {
+        return { dat: bool ? 0x01 : 0x00, bit: 1, nam: 'graftable' };
     }
 
     public static encodeVersion(input: EncoderTypes.Version): EncoderTypes.Byter[] {
@@ -295,12 +301,27 @@ export class Encoder {
         // console.log({ z });
         res.push(z);
 
+        res.push(...this.encodeGraft(input.graftPalletIndex));
+
         const color = this.encodeRGB(input.rgba.r, input.rgba.g, input.rgba.b);
         res.push(...color);
 
         res.push(...this.encodeA(input.rgba.a));
 
         return res;
+    }
+
+    public static encodeGraft(input: number | null): EncoderTypes.Byter[] {
+        if (input === null) return [{ dat: 0x0, bit: 1, nam: 'is graft ?' }];
+
+        console.log(input);
+        invariant(!Number.isNaN(input), 'encodeGraft:NAN');
+        invariant(input <= 16, 'encodeGraft: graftPalletIndex too big');
+
+        return [
+            { dat: 0x1, bit: 1, nam: 'is graft ?' },
+            { dat: input, bit: 4, nam: 'graftPalletIndex ' },
+        ];
     }
 
     public static encodeA(input: number): EncoderTypes.Byter[] {
@@ -333,9 +354,9 @@ export class Encoder {
         return [
             { dat: 0x0, bit: 1, nam: 'is RGB black ?' },
             { dat: 0x0, bit: 1, nam: 'is RGB white ?' },
-            { dat: r, bit: 8, nam: 'R' },
-            { dat: g, bit: 8, nam: 'G' },
             { dat: b, bit: 8, nam: 'B' },
+            { dat: g, bit: 8, nam: 'G' },
+            { dat: r, bit: 8, nam: 'R' },
             // { dat: (r << 16) | (g << 8) | b, bit: 24, nam: 'non black rgb' },
         ];
     }

@@ -9,6 +9,7 @@ import * as BuilderTypes from '../types/BuilderTypes';
 import { dotnugg } from '../..';
 import { Config } from '../../parser/classes/Config';
 import { ReceiverType } from '../../parser/types/ParserTypes';
+import { invariantFatal } from '../../utils/index';
 
 export class Transform {
     input: TransformTypes.Document;
@@ -20,6 +21,8 @@ export class Transform {
     defaultLayerMap: BuilderTypes.Dictionary<BuilderTypes.uint8> = {};
     sortedFeatureStrings: string[] = [];
     sortedFeatureUints: BuilderTypes.uint8[] = [];
+
+    graftableFeature: BuilderTypes.uint8;
 
     seenIds: { [_: number]: { [_: number]: boolean } } = { 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {} };
 
@@ -56,8 +59,14 @@ export class Transform {
             .reverse()
             .map((args, i) => {
                 this.featureMap[args[0]] = i;
+
                 // console.log(args[0], this.defaultLayerMap[args[0]].toString());
+
                 this.defaultLayerMap[args[0]] = new ItemTransform(this).transformLevel(args[1].zindex as TransformTypes.Level) - 4;
+                if (args[1].graftable) {
+                    invariantFatal(!this.graftableFeature, ['only support for one graftable feature']);
+                    this.graftableFeature = i;
+                }
 
                 return args;
             })
@@ -128,7 +137,6 @@ export class ItemTransform {
         const folderName = input.fileName.split('/')[input.fileName.split('/').length - 2];
 
         dotnugg.utils.invariantFatal(fileName.split('.').length > 1, ['TRANSITEM:SPLTFN:0 - ', fileName.split('.').length]);
-
         const id = input.order;
 
         // invariant(this.transformer.lastSeenId[this.feature] + 1 == id, "")
@@ -157,6 +165,7 @@ export class ItemTransform {
             weight: input.weight,
             fileUri: input.fileName,
             warnings: [],
+            graftable: this.transformer.graftableFeature === this.transformer.featureMap[input.feature],
         };
     }
 
@@ -211,6 +220,7 @@ export class ItemTransform {
         return {
             rgba: this.transformer.transformColorString(input.rgba),
             zindex: this.transformLevel(input.zindex),
+            graftPalletIndex: input.graft ? input.name.charCodeAt(0) - 96 : null,
         };
     }
 

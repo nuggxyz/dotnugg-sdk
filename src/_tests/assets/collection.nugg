@@ -2,6 +2,7 @@
   features := {
         BASE := {
             lay := +0
+            graftable := true
             exp := { feature: EYES, pointer: +2, yoffset: -1 }
             exp := { feature: MOUTH, pointer: +3, yoffset: -1 }
             exp := { feature: BACK, pointer: +0, yoffset: +0 }

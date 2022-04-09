@@ -32,6 +32,7 @@ const receiver = '.receiver';
 const width = '.width';
 const order = '.order';
 const weight = '.weight';
+const graft = '.graft';
 
 const l = '.l';
 const r = '.r';
@@ -119,6 +120,7 @@ const GeneralColors = General + colors;
 const GeneralColor = General + color;
 const GeneralColorDetails = GeneralColor + details;
 const GeneralColorName = GeneralColor + name;
+const GeneralColorGraft = GeneralColor + graft;
 const GeneralColorDetailsZIndex = GeneralColorDetails + zindex;
 const GeneralColorDetailsZIndexOffset = GeneralColorDetailsZIndex + offset;
 const GeneralColorDetailsZIndexDirection = GeneralColorDetailsZIndex + direction;
@@ -166,6 +168,9 @@ const CollectionFeatureLongName = CollectionFeatureLong + name;
 
 const CollectionFeatureLongOpen = CollectionFeatureLong + open;
 const CollectionFeatureLongClose = CollectionFeatureLong + close;
+const CollectionFeatureLongGraft = CollectionFeatureLong + graft;
+const CollectionFeatureLongGraftName = CollectionFeatureLongGraft + name;
+
 const CollectionFeatureLongZIndex = CollectionFeatureLong + zindex;
 const CollectionFeatureLongReceiver = CollectionFeatureLong + receiver;
 
@@ -297,4 +302,8 @@ export default {
     CollectionOpenWidth,
     ItemOpenOrder,
     ItemOpenWeight,
+
+    GeneralColorGraft,
+    CollectionFeatureLongGraft,
+    CollectionFeatureLongGraftName,
 };

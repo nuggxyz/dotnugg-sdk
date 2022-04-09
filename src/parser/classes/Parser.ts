@@ -145,7 +145,7 @@ export class Parser {
     }
 
     public static parseData(fileData: string) {
-        return new Parser(fileData, 'none', 'none').initSingle();
+        return new Parser(fileData, 'none.nugg', 'none.nugg').initSingle();
     }
     public static parsePath(filePath: string) {
         invariant(this._inited, 'ERROR: Parser not initialized');
@@ -802,7 +802,10 @@ export class Parser {
                     token: nameToken,
                     value: name,
                 },
-
+                graftable: {
+                    value: false, // only setable in long version
+                    token: nameToken,
+                },
                 receivers: [], // empty bc these only exist in long version
                 expandableAt: {
                     token: radiiToken,
@@ -849,6 +852,7 @@ export class Parser {
             let zindex: ParserTypes.RangeOf<ParserTypes.ZIndex> = undefined;
             let expandableAt: ParserTypes.RangeOf<ParserTypes.RLUD<number>> = undefined;
             let receivers: ParserTypes.RangeOf<ParserTypes.Receiver>[] = [];
+            let graftable: ParserTypes.RangeOf<boolean> = undefined;
 
             for (; this.has(tokens.CollectionFeatureLong) && endToken === undefined; this.next) {
                 if (this.has(tokens.CollectionFeatureLongName)) {
@@ -863,6 +867,11 @@ export class Parser {
                 const zindex_ = this.parseCollectionFeatureLongZIndex();
                 if (zindex_) {
                     zindex = zindex_;
+                }
+
+                const graft_ = this.parseCollectionFeatureLongGraft();
+                if (graft_) {
+                    graftable = graft_;
                 }
 
                 const receiver_ = this.parseGeneralReceiver(ParserTypes.ReceiverType.CALCULATED);
@@ -893,7 +902,8 @@ export class Parser {
                     value: name,
                     token: nameToken,
                 },
-                receivers, // empty bc these only exist in long version
+                receivers,
+                graftable,
                 expandableAt,
             };
 
@@ -1043,6 +1053,23 @@ export class Parser {
         return undefined;
     }
 
+    parseCollectionFeatureLongGraft() {
+        if (this.has(tokens.CollectionFeatureLongGraft)) {
+            let graft: boolean = this.currentValue === 'true';
+
+            return {
+                value: graft,
+                token: this.current,
+                endToken: undefined,
+            };
+            // } else {
+            //     console.error('ERROR', 'blank value returned from: parseItemVersionAnchor', validator.undefinedVarNames);
+            //     throw new Error('blank value returned from: parseItemVersionAnchor');
+            // }
+        }
+        return undefined;
+    }
+
     parseGeneralColors() {
         if (this.has(tokens.GeneralColors)) {
             const token = this.current;
@@ -1091,6 +1118,8 @@ export class Parser {
             let zindexToken: ParserTypes.ParsedToken = undefined;
             let name: string = undefined;
             let nameToken: ParserTypes.ParsedToken = undefined;
+            let graft: boolean = undefined;
+            let graftToken: ParserTypes.ParsedToken = undefined;
 
             for (; this.has(tokens.GeneralColor) && endToken === undefined; this.next) {
                 if (this.currentValue === '') {
@@ -1108,6 +1137,10 @@ export class Parser {
                 if (this.has(tokens.GeneralColorName)) {
                     name = this.currentValue;
                     nameToken = this.current;
+                }
+                if (this.has(tokens.GeneralColorGraft)) {
+                    graft = true;
+                    graftToken = this.current;
                 }
                 if (this.has(tokens.GeneralColorDetailsRgba)) {
                     rgba = this.currentValue as ParserTypes.RGBA;
@@ -1147,6 +1180,19 @@ export class Parser {
                     value: rgba,
                     token: rgbaToken,
                 },
+                ...(graft === undefined
+                    ? {
+                          graft: {
+                              value: false,
+                              token: nameToken,
+                          },
+                      }
+                    : {
+                          graft: {
+                              value: true,
+                              token: graftToken,
+                          },
+                      }),
             };
             return {
                 value,

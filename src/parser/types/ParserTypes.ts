@@ -25,6 +25,7 @@ export type Collection = {
 export type CollectionFeatures = Dictionary<RangeOf<CollectionFeature>>;
 
 export type CollectionFeature = {
+    graftable: RangeOf<boolean>;
     name: RangeOf<string>;
     zindex: RangeOf<ZIndex>;
     receivers: RangeOf<Receiver>[];
@@ -86,6 +87,7 @@ export type Color = {
     name: RangeOf<string>;
     zindex: RangeOf<ZIndex>;
     rgba: RangeOf<RGBA>;
+    graft: RangeOf<boolean>;
 };
 
 export type RGBA = `rgba(${_}${number}${_},${_}${number}${_},${_}${number}${_},${_}${number}${_})`;

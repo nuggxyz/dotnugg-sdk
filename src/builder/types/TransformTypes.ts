@@ -12,7 +12,7 @@ export type Collection = {
 export type CollectionFeature = {
     name: string;
     zindex: LevelNullable;
-
+    graftable: boolean;
     receivers: Receiver[];
     expandableAt: Rlud;
 };
@@ -21,6 +21,7 @@ export type Pixel = {
     name: string;
     zindex: Level;
     rgba: string;
+    graft: boolean;
 };
 
 export type Rgba = {

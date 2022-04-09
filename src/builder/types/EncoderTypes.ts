@@ -42,6 +42,7 @@ export type Item = {
     order: number;
     weight: number;
     warnings: string[];
+    graftable: boolean;
 };
 // export type Version struct {
 // 	Groups    []*Group
@@ -76,6 +77,7 @@ export type Collection = {
 export type Pixel = {
     rgba: Rgba;
     zindex: BuilderTypes.uint8;
+    graftPalletIndex: BuilderTypes.uint8 | null;
 };
 // export type Receiver struct {
 // 	Feature int8
