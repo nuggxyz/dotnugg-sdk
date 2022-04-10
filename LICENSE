@@ -3,22 +3,24 @@ Business Source License 1.1
 License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
 "Business Source License" is a trademark of MariaDB Corporation Ab.
 
----
+-----------------------------------------------------------------------------
 
 Parameters
 
-Licensor: nugg.xyz LLC
+Licensor:             nugg.xyz LLC
 
-Licensed Work: DotnuggV1 SDK
-The Licensed Work is (c) 2022 nugg.xyz LLC
+Licensed Work:        DotnuggV1 SDK
+                      The Licensed Work is (c) 2022 nugg.xyz LLC
 
-Additional Use Grant: Any uses listed and defined at dotnugg-v1-sdk-license-grants.nugg.xyz
+Additional Use Grant: Any uses listed and defined at
+                      dotnugg-v1-sdk-license-grants.nugg.xyz 
 
-Change Date: The earlier of 2026-04-01 or a date specified at dotnugg-v1-sdk-license-date.nugg.xyz
+Change Date:          The earlier of 2026-04-01 or a date specified at
+                      dotnugg-v1-sdk-license-date.nugg.xyz 
 
-Change License: GNU General Public License v2.0 or later
+Change License:       GNU General Public License v2.0 or later
 
----
+-----------------------------------------------------------------------------
 
 Terms
 
@@ -66,7 +68,7 @@ MariaDB hereby grants you permission to use this License’s text to license
 your works, and to refer to it using the trademark "Business Source License",
 as long as you comply with the Covenants of Licensor below.
 
----
+-----------------------------------------------------------------------------
 
 Covenants of Licensor
 
@@ -89,7 +91,7 @@ other recipients of the licensed work to be provided by Licensor:
 
 4. Not to modify this License in any other way.
 
----
+-----------------------------------------------------------------------------
 
 Notice
 
