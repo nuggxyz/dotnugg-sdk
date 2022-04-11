@@ -21,22 +21,51 @@ describe('main', () => {
         // console.log(p.results.items[0].value.versions.value[0].value.data.value.matrix.length);
     });
 
-    it('compile test', async (done) => {
+    // it('compile test', async (done) => {
+    //     // @ts-ignore
+    //     // this.timeout(60000);
+
+    //     await dotnugg.parser.init('other/test4');
+
+    //     const comp = dotnugg.compiler.compileDirectoryCheckCacheAndRender(
+    //         '0x2bbb4e1d019ab98eff32560d8cb25535b9d0b6c6',
+    //         new ethers.providers.InfuraProvider('rinkeby', 'a1625b39cf0047febd415f9b37d8c931'),
+    //         path.join(__dirname, '../../../nuggft-art'),
+    //     );
+
+    //     console.log(comp.renderer.results);
+
+    //     return await comp.renderer.wait().then(() => {
+    //         done();
+    //     });
+
+    //     // .catch((err) => {
+    //     //     console.log('WHO', err);
+    //     // });
+
+    //     // done();
+
+    //     // const comp = dotnugg.compiler.compileDirectoryCheckCache(path.join(__dirname, '../../../nuggft-art'));
+
+    //     // console.log(comp.compileTimeBytecodeEncoded);
+    // }).timeout(60000);
+
+    it('compile test async', async (done) => {
         // @ts-ignore
         // this.timeout(60000);
 
         await dotnugg.parser.init('other/test4');
 
         const comp = dotnugg.compiler.compileDirectoryCheckCacheAndRender(
-            '0x2bbb4e1d019ab98eff32560d8cb25535b9d0b6c6',
+            '0x5dc1a0e59729c0c29b2b659e452a34e2b4f987f1',
             new ethers.providers.InfuraProvider('rinkeby', 'a1625b39cf0047febd415f9b37d8c931'),
             path.join(__dirname, '../../../nuggft-art'),
         );
 
-        console.log(comp.renderer.results);
+        // console.log(comp.renderer.results);
 
         return await comp.renderer.wait().then(() => {
-            // done();
+            done();
         });
 
         // .catch((err) => {

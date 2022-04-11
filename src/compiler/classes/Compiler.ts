@@ -57,6 +57,26 @@ export class Compiler extends Builder {
         return me;
     };
 
+    public static compileDirectoryCheckCacheAndRenderAsync = async (
+        contractAddr: string,
+        provider: ethers.providers.InfuraProvider,
+        inputdir: string,
+    ) => {
+        dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
+
+        console.log('compiling directory checking cache and render: ', inputdir);
+
+        let doc = dotnugg.parser.parseDirectoryCheckCache(inputdir);
+
+        let me = dotnugg.builder.fromObject(doc) as Compiler;
+
+        me.renderer = await dotnugg.renderer.renderCheckCacheAsync(contractAddr, provider, inputdir, me);
+
+        me.processed = true;
+
+        return me;
+    };
+
     public static compileFile = (inputpath: string) => {
         dotnugg.utils.invariantVerbose(dotnugg.parser.inited, 'PARSER:NOT:INIT');
 

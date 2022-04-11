@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 import { IDotnuggV1Resolver, IDotnuggV1Resolver__factory } from '../../typechain';
 import { dotnugg } from '../..';
@@ -43,8 +43,12 @@ export class Renderer {
         this._instance = new ethers.Contract(addr, IDotnuggV1Resolver__factory.abi, prov) as IDotnuggV1Resolver;
     }
 
-    public async renderOnChain(data: ethers.BigNumber[], base64: boolean): Promise<string> {
-        return await this._instance['combo(uint256[],bool)'](data, base64);
+    public async renderOnChain(data: ethers.BigNumber[][], base64: boolean): Promise<string> {
+        return await this._instance.combo(data, base64);
+    }
+
+    public async bulkRenderOnChain(data: ethers.BigNumber[][][], base64: boolean): Promise<string[]> {
+        return await this._instance.supersize(data, base64);
     }
 
     public static renderCheckCache(addr: string, prov: ethers.providers.InfuraProvider, dir: string, builder: dotnugg.builder) {
@@ -75,9 +79,7 @@ export class Renderer {
                 }
             }
 
-            // console.log(i, builder.outputByItemIndex);
-
-            cache[fileUri] = { mtimeMs, data: me.renderOnChain(builder.hexArray(builder.output[i]), true) };
+            cache[fileUri] = { mtimeMs, data: me.renderOnChain([builder.hexArray(builder.output[i])], true) };
 
             renderedamt++;
             me.cacheUpdated = true;
@@ -86,6 +88,65 @@ export class Renderer {
         console.log(`rendered ${renderedamt} files and must "wait()" to save ${cachedamt} rendered files to cache`);
 
         me.promisedResults = cache;
+
+        return me;
+    }
+
+    public static async renderCheckCacheAsync(addr: string, prov: ethers.providers.InfuraProvider, dir: string, builder: dotnugg.builder) {
+        let me = new Renderer(addr, prov);
+        me.cachepath = Config.cachePath(dir, 'renderer');
+        // me.cachepath = Cacher.getFilesInDir(dir);
+
+        let cache: { [_: string]: { mtimeMs: number; data: Promise<string> } } = {};
+
+        let cachedamt = 0;
+        let renderedamt = 0;
+
+        try {
+            let rawdata = fs.readFileSync(me.cachepath, 'utf8');
+            cache = JSON.parse(rawdata);
+
+            if (cache[`${undefined}`]) cache = {};
+        } catch (err) {
+            console.log('no cache file found at: ', me.cachepath);
+        }
+
+        let hack = 0;
+        let hack2: Promise<any>[] = [];
+
+        for (var i = 0; i < builder.output.length; i++) {
+            const { fileUri, mtimeMs } = builder.output[i];
+            if (cache[fileUri]) {
+                if (mtimeMs && mtimeMs === cache[fileUri].mtimeMs) {
+                    cachedamt++;
+                    continue;
+                }
+            }
+
+            const prom = me.renderOnChain([builder.hexArray(builder.output[i])], true);
+
+            cache[fileUri] = { mtimeMs, data: prom };
+
+            hack2.push(prom);
+
+            renderedamt++;
+            me.cacheUpdated = true;
+
+            if (hack2.length > 25) {
+                console.log(`shot off 25 requests... waiting for all`);
+
+                console.log(hack2);
+                await Promise.all(hack2);
+                console.log(`got em, moving on`);
+                hack2 = [];
+            }
+        }
+
+        console.log(`rendered ${renderedamt} files and calling "wait()" to save ${cachedamt} rendered files to cache`);
+
+        me.promisedResults = cache;
+
+        await me.wait();
 
         return me;
     }
