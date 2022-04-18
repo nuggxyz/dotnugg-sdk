@@ -1,9 +1,9 @@
-import { BigNumber, BigNumberish, BytesLike, ethers, Overrides, PopulatedTransaction } from 'ethers';
-import invariant from 'tiny-invariant';
+import { BigNumber, BigNumberish, BytesLike, ethers, Overrides, PopulatedTransaction, utils } from 'ethers';
 
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
 import constants from '../constants';
+import { dotnugg } from '../..';
 
 interface func {
     unsafeStoreFilesBulk(
@@ -26,7 +26,10 @@ export class Encoder {
     public static strarr(input: EncoderTypes.Byter[]): BigNumber {
         // console.log('----------------');
         return [...input].reverse().reduce((prev, curr) => {
-            invariant(curr.dat < Math.pow(2, curr.bit) && curr.dat >= 0, 'ENCODE:STRARR:0 - ' + curr.dat + ' < ' + Math.pow(2, curr.bit));
+            dotnugg.utils.invariantVerbose(
+                curr.dat < Math.pow(2, curr.bit) && curr.dat >= 0,
+                'ENCODE:STRARR:0 - ' + curr.dat + ' < ' + Math.pow(2, curr.bit),
+            );
             // if (curr.nam && !curr.nam.includes('MATRIX')) console.log(curr.nam, curr.bit, curr.dat);
             return prev.eq(0) ? (prev = BigNumber.from(curr.dat)) : prev.shl(curr.bit).or(curr.dat);
         }, BigNumber.from(0));
@@ -36,7 +39,7 @@ export class Encoder {
         // uint12
         const x = input.x;
         const y = input.y;
-        invariant(x <= constants.WIDTH && y <= constants.WIDTH && x >= 0 && y >= 0, 'ENCODE:EC:0');
+        dotnugg.utils.invariantVerbose(x <= constants.WIDTH && y <= constants.WIDTH && x >= 0 && y >= 0, 'ENCODE:EC:0');
         return [
             { dat: x, bit: constants.BITLEN, nam: 'coord x' },
             { dat: y, bit: constants.BITLEN, nam: 'coord y' },
@@ -46,10 +49,10 @@ export class Encoder {
     static encodeRlud(input: EncoderTypes.Rlud): EncoderTypes.Byter[] {
         //uint1 | uint25
         if (input.exists) {
-            invariant(0 <= input.r && input.r < constants.WIDTH, 'ENCODE:ER:0');
-            invariant(0 <= input.l && input.l < constants.WIDTH, 'ENCODE:ER:1');
-            invariant(0 <= input.u && input.u < constants.WIDTH, 'ENCODE:ER:2');
-            invariant(0 <= input.d && input.d < constants.WIDTH, 'ENCODE:ER:3');
+            dotnugg.utils.invariantVerbose(0 <= input.r && input.r < constants.WIDTH, 'ENCODE:ER:0');
+            dotnugg.utils.invariantVerbose(0 <= input.l && input.l < constants.WIDTH, 'ENCODE:ER:1');
+            dotnugg.utils.invariantVerbose(0 <= input.u && input.u < constants.WIDTH, 'ENCODE:ER:2');
+            dotnugg.utils.invariantVerbose(0 <= input.d && input.d < constants.WIDTH, 'ENCODE:ER:3');
             return [
                 {
                     dat: 0x0,
@@ -78,9 +81,9 @@ export class Encoder {
     // y = uint6
     static encodeReceiver(input: EncoderTypes.Receiver): EncoderTypes.Byter[] {
         let c = input.calculated ? 0x1 : 0x0;
-        invariant(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0 - ' + input.feature);
-        invariant(0 <= input.xorZindex && input.xorZindex <= constants.WIDTH, 'ENCODE:REC:2 - ' + input.xorZindex);
-        invariant(0 <= input.yorYoffset && input.yorYoffset <= constants.WIDTH, 'ENCODE:REC:3');
+        dotnugg.utils.invariantVerbose(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0 - ' + input.feature);
+        dotnugg.utils.invariantVerbose(0 <= input.xorZindex && input.xorZindex <= constants.WIDTH, 'ENCODE:REC:2 - ' + input.xorZindex);
+        dotnugg.utils.invariantVerbose(0 <= input.yorYoffset && input.yorYoffset <= constants.WIDTH, 'ENCODE:REC:3');
         return [
             {
                 dat: input.yorYoffset,
@@ -115,7 +118,7 @@ export class Encoder {
     //         .map((x) => {
     //             let res = [];
     //             x.len = x.len - 1;
-    //             invariant(0 <= x.len && x.len < 256, 'ENCODE:EMP:2');
+    //             dotnugg.utils.invariantVerbose(0 <= x.len && x.len < 256, 'ENCODE:EMP:2');
 
     //             if (x.len == 0) res.push({ dat: 0, bit: 3 });
     //             else if (x.len == 1) res.push({ dat: 1, bit: 3 });
@@ -137,11 +140,11 @@ export class Encoder {
     //                         { dat: x.len, bit: 8 },
     //                     ],
     //                 );
-    //             else invariant(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
+    //             else dotnugg.utils.invariantVerbose(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
     //             if (x.colorkey === undefined) x.colorkey = 0;
     //             else x.colorkey++;
 
-    //             invariant(0 <= x.colorkey && x.colorkey < 16, 'ENCODE:EMP:CKs - ' + x.colorkey);
+    //             dotnugg.utils.invariantVerbose(0 <= x.colorkey && x.colorkey < 16, 'ENCODE:EMP:CKs - ' + x.colorkey);
 
     //             res.push({ dat: x.colorkey, bit: 4 });
     //             return res;
@@ -149,12 +152,12 @@ export class Encoder {
     //         .flat();
     // }
 
-    static encodeMatrixPixelB(input: EncoderTypes.Group[]): EncoderTypes.Byter[][] {
+    static encodeMatrixPixelB(input: EncoderTypes.Group[], palletLen: number, pixBitLen: 4 | 8): EncoderTypes.Byter[][] {
         return input
             .map((x) => {
                 let res: EncoderTypes.Byter[][] = [];
                 x.len = x.len - 1;
-                invariant(0 <= x.len && x.len < 19, 'ENCODE:EMP:2');
+                dotnugg.utils.invariantVerbose(0 <= x.len && x.len < 19, 'ENCODE:EMP:2');
 
                 if (x.len == 0) res.push([{ dat: 0, bit: 2, nam: 'MATRIX LEN' }]);
                 else if (x.len == 1) res.push([{ dat: 1, bit: 2, nam: 'MATRIX LEN' }]);
@@ -164,12 +167,12 @@ export class Encoder {
                         { dat: 3, bit: 2, nam: 'MATRIX LEN' },
                         { dat: x.len - 3, bit: 4, nam: 'MATRIX LEN BIG' },
                     ]);
-                else invariant(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
+                else dotnugg.utils.invariantVerbose(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
                 if (x.colorkey === undefined) x.colorkey = 0;
 
-                invariant(0 <= x.colorkey && x.colorkey < 16, 'ENCODE:EMP:CKs');
+                dotnugg.utils.invariantVerbose(0 <= x.colorkey && x.colorkey <= palletLen, 'ENCODE:EMP:CKs' + x.colorkey + ' ' + palletLen);
 
-                res.push([{ dat: x.colorkey, bit: 4, nam: 'MATRIX KEY' }]);
+                res.push([{ dat: x.colorkey, bit: pixBitLen, nam: 'MATRIX KEY' }]);
                 return res;
             })
             .flat();
@@ -180,16 +183,16 @@ export class Encoder {
     //         .map((x) => {
     //             let res = [];
     //             x.len = x.len - 1;
-    //             invariant(0 <= x.len && x.len < 19, 'ENCODE:EMP:2');
+    //             dotnugg.utils.invariantVerbose(0 <= x.len && x.len < 19, 'ENCODE:EMP:2');
 
     //             if (x.len == 0) res.push({ dat: 0, bit: 2 });
     //             else if (x.len == 1) res.push({ dat: 1, bit: 2 });
     //             else if (x.len == 2) res.push({ dat: 2, bit: 2 });
     //             else if (x.len == 3) res.push({ dat: 3, bit: 2 });
-    //             else invariant(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
+    //             else dotnugg.utils.invariantVerbose(false, 'ENCODE:EMP:ERROR:SHOULDNOTHAPPEN');
     //             if (x.colorkey === undefined) x.colorkey = 0;
 
-    //             invariant(0 <= x.colorkey && x.colorkey < 16, 'ENCODE:EMP:CKs');
+    //             dotnugg.utils.invariantVerbose(0 <= x.colorkey && x.colorkey < 16, 'ENCODE:EMP:CKs');
 
     //             res.push({ dat: x.colorkey, bit: 4 });
     //             return res;
@@ -204,11 +207,19 @@ export class Encoder {
 
         res.push(this.encodeFeatureId(input.id));
 
-        invariant(0 < input.versions.length && input.versions.length <= 16, 'ENCODE:ITM:0');
+        dotnugg.utils.invariantVerbose(0 < input.versions.length && input.versions.length <= 16, 'ENCODE:ITM:0');
+        dotnugg.utils.invariantVerbose(input.pixels.length < 256, 'ENCODE:PIXEL:0');
 
-        res.push({ dat: input.pixels.length - 1, bit: 4, nam: 'pallet len' }); // pallet length
-
+        let pixBitLen: 4 | 8;
         // res.push({ dat: input.versions.length - 1, bit: 2, nam: 'version len' });
+        if (input.pixels.length >= 16) {
+            pixBitLen = 8;
+            res.push({ dat: 0x1, bit: 1, nam: 'pallet size category' });
+        } else {
+            pixBitLen = 4;
+            res.push({ dat: 0x0, bit: 1, nam: 'pallet size category' });
+        }
+        res.push({ dat: input.pixels.length - 1, bit: pixBitLen, nam: 'pallet len' }); // pallet length
 
         input.pixels.forEach((x) => {
             res.push(...this.encodePixel(x));
@@ -216,12 +227,12 @@ export class Encoder {
 
         res.push(this.encodeGraftable(input.graftable));
 
-        invariant(0 < input.versions.length && input.versions.length <= 4, 'ENCODE:ITM:1');
+        dotnugg.utils.invariantVerbose(0 < input.versions.length && input.versions.length <= 4, 'ENCODE:ITM:1');
 
         res.push({ dat: input.versions.length - 1, bit: 2, nam: 'version len' }); // pallet length
 
         input.versions.forEach((x) => {
-            res.push(...this.encodeVersion(x));
+            res.push(...this.encodeVersion(x, input.pixels.length, pixBitLen));
         });
 
         return {
@@ -236,12 +247,12 @@ export class Encoder {
     }
 
     public static encodeFeature(input: number): EncoderTypes.Byter {
-        invariant(0 <= input && input < 8, 'ENCODE:FEA:0');
+        dotnugg.utils.invariantVerbose(0 <= input && input < 8, 'ENCODE:FEA:0');
         return { dat: input, bit: 3 };
     }
 
     public static encodeFeatureId(input: number): EncoderTypes.Byter {
-        invariant(0 <= input && input < 255, 'ENCODE:FEATID:0');
+        dotnugg.utils.invariantVerbose(0 <= input && input < 255, 'ENCODE:FEATID:0');
         return { dat: input + 1, bit: 8 };
     }
 
@@ -249,7 +260,7 @@ export class Encoder {
         return { dat: bool ? 0x01 : 0x00, bit: 1, nam: 'graftable' };
     }
 
-    public static encodeVersion(input: EncoderTypes.Version): EncoderTypes.Byter[] {
+    public static encodeVersion(input: EncoderTypes.Version, palletLen: number, pixBitLen: 4 | 8): EncoderTypes.Byter[] {
         let res: EncoderTypes.Byter[] = [];
 
         res.push(...this.encodeCoordinate(input.len));
@@ -257,7 +268,10 @@ export class Encoder {
         res.push(...this.encodeRlud(input.radii));
         res.push(...this.encodeRlud(input.expanders));
 
-        invariant(0 <= input.receivers.length && input.receivers.length < 16, 'ENCODE:VERS:0 - ' + input.receivers.length);
+        dotnugg.utils.invariantVerbose(
+            0 <= input.receivers.length && input.receivers.length < 16,
+            'ENCODE:VERS:0 - ' + input.receivers.length,
+        );
         if (input.receivers.length == 1) {
             res.push({ dat: 0x1, bit: 1, nam: 'receiver len == 1 ?' });
         } else {
@@ -266,14 +280,15 @@ export class Encoder {
         }
         res.push(...this.encodeReceivers(input.receivers));
 
-        const groups = this.encodeMatrixPixelB(input.groups);
+        const groups = this.encodeMatrixPixelB(input.groups, palletLen, pixBitLen);
 
         const realgrouplen = input.groups.length;
-        invariant(0 < realgrouplen && realgrouplen <= 4096, 'ENCODE:VERS:1');
+        dotnugg.utils.invariantVerbose(0 < realgrouplen && realgrouplen <= Math.pow(2, 16), 'ENCODE:VERS:1 - ' + realgrouplen);
         if (realgrouplen <= 256) {
             res.push({ dat: 0x1, bit: 1, nam: 'group len <= 256 ? ' });
             res.push({ dat: realgrouplen - 1, bit: 8, nam: 'group len' });
         } else {
+            // TODO
             res.push({ dat: 0x0, bit: 1, nam: 'group len <= 256 ?' });
             res.push({ dat: realgrouplen - 1, bit: 16, nam: 'group len' });
         }
@@ -284,7 +299,7 @@ export class Encoder {
 
     public static encodeVersions(input: BuilderTypes.Dictionary<EncoderTypes.Version>): EncoderTypes.Byter[] {
         return Object.values(input)
-            .map((x) => this.encodeVersion(x))
+            .map((x) => this.encodeVersion(x, 16, 4))
             .flat();
     }
     public static encodePixels(input: BuilderTypes.Dictionary<EncoderTypes.Pixel>): EncoderTypes.Byter[] {
@@ -313,9 +328,9 @@ export class Encoder {
     public static encodeGraft(input: number | null): EncoderTypes.Byter[] {
         if (input === null) return [{ dat: 0x0, bit: 1, nam: 'is graft ?' }];
 
-        invariant(!Number.isNaN(input) && !!input, 'encodeGraft:NAN');
+        dotnugg.utils.invariantVerbose(!Number.isNaN(input) && !!input, 'encodeGraft:NAN');
 
-        invariant(input <= 16, 'encodeGraft: graftPalletIndex too big');
+        dotnugg.utils.invariantVerbose(input <= 16, 'encodeGraft: graftPalletIndex too big');
 
         return [
             { dat: 0x1, bit: 1, nam: 'is graft ?' },
@@ -326,7 +341,7 @@ export class Encoder {
     public static encodeA(input: number): EncoderTypes.Byter[] {
         //    uint1 | uint9
 
-        invariant(!Number.isNaN(input), 'ENCODE:A:NAN');
+        dotnugg.utils.invariantVerbose(!Number.isNaN(input), 'ENCODE:A:NAN');
         if (input == 255) return [{ dat: 0x1, bit: 1, nam: 'is A 255 ? ' }];
         return [
             { dat: 0x0, bit: 1, nam: 'is A 255 ? ' },
@@ -347,9 +362,9 @@ export class Encoder {
                 { dat: 0x1, bit: 1, nam: 'is RBG white ?' },
             ];
 
-        invariant(0 <= r && r < 256, 'ENCODE:ER:R');
-        invariant(0 <= g && g < 256, 'ENCODE:ER:G');
-        invariant(0 <= b && b < 256, 'ENCODE:ER:B');
+        dotnugg.utils.invariantVerbose(0 <= r && r < 256, 'ENCODE:ER:R');
+        dotnugg.utils.invariantVerbose(0 <= g && g < 256, 'ENCODE:ER:G');
+        dotnugg.utils.invariantVerbose(0 <= b && b < 256, 'ENCODE:ER:B');
         return [
             { dat: 0x0, bit: 1, nam: 'is RGB black ?' },
             { dat: 0x0, bit: 1, nam: 'is RGB white ?' },
@@ -362,7 +377,7 @@ export class Encoder {
 
     public static encodeLayer(input: number): EncoderTypes.Byter {
         //uint8
-        invariant(0 <= input && input < 15, 'ENCODE:LAYER:0');
+        dotnugg.utils.invariantVerbose(0 <= input && input < 15, 'ENCODE:LAYER:0');
         return { bit: 4, dat: input, nam: 'layer' };
     }
 

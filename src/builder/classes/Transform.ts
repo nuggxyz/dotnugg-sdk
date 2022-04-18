@@ -1,8 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import invariant from 'tiny-invariant';
-
 import * as TransformTypes from '../types/TransformTypes';
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
@@ -160,7 +158,10 @@ export class ItemTransform {
         const graftable = this.transformer.graftableFeature === this.transformer.featureMap[input.feature];
 
         if (graftable) {
-            invariant(pixels.length === 15, 'graftable items must have a pallet of length 15.. found: ' + pixels.length);
+            dotnugg.utils.invariantVerbose(
+                pixels.length === 15,
+                'graftable items must have a pallet of length 15.. found: ' + pixels.length,
+            );
         }
 
         return {
