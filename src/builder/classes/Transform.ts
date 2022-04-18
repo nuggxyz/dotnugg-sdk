@@ -10,6 +10,7 @@ import { dotnugg } from '../..';
 import { Config } from '../../parser/classes/Config';
 import { ReceiverType } from '../../parser/types/ParserTypes';
 import { invariantFatal } from '../../utils/index';
+import constants from '../constants';
 
 export class Transform {
     input: TransformTypes.Document;
@@ -96,7 +97,7 @@ export class Transform {
     transformReceiver(input: TransformTypes.Receiver): EncoderTypes.Receiver {
         return {
             xorZindex: input.a.offset, // zindex or x
-            yorYoffset: input.b.offset + (input.type === ReceiverType.CALCULATED && input.b.direction === '-' ? 32 : 0), // yoffset or y
+            yorYoffset: input.b.offset + (input.type === ReceiverType.CALCULATED && input.b.direction === '-' ? constants.MID : 0), // yoffset or y
             feature: this.featureMap[input.feature],
             calculated: input.type === ReceiverType.CALCULATED,
         };

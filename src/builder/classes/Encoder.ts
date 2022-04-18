@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant';
 
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
+import constants from '../constants';
 
 interface func {
     unsafeStoreFilesBulk(
@@ -35,20 +36,20 @@ export class Encoder {
         // uint12
         const x = input.x;
         const y = input.y;
-        invariant(x < 64 && y < 64 && x >= 0 && y >= 0, 'ENCODE:EC:0');
+        invariant(x <= constants.WIDTH && y <= constants.WIDTH && x >= 0 && y >= 0, 'ENCODE:EC:0');
         return [
-            { dat: x, bit: 6, nam: 'coord x' },
-            { dat: y, bit: 6, nam: 'coord y' },
+            { dat: x, bit: constants.BITLEN, nam: 'coord x' },
+            { dat: y, bit: constants.BITLEN, nam: 'coord y' },
         ];
     }
 
     static encodeRlud(input: EncoderTypes.Rlud): EncoderTypes.Byter[] {
         //uint1 | uint25
         if (input.exists) {
-            invariant(0 <= input.r && input.r < 64, 'ENCODE:ER:0');
-            invariant(0 <= input.l && input.l < 64, 'ENCODE:ER:1');
-            invariant(0 <= input.u && input.u < 64, 'ENCODE:ER:2');
-            invariant(0 <= input.d && input.d < 64, 'ENCODE:ER:3');
+            invariant(0 <= input.r && input.r < constants.WIDTH, 'ENCODE:ER:0');
+            invariant(0 <= input.l && input.l < constants.WIDTH, 'ENCODE:ER:1');
+            invariant(0 <= input.u && input.u < constants.WIDTH, 'ENCODE:ER:2');
+            invariant(0 <= input.d && input.d < constants.WIDTH, 'ENCODE:ER:3');
             return [
                 {
                     dat: 0x0,
@@ -56,8 +57,8 @@ export class Encoder {
                     nam: 'ruld all zero?',
                 },
                 {
-                    dat: (input.r << 18) | (input.l << 12) | (input.u << 6) | input.d,
-                    bit: 24,
+                    dat: (input.r << constants.BITLENx3) | (input.l << constants.BITLENx2) | (input.u << constants.BITLEN) | input.d,
+                    bit: constants.BITLENx4,
                     nam: 'RLUD data',
                 },
             ];
@@ -78,17 +79,17 @@ export class Encoder {
     static encodeReceiver(input: EncoderTypes.Receiver): EncoderTypes.Byter[] {
         let c = input.calculated ? 0x1 : 0x0;
         invariant(0 <= input.feature && input.feature < 8, 'ENCODE:REC:0 - ' + input.feature);
-        invariant(0 <= input.xorZindex && input.xorZindex < 64, 'ENCODE:REC:2 - ' + input.xorZindex);
-        invariant(0 <= input.yorYoffset && input.yorYoffset < 64, 'ENCODE:REC:3');
+        invariant(0 <= input.xorZindex && input.xorZindex <= constants.WIDTH, 'ENCODE:REC:2 - ' + input.xorZindex);
+        invariant(0 <= input.yorYoffset && input.yorYoffset <= constants.WIDTH, 'ENCODE:REC:3');
         return [
             {
                 dat: input.yorYoffset,
-                bit: 6,
+                bit: constants.BITLEN,
                 nam: 'yorYoffset',
             },
             {
                 dat: input.xorZindex,
-                bit: 6,
+                bit: constants.BITLEN,
                 nam: 'xorZindex',
             },
             {
