@@ -247,11 +247,11 @@ export class Builder {
 
     protected constructor() {}
 
-    public hexFromBits(input: BuilderTypes.Output['bits']) {
+    public static hexFromBits(input: BuilderTypes.Output['bits']) {
         return Encoder.strarr(input);
     }
 
-    public hexArrayFromBits(input: BuilderTypes.Output['bits']) {
+    public static hexArrayFromBits(input: BuilderTypes.Output['bits']) {
         return Builder.breakup(this.hexFromBits(input));
     }
 
