@@ -43,6 +43,11 @@
                 "internalType": "uint256[]",
                 "name": "",
                 "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
         "stateMutability": "pure",
@@ -78,9 +83,14 @@
                 "internalType": "bytes",
                 "name": "input",
                 "type": "bytes"
+            },
+            {
+                "internalType": "bool",
+                "name": "base64",
+                "type": "bool"
             }
         ],
-        "name": "encodeJsonAsBase64",
+        "name": "encodeJson",
         "outputs": [
             {
                 "internalType": "bytes",
@@ -97,47 +107,14 @@
                 "internalType": "bytes",
                 "name": "input",
                 "type": "bytes"
-            }
-        ],
-        "name": "encodeJsonAsUtf8",
-        "outputs": [
+            },
             {
-                "internalType": "bytes",
-                "name": "res",
-                "type": "bytes"
+                "internalType": "bool",
+                "name": "base64",
+                "type": "bool"
             }
         ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes",
-                "name": "input",
-                "type": "bytes"
-            }
-        ],
-        "name": "encodeSvgAsBase64",
-        "outputs": [
-            {
-                "internalType": "bytes",
-                "name": "res",
-                "type": "bytes"
-            }
-        ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes",
-                "name": "input",
-                "type": "bytes"
-            }
-        ],
-        "name": "encodeSvgAsUtf8",
+        "name": "encodeSvg",
         "outputs": [
             {
                 "internalType": "bytes",
@@ -202,25 +179,6 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint256[][]",
-                "name": "files",
-                "type": "uint256[][]"
-            }
-        ],
-        "name": "execute",
-        "outputs": [
-            {
-                "internalType": "uint256[]",
-                "name": "res",
-                "type": "uint256[]"
-            }
-        ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
         "inputs": [],
         "name": "factory",
         "outputs": [
@@ -241,95 +199,9 @@
                 "type": "bytes[]"
             }
         ],
-        "name": "init",
+        "name": "protectedInit",
         "outputs": [],
         "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "feature",
-                "type": "uint8"
-            }
-        ],
-        "name": "lengthOf",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "a",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "feature",
-                "type": "uint8"
-            }
-        ],
-        "name": "locationOf",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "res",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8[8]",
-                "name": "ids",
-                "type": "uint8[8]"
-            },
-            {
-                "internalType": "string[8]",
-                "name": "labels",
-                "type": "string[8]"
-            }
-        ],
-        "name": "props",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "feature",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint256",
-                "name": "seed",
-                "type": "uint256"
-            }
-        ],
-        "name": "randOf",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "a",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -386,7 +258,7 @@
         "name": "register",
         "outputs": [
             {
-                "internalType": "contract IDotnuggV1Safe",
+                "internalType": "contract IDotnuggV1",
                 "name": "proxy",
                 "type": "address"
             }
@@ -397,33 +269,14 @@
     {
         "inputs": [
             {
-                "internalType": "uint256[][][]",
-                "name": "reads",
-                "type": "uint256[][][]"
-            },
-            {
-                "internalType": "bool",
-                "name": "base64",
-                "type": "bool"
-            }
-        ],
-        "name": "supersize",
-        "outputs": [
-            {
-                "internalType": "string[]",
-                "name": "res",
-                "type": "string[]"
-            }
-        ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "uint256[]",
                 "name": "calculated",
                 "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256",
+                "name": "dat",
+                "type": "uint256"
             },
             {
                 "internalType": "bool",
@@ -440,19 +293,6 @@
             }
         ],
         "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes[]",
-                "name": "data",
-                "type": "bytes[]"
-            }
-        ],
-        "name": "write",
-        "outputs": [],
-        "stateMutability": "nonpayable",
         "type": "function"
     }
 ]

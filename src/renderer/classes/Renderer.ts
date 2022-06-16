@@ -1,15 +1,14 @@
 import * as fs from 'fs';
-import * as path from 'path';
 
 import { BigNumber, ethers } from 'ethers';
 
-import { IDotnuggV1Resolver, IDotnuggV1Resolver__factory } from '../../typechain';
 import { dotnugg } from '../..';
 import { Config } from '../../parser/classes/Config';
-import { Output } from '../../builder/types/BuilderTypes';
+import { DotnuggV1 } from '../../typechain/DotnuggV1';
+import { DotnuggV1__factory } from '../../typechain';
 
 export class Renderer {
-    private _instance: IDotnuggV1Resolver;
+    private _instance: DotnuggV1;
 
     // now
     public promisedResults: { [_: string]: { mtimeMs: number; data: Promise<string> } };
@@ -19,10 +18,12 @@ export class Renderer {
     public results: { [_: string]: { mtimeMs: number; data: string } };
 
     public async wait() {
+        console.log('all of them:', this.promisedResults.length);
         this.results = (
             await Promise.all(
-                Object.entries(this.promisedResults).map(async (x) => {
+                Object.entries(this.promisedResults).map(async (x, i) => {
                     const data = await x[1].data;
+                    // console.log(i, data);
                     return { data, name: x[0], mtimeMs: x[1].mtimeMs };
                 }),
             )
@@ -40,15 +41,14 @@ export class Renderer {
         }
     }
     private constructor(addr: string, prov: ethers.providers.InfuraProvider) {
-        this._instance = new ethers.Contract(addr, IDotnuggV1Resolver__factory.abi, prov) as IDotnuggV1Resolver;
+        this._instance = new ethers.Contract(addr, DotnuggV1__factory.abi, prov) as DotnuggV1;
     }
 
     public async renderOnChain(data: ethers.BigNumber[][], base64: boolean): Promise<string> {
-        return await this._instance.combo(data, base64);
-    }
-
-    public async bulkRenderOnChain(data: ethers.BigNumber[][][], base64: boolean): Promise<string[]> {
-        return await this._instance.supersize(data, base64);
+        return await this._instance.combo(data, base64).catch((err) => {
+            console.error('ERROR CALLING COMBO: ', err);
+            return undefined;
+        });
     }
 
     public static renderCheckCache(addr: string, prov: ethers.providers.InfuraProvider, dir: string, builder: dotnugg.builder) {
@@ -72,7 +72,8 @@ export class Renderer {
 
         for (var i = 0; i < builder.output.length; i++) {
             const { fileUri, mtimeMs } = builder.output[i];
-            if (cache[fileUri]) {
+
+            if (cache[fileUri]?.data) {
                 if (mtimeMs && mtimeMs === cache[fileUri].mtimeMs) {
                     cachedamt++;
                     continue;
@@ -80,7 +81,6 @@ export class Renderer {
             }
 
             cache[fileUri] = { mtimeMs, data: me.renderOnChain([builder.hexArray(builder.output[i])], true) };
-
             renderedamt++;
             me.cacheUpdated = true;
         }

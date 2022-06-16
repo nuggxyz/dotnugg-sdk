@@ -10,7 +10,8 @@
         "outDir": "./dist",
         "sourceMap": true,
         "declaration": true,
-        "declarationMap": true
+        "declarationMap": true,
+        "noErrorTruncation": true
     },
     "include": ["src/**/*", "index.d.ts"],
     "exclude": []

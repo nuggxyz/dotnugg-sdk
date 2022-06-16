@@ -5,7 +5,6 @@ import * as TransformTypes from '../types/TransformTypes';
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';
 import { dotnugg } from '../..';
-import { Config } from '../../parser/classes/Config';
 import { ReceiverType } from '../../parser/types/ParserTypes';
 import { invariantFatal } from '../../utils/index';
 import constants from '../constants';

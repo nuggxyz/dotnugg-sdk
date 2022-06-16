@@ -4,7 +4,6 @@ import { BigNumber, BytesLike, ethers } from 'ethers';
 import { AbiCoder, keccak256 } from 'ethers/lib/utils';
 import invariant from 'tiny-invariant';
 
-import { DotnuggV1Storage, DotnuggV1Storage__factory } from '../../typechain';
 import * as TransformTypes from '../types/TransformTypes';
 import * as EncoderTypes from '../types/EncoderTypes';
 import * as BuilderTypes from '../types/BuilderTypes';

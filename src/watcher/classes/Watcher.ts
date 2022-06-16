@@ -109,8 +109,8 @@ export class Watcher {
         directory: string,
         contractAddr: string,
         provider: InfuraProvider,
-        onFileChangeCallback: (fileUri: string) => void,
-        onMemoryUpdateCallback: (fileUri: string) => void,
+        onFileChangeCallback?: (fileUri: string, me: Watcher) => void,
+        onMemoryUpdateCallback?: (fileUri: string, me: Watcher) => void,
         onErrorCallback?: (error: string) => void,
     ) {
         return new Watcher(appname, directory, contractAddr, provider, onFileChangeCallback, onMemoryUpdateCallback, onErrorCallback);

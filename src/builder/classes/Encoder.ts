@@ -5,13 +5,6 @@ import * as BuilderTypes from '../types/BuilderTypes';
 import constants from '../constants';
 import { dotnugg } from '../..';
 
-interface func {
-    unsafeStoreFilesBulk(
-        data: BigNumberish[][][],
-        overrides?: Overrides & { from?: string | Promise<string> },
-    ): Promise<PopulatedTransaction>;
-}
-
 export class Encoder {
     static fileHeader: EncoderTypes.Byter = { dat: 0x420690_01, bit: 32, nam: 'nuggcheck' };
 
