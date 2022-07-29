@@ -33,7 +33,7 @@
                             { run: yarn },
                             { run: yarn package },
                             {
-                                run: 'yarn config set npmAuthKey $NPM_AUTH_TOKEN',
+                                run: 'yarn config set npmAuthToken $NPM_AUTH_TOKEN',
                             },
                             {
                                 run: 'yarn npm publish --access public',
