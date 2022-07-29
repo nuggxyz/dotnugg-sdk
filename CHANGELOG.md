@@ -1,5 +1,11 @@
 # @nuggxyz/dotnugg-sdk
 
+## 0.4.6
+
+### Patch Changes
+
+-   dumb
+
 ## 0.4.5
 
 ### Patch Changes
