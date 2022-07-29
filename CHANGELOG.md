@@ -1,5 +1,11 @@
 # @nuggxyz/dotnugg-sdk
 
+## 0.4.8
+
+### Patch Changes
+
+-   fix again
+
 ## 0.4.7
 
 ### Patch Changes
