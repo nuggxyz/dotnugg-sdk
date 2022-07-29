@@ -4,10 +4,7 @@
     jobs:
         {
             build:
-                {
-                    runs-on: ubuntu-latest,
-                    steps:
-                        [
+                { runs-on: ubuntu-latest, steps: [
                             {
                                 uses: actions/checkout@v2,
                             },
@@ -29,11 +26,11 @@
                             { run: yarn },
                             { run: yarn package },
                             {
-                                run: 'yarn npm publish --access public',
-                                env:
-                                    {
-                                        NODE_AUTH_TOKEN: '${{ secrets.NPM_AUTOMATION_KEY }}',
-                                    },
+                                run: 'yarn npm publish --access public -otp ${{ secrets.NPM_AUTOMATION_KEY }}',
+                                # env:
+                                #     {
+                                #         NODE_AUTH_TOKEN: '',
+                                #     },
                             },
                             {
                                 uses: marvinpinto/action-automatic-releases@latest,
@@ -43,7 +40,6 @@
                                         prerelease: true,
                                     },
                             },
-                        ],
-                },
+                        ] },
         },
 }
