@@ -1,6 +1,10 @@
 {
     name: release + npm,
     on: { push: { tags: ['v*'] } },
+    env:
+        {
+            NPM_AUTH_TOKEN: '${{ secrets.NPM_AUTOMATION_KEY }}',
+        },
     jobs:
         {
             build:
@@ -29,11 +33,10 @@
                             { run: yarn },
                             { run: yarn package },
                             {
+                                run: 'yarn config set npmAuthKey $NPM_AUTH_TOKEN',
+                            },
+                            {
                                 run: 'yarn npm publish --access public',
-                                env:
-                                    {
-                                        NPM_AUTH_TOKEN: '${{ secrets.NPM_AUTOMATION_KEY }}',
-                                    },
                             },
                             {
                                 uses: marvinpinto/action-automatic-releases@latest,
