@@ -1,6 +1,6 @@
 {
     name: release + npm,
-    on: { push: { tags: [v*] } },
+    on: { push: { tags: ['v*'] } },
     jobs:
         {
             build:
@@ -22,14 +22,14 @@
                                 with:
                                     {
                                         node-version: '${{ steps.nvm.outputs.NVMRC }}',
-                                        registry-url: https://registry.npmjs.org,
+                                        registry-url: 'https://registry.npmjs.org',
                                         scope: '@nuggxyz',
                                     },
                             },
                             { run: yarn },
                             { run: yarn package },
                             {
-                                run: yarn publish --access public,
+                                run: 'yarn publish --access public',
                                 env:
                                     {
                                         NODE_AUTH_TOKEN: '${{ secrets.NPM_AUTOMATION_KEY }}',
