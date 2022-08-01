@@ -1098,10 +1098,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuggxyz/dotnugg-grammar@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@nuggxyz/dotnugg-grammar@npm:0.3.1"
-  checksum: d322034d2fb6e65abf7296bc0a5182778d7f4a5a724e8e402821650675c53ce79ab1ba99a54a3d8f5c93de5ced8ac5d6a645b1b0e4f495154e8d416438c45afd
+"@nuggxyz/dotnugg-grammar@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "@nuggxyz/dotnugg-grammar@npm:0.3.2"
+  checksum: 683c93e19e09d8d034a3b8080cd416d40fcd142a021cb5502c720332b17d1b8b6d45ae4b94461c0c033c376fb62a8cadd5058d9249eea4abce0e98b444c59114
   languageName: node
   linkType: hard
 
@@ -1114,7 +1114,7 @@ __metadata:
     "@ethersproject/abi": ^5.6.4
     "@ethersproject/bytes": ^5.6.1
     "@ethersproject/providers": ^5.6.8
-    "@nuggxyz/dotnugg-grammar": ^0.3.1
+    "@nuggxyz/dotnugg-grammar": ^0.3.2
     "@typechain/ethers-v5": ^10.1.0
     "@types/chai": ^4.3.1
     "@types/fs-extra": ^9.0.13
@@ -6256,7 +6256,7 @@ __metadata:
 
 "typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>":
   version: 4.7.4
-  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"
+  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=f456af"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
