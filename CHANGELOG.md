@@ -1,5 +1,11 @@
 # @nuggxyz/dotnugg-sdk
 
+## 0.4.12
+
+### Patch Changes
+
+-   upgrade yarn
+
 ## 0.4.11
 
 ### Patch Changes
