@@ -1,6 +1,6 @@
 {
 	"name": "@nuggxyz/dotnugg-sdk",
-	"version": "0.4.12",
+	"version": "0.4.13",
 	"description": "sdk for working with dotnugg files written in typescript",
 	"license": "BUSL-1.1",
 	"repository": "https://github.com/nuggxyz/dotnugg-sdk.git",
@@ -33,7 +33,7 @@
 		"@ethersproject/abi": "^5.6.4",
 		"@ethersproject/bytes": "^5.6.1",
 		"@ethersproject/providers": "^5.6.8",
-		"@nuggxyz/dotnugg-grammar": "^0.3.2",
+		"@nuggxyz/dotnugg-grammar": "^0.3.4",
 		"chokidar": "^3.5.3",
 		"color-parse": "^1.4.2",
 		"ethers": "^5.6.9",

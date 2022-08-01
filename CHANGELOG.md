@@ -1,5 +1,11 @@
 # @nuggxyz/dotnugg-sdk
 
+## 0.4.13
+
+### Patch Changes
+
+-   0.3.4 for grammar
+
 ## 0.4.12
 
 ### Patch Changes

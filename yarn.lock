@@ -1098,10 +1098,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuggxyz/dotnugg-grammar@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "@nuggxyz/dotnugg-grammar@npm:0.3.2"
-  checksum: 683c93e19e09d8d034a3b8080cd416d40fcd142a021cb5502c720332b17d1b8b6d45ae4b94461c0c033c376fb62a8cadd5058d9249eea4abce0e98b444c59114
+"@nuggxyz/dotnugg-grammar@npm:^0.3.4":
+  version: 0.3.4
+  resolution: "@nuggxyz/dotnugg-grammar@npm:0.3.4"
+  checksum: 1d5afc8f9bfede9bee48022114ac90912159879771e9eacc37e69b2d785006f0916b2f52eaabc53369c837999daf4e67ad02683660c1df6dbf23ba261f8c0a0e
   languageName: node
   linkType: hard
 
@@ -1114,7 +1114,7 @@ __metadata:
     "@ethersproject/abi": ^5.6.4
     "@ethersproject/bytes": ^5.6.1
     "@ethersproject/providers": ^5.6.8
-    "@nuggxyz/dotnugg-grammar": ^0.3.2
+    "@nuggxyz/dotnugg-grammar": ^0.3.4
     "@typechain/ethers-v5": ^10.1.0
     "@types/chai": ^4.3.1
     "@types/fs-extra": ^9.0.13
